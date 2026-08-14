@@ -13,8 +13,8 @@ decisions:
   - Project labels are human-controlled presentation and never session identity.
   - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical truth.
   - Stale, exited, and ambiguous sessions never silently map to idle or error.
-  - Registration captures stable Ghostty identity and renders the complete tab-title override.
-  - Codex ordinary-TUI and managed-TUI observation are distinct capability modes until the pre-architecture prototype settles the supported default.
+  - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
+  - Codex ordinary-TUI and managed-TUI observation are distinct capability modes; the completed prototype leaves their default as an explicit product-taste choice.
   - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
   - The first release is observation-only and exposes no semantic agent actions.
 ---
@@ -63,15 +63,16 @@ The desired visible semantics are:
 “Needs user input” includes approval and direct-question waits at the projection
 layer. Adapter detail may distinguish them for diagnostics.
 
-Two integration modes remain deliberately distinct until a prototype settles
-the first supported path:
+The completed runtime prototype keeps two integration modes deliberately
+distinct while the supported default awaits a product-taste decision:
 
 - Ordinary-TUI observation preserves an unchanged `codex` launch and uses
   documented hooks and notifications. Its incomplete working/idle coverage must
   remain visibly lower-confidence.
 - Managed-TUI observation launches app-server first and connects the Codex TUI
   with `codex --remote`, preserving the terminal interface while enabling richer
-  machine-readable lifecycle state.
+  machine-readable lifecycle state. A concurrent observer successfully received
+  a remote-TUI thread's active and idle transitions on the installed build.
 
 The product must not claim ordinary-TUI observation has the same fidelity as the
 managed path without evidence.
@@ -88,8 +89,10 @@ The glyph always occupies the first display position. Both a status change and a
 rename re-render the entire value from independently stored fields.
 
 The first Ghostty adapter targets a registered tab/terminal through the official
-macOS scripting interface and a machine-maintained tab-title override. OSC title
-sequences are a compatibility fallback, not the default ownership mechanism.
+macOS scripting interface and a machine-maintained tab-title override. The
+installed release preserved stable IDs across title updates and restored normal
+title behavior when the override was cleared. OSC title sequences are a
+compatibility fallback, not the default ownership mechanism.
 
 Unregistering clears Agent Board's override so ordinary Ghostty title behavior
 can resume.
@@ -126,8 +129,11 @@ prompt, or manual acknowledgement signals are reliable in the selected Codex
 mode.
 
 The board reconciles registered Ghostty identities during reads and state writes.
-A missing terminal surface becomes disconnected/stale, not idle or error. It may
-remain as a bounded diagnostic tombstone before being pruned.
+A missing terminal surface becomes disconnected/stale, not idle or error. A
+terminal that remains application-enumerable but is absent from its expected
+current window/tab hierarchy is hidden/undoable evidence, not proof of a visible
+session. A disconnected record may remain as a bounded diagnostic tombstone
+before being pruned.
 
 ## Domain model
 
@@ -210,14 +216,16 @@ renderers.
   which adapter evidence produced it.
 - Reversible: uninstalling or unregistering restores normal terminal-title
   behavior and does not modify repositories.
-- Proportionate: the first release does not require a resident network service,
-  database server, terminal multiplexer, or GUI framework.
+- Proportionate: the first release does not require a permanently installed
+  daemon, database server, terminal multiplexer, or GUI framework. A
+  launcher-owned local app-server process remains permissible if managed mode is
+  selected.
 
 ## Platform constraints
 
 - macOS is the only first-release operating system.
-- Ghostty 1.3 or later with AppleScript enabled is the candidate supported
-  terminal contract, subject to the installed-dictionary prototype.
+- Ghostty 1.3 or later with AppleScript enabled is the supported terminal
+  contract; setup verifies the installed dictionary and Automation permission.
 - One supervised agent per Ghostty tab is supported; split aggregation is not.
 - Codex is the only first-release agent adapter.
 - Codex's own terminal-title writer must be coordinated or disabled when Agent
@@ -234,10 +242,12 @@ without visiting each tab. State changes are timely, uncertainty is not hidden,
 dead sessions are reconciled, and installation/usage can be repeated from the
 documentation.
 
-Before that boundary is locked, the Codex detector prototype must establish
-whether managed-TUI launch friction is acceptable and whether its event coverage
-actually satisfies the five-state contract. If it does not, the specification
-must narrow the promise rather than relabel inference as certainty.
+Before that boundary is locked, Andrew must decide whether the measured managed-
+TUI launch change is acceptable as the default. Its activity coverage is
+sufficient for the core contract; human-wait and acknowledgement behavior still
+require implementation-level integration tests. If ordinary mode is selected as
+the default, the specification must narrow the promise rather than relabel
+inference as certainty.
 
 ## Preserved future options
 

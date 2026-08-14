@@ -1,13 +1,14 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-14T21:26:24Z'
+generated_at: '2026-08-14T21:30:01Z'
 generated_from: frontmatter
 schema_version: 1
 documents:
   docs/ARCHITECTURE.md:
     summary: 'Agent Board is organized around a normalized session domain with ports for agent evidence,
-      terminal control, storage, and clocks. Thin CLI, Codex, Ghostty, store, and renderer adapters compose
-      into a local event-to-projection flow; detailed process topology waits on two focused prototypes.
+      terminal control, storage, and clocks. Runtime probes validate Ghostty title/session control and
+      both Codex observation modes; the only remaining process-topology gate is whether managed-launch
+      friction is acceptable for the trustworthy default.
 
       '
     decisions:
@@ -15,9 +16,12 @@ documents:
     - Agent and terminal integrations are separate adapters because they provide different evidence and
       capabilities.
     - One projection policy drives every status glyph and label.
-    - Ghostty 1.3+ AppleScript IDs and targeted tab-title actions are the candidate primary terminal integration.
+    - Ghostty 1.3+ AppleScript IDs and targeted tab-title actions are the validated primary terminal integration.
     - The first store is local, versioned, atomically updated, and usable without a daemon.
-    - Codex managed-TUI and ordinary-TUI modes remain separate adapter capabilities until prototyped.
+    - Codex managed-TUI and ordinary-TUI modes remain separate adapter capabilities until product taste
+      selects the default.
+    - Ghostty liveness reconciliation uses current window/tab ancestry plus surface existence because
+      undo-closed terminals remain enumerable.
     - A composition root owns process wiring; domain logic does not import infrastructure adapters.
     - External action capabilities are excluded from the first architecture boundary.
   docs/PRINCIPLES.md:
@@ -49,9 +53,9 @@ documents:
     - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical
       truth.
     - Stale, exited, and ambiguous sessions never silently map to idle or error.
-    - Registration captures stable Ghostty identity and renders the complete tab-title override.
-    - Codex ordinary-TUI and managed-TUI observation are distinct capability modes until the pre-architecture
-      prototype settles the supported default.
+    - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
+    - Codex ordinary-TUI and managed-TUI observation are distinct capability modes; the completed prototype
+      leaves their default as an explicit product-taste choice.
     - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
     - The first release is observation-only and exposes no semantic agent actions.
   docs/VISION.md:
