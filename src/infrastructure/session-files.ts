@@ -65,10 +65,10 @@ export async function writeSessionFileAtomic(path: string, record: SessionRecord
     throw withFileContext(error, path, "INVALID_RECORD");
   }
 
-  await mkdir(dirname(path), { recursive: true });
   const tempPath = `${dirname(path)}/.${basename(path)}.${process.pid}.${randomUUID()}.tmp`;
   let handle: FileHandle | undefined;
   try {
+    await mkdir(dirname(path), { recursive: true });
     handle = await open(tempPath, "wx", 0o600);
     await handle.writeFile(`${JSON.stringify(validated)}\n`, "utf8");
     await handle.sync();

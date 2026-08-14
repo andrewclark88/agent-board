@@ -19,11 +19,14 @@ export function assertSafeSessionId(sessionId: string): void {
   if (typeof sessionId !== "string" || sessionId.length === 0) {
     throw new TypeError("Session id must not be empty");
   }
+  if (sessionId.startsWith(".")) {
+    throw new TypeError("Session id cannot use a hidden-file prefix");
+  }
+  if (sessionId === "registry") {
+    throw new TypeError("Session id is reserved for the registry lock");
+  }
   if (/[/\\]/u.test(sessionId) || /[\u0000-\u001f\u007f-\u009f]/u.test(sessionId)) {
     throw new TypeError("Session id contains unsafe path characters");
-  }
-  if (sessionId === "." || sessionId === "..") {
-    throw new TypeError("Session id cannot be a path segment");
   }
 }
 

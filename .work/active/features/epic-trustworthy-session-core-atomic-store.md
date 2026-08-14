@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-atomic-store
 kind: feature
-stage: review
+stage: done
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: [epic-trustworthy-session-core-domain-contract]
@@ -224,3 +224,20 @@ implemented and verified by one owner.
 - Discrepancies from design: `proper-lockfile` enforces a 2-second minimum stale interval, so the adapter clamps smaller `staleMs` values to the library's safe minimum while preserving the caller's bounded acquisition timeout. No domain-port correction was needed.
 - Adjacent issues parked: none.
 - Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (18 tests, 18 passed).
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with comments
+
+**Blockers**: none — fixed the accepted/listed ID mismatch in this review commit
+**Important**: none — fixed the registry lock-anchor collision in this review commit
+**Nits**: lock release failure after an operation failure remains secondary to the operation error; no separate logging surface exists yet
+**Rejected**: none
+
+**Notes**: Standard-weight cross-model review ran exactly one balanced pass
+against `18cb1f0`. The receiver confirmed that leading-dot session ids were
+accepted by create/get but filtered from list, and that `registry` aliased the
+registry lock anchor. The boundary now rejects both classes and regression tests
+cover them. The low-cost mkdir error-path nit was also normalized into the stable
+adapter error wrapper. Full typecheck, build, and test verification completed
+after fixes; standard closure does not commission another independent pass.

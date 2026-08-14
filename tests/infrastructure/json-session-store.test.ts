@@ -65,8 +65,10 @@ test("create, get, list, and remove use deterministic canonical files", async ()
   });
 });
 
-test("rejects traversal ids and invalid starting revisions", async () => {
+test("rejects unlistable, reserved, traversal ids and invalid starting revisions", async () => {
   await withStore(async (store) => {
+    await assert.rejects(store.create(validRecord(".hidden-session")), (error: unknown) => error instanceof TypeError);
+    await assert.rejects(store.create(validRecord("registry")), (error: unknown) => error instanceof TypeError);
     await assert.rejects(store.get("../escape"), (error: unknown) => error instanceof TypeError);
     await assert.rejects(store.get("."), (error: unknown) => error instanceof TypeError);
     await assert.rejects(store.create(validRecord("bad", 1)), (error: unknown) =>
