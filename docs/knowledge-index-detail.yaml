@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-14T21:08:07Z'
+generated_at: '2026-08-14T21:26:24Z'
 generated_from: frontmatter
 schema_version: 1
 documents:
@@ -79,9 +79,9 @@ documents:
 
       '
   docs/research-plan.md:
-    summary: 'Scout is complete. Two focused pre-architecture engagements remain: compare Codex ordinary-TUI
-      and managed-TUI observation in the real Ghostty workflow, and validate Ghostty registration/title/liveness
-      behavior against the installed application.
+    summary: 'Scout and both focused pre-architecture engagements are complete. Detailed architecture
+      now waits only on the product-taste choice between ordinary Codex launch friction and managed remote-TUI
+      state fidelity.
 
       '
     decisions:
@@ -94,6 +94,38 @@ documents:
       research yet.
     - Hardware, wireless, remote aggregation, and multi-agent research remain deferred until their entry
       conditions are met.
+    - Ghostty 1.3+ AppleScript IDs and targeted tab-title overrides are validated for V1, with hierarchy-aware
+      liveness required for undo-close.
+  .research/analysis/briefs/codex-detector-topology.md:
+    summary: 'Managed app-server plus a remote Codex TUI preserves the recognizable terminal workflow
+      and supplies exact active/idle state to a concurrent observer, but it changes launch topology and
+      relies on an experimental interface. Ordinary Codex has lower startup friction but cannot fulfill
+      the same working/idle/error contract without visibly lower confidence.
+
+      '
+    key_findings:
+    - A second app-server client can discover a remote-TUI thread and receive its active/idle transitions.
+    - The remote TUI retained the normal prompt, project/branch/model/context status line, and terminal-title
+      behavior in a PTY probe.
+    - Ordinary-TUI hooks and notifications remain useful partial evidence but do not expose working start
+      or immediate generic idle.
+    - Human-wait flags are present in the installed schema but were not forced in the runtime probe.
+    - The topology choice is a product-taste decision between launch friction and semantic fidelity.
+  .research/analysis/briefs/ghostty-registration-liveness.md:
+    summary: 'Ghostty 1.3.1 stable IDs and targeted tab-title overrides are suitable for V1 registration
+      and rendering. Closed tabs remain alive and enumerable during undo-close, so liveness must combine
+      current tab hierarchy, explicit lifecycle evidence, and staleness rather than equating enumeration
+      with visibility.
+
+      '
+    key_findings:
+    - Targeted set_tab_title updates and clearing worked without changing captured IDs.
+    - Closing a whole temporary window removed its terminal from live enumeration.
+    - Closing a tab left its terminal enumerable; undo restored the same tab and terminal IDs.
+    - Ghostty 1.3+ AppleScript should be the minimum supported integration and OSC should be diagnostic
+      fallback only.
+    - Reorder, window movement, and live bell decoration remain implementation-time checks, not blockers
+      to the vertical slice.
   .research/analysis/campaigns/agent-board-prior-art/parent.md:
     summary: 'The landscape supports a narrow Ghostty-first attention board, a multidimensional internal
       state projected into five simple symbols, and machine-maintained Ghostty tab-title overrides. Codex

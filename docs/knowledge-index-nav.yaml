@@ -3,13 +3,13 @@
 # Provides corpus situational awareness only. Read knowledge-index.yaml for full index.
 
 schema_version: 3
-generated_at: 2026-08-14T21:08:07Z
+generated_at: 2026-08-14T21:26:24Z
 generated_from: frontmatter
-total_docs: 14
+total_docs: 16
 
 by_kind:
   planning: 5
-  research: 8
+  research: 10
   historical: 1
 
 # Top 15 most-recently-updated docs (planning + research only).

@@ -6,9 +6,9 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 1
-generated_at: 2026-08-14T21:08:07Z
+generated_at: 2026-08-14T21:26:24Z
 generated_from: frontmatter
-total_docs: 14
+total_docs: 16
 
 documents:
   # ── planning ──────────────────────────────────────────────────────────────
@@ -54,6 +54,24 @@ documents:
     consumer_hint: Read this to understand the first product contract, normalized domain model, behavior, constraints, and acceptance boundary.
 
   # ── research ──────────────────────────────────────────────────────────────
+
+  - path: .research/analysis/briefs/codex-detector-topology.md
+    title: Codex detector topology
+    type: brief
+    kind: research
+    updated: 2026-08-14
+    status: locked
+    research_method: /research
+    consumer_hint: Read this before selecting or implementing the Codex V1 adapter; it compares unchanged ordinary-TUI observation with a managed remote TUI on the installed build.
+
+  - path: .research/analysis/briefs/ghostty-registration-liveness.md
+    title: Ghostty registration and liveness contract
+    type: brief
+    kind: research
+    updated: 2026-08-14
+    status: locked
+    research_method: /research
+    consumer_hint: Read this before implementing Ghostty identity, title rendering, reconciliation, or stale-session cleanup.
 
   - path: .research/analysis/campaigns/agent-board-prior-art/acquisitions.md
     title: Acquisition candidates

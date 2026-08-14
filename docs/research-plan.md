@@ -7,13 +7,14 @@ status: draft
 nav_priority: high
 updated: 2026-08-14
 summary: |
-  Scout is complete. Two focused pre-architecture engagements remain: compare Codex ordinary-TUI and managed-TUI observation in the real Ghostty workflow, and validate Ghostty registration/title/liveness behavior against the installed application.
+  Scout and both focused pre-architecture engagements are complete. Detailed architecture now waits only on the product-taste choice between ordinary Codex launch friction and managed remote-TUI state fidelity.
 decisions:
   - No deep-research or research-program campaign is warranted before the first proof.
   - Codex detector topology is the first pre-architecture decision because it changes workflow friction and state fidelity.
   - Ghostty scripting behavior requires an empirical integration check in addition to documentation research.
   - Store encoding and implementation language are well-understood reversible choices and need no external research yet.
   - Hardware, wireless, remote aggregation, and multi-agent research remain deferred until their entry conditions are met.
+  - Ghostty 1.3+ AppleScript IDs and targeted tab-title overrides are validated for V1, with hierarchy-aware liveness required for undo-close.
 ---
 
 # Agent Board research plan
@@ -28,9 +29,11 @@ It covers Codex lifecycle interfaces, Ghostty title/session APIs, direct attenti
 supervisors, state-model patterns, liveness, and preservation of the old product
 horizon.
 
-## Pre-architecture research
+## Completed pre-architecture research
 
-### 1. Codex detector topology — `/research`
+### 1. Codex detector topology — `/research` complete
+
+Output: `.research/analysis/briefs/codex-detector-topology.md`
 
 Question: In Andrew's real Ghostty workflow, which supported launch topology
 provides the smallest acceptable combination of startup friction, TUI fidelity,
@@ -51,10 +54,14 @@ generated schemas from the installed Codex build.
 Rationale: this finding changes the first supported adapter, install/startup
 experience, normalized confidence contract, and possibly process topology.
 
-Expected output: focused brief under `.research/analysis/briefs/` plus a local
-prototype/test record. This blocks detailed architecture.
+Result: both topologies are viable, but only managed app-server plus remote TUI
+provided authoritative active/idle transitions to a concurrent observer. The
+remaining choice is a taste gate because managed mode changes startup topology
+and relies on an experimental interface.
 
-### 2. Ghostty registration and liveness contract — `/research`
+### 2. Ghostty registration and liveness contract — `/research` complete
+
+Output: `.research/analysis/briefs/ghostty-registration-liveness.md`
 
 Question: Against the installed supported Ghostty release, do AppleScript IDs and
 targeted tab-title actions remain stable across rename, focus, reorder, agent exit,
@@ -68,8 +75,9 @@ whether hidden undo-close surfaces remain enumerable.
 Rationale: this finding changes identity, stale cleanup, minimum Ghostty version,
 and whether OSC must remain a supported fallback.
 
-Expected output: focused brief under `.research/analysis/briefs/` plus an
-integration test matrix. This blocks detailed architecture.
+Result: stable IDs and targeted title set/update/clear are suitable for V1.
+Closed tabs remain enumerable during undo-close and return with the same IDs, so
+reconciliation must distinguish visibility from process/surface existence.
 
 ## Optional follow-ups after architecture
 
