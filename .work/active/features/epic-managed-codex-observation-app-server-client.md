@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation-app-server-client
 kind: feature
-stage: review
+stage: done
 tags: [integration]
 parent: epic-managed-codex-observation
 depends_on: []
@@ -213,3 +213,18 @@ boundary best owned and reviewed together.
 - Discrepancies from design: the options type includes `maxPendingRequests` so
   the pending-request bound is explicit and testable; otherwise none.
 - Adjacent issues parked: none.
+
+## Review (2026-08-14)
+
+Standard-weight review used one fresh-context cross-model pass with Claude
+Sonnet. It found no blockers and confirmed the endpoint, version, and protocol
+contracts against the captured/generated Codex evidence. Receiver adjudication
+accepted three important hardening findings: completed-request abort listeners
+were not removed, the notification-overflow test did not exercise overflow, and
+a late timed-out response could close unrelated work. All were corrected.
+
+The same focused fix removed handshake listeners after connection, made async
+request failure consistently promise-based, and added binary-message coverage.
+Post-fix typecheck, build, focused client tests, and the full suite passed. Per
+standard policy, the feature closes after this single review pass and verified
+fix set without re-review.

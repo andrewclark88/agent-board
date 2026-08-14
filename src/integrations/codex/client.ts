@@ -31,6 +31,8 @@ interface PendingRequest<T> {
   resolve: (value: T) => void;
   reject: (error: unknown) => void;
   timer: ReturnType<typeof setTimeout>;
+  signal?: AbortSignal;
+  abort?: () => void;
 }
 
 interface Waiter {
@@ -43,11 +45,17 @@ class NotificationSubscription implements AsyncIterable<CodexNotification>, Asyn
   private readonly waiters: Waiter[] = [];
   private ended = false;
   private failure: unknown;
+  private readonly signal?: AbortSignal;
+  private readonly abort?: () => void;
 
   constructor(private readonly maxQueue: number, private readonly onEnd: (subscription: NotificationSubscription) => void, signal?: AbortSignal) {
+    this.signal = signal;
     if (signal) {
       if (signal.aborted) this.end(new AgentBoardError("ADAPTER_FAILURE", "Codex notification stream aborted"));
-      else signal.addEventListener("abort", () => this.end(new AgentBoardError("ADAPTER_FAILURE", "Codex notification stream aborted")), { once: true });
+      else {
+        this.abort = () => this.end(new AgentBoardError("ADAPTER_FAILURE", "Codex notification stream aborted"));
+        signal.addEventListener("abort", this.abort, { once: true });
+      }
     }
   }
 
@@ -76,6 +84,8 @@ class NotificationSubscription implements AsyncIterable<CodexNotification>, Asyn
     if (this.ended) return;
     this.ended = true;
     this.failure = error;
+    if (this.signal && this.abort) this.signal.removeEventListener("abort", this.abort);
+    if (error) this.queue.splice(0);
     this.onEnd(this);
     for (const waiter of this.waiters.splice(0)) {
       if (error) waiter.reject(error);
@@ -139,31 +149,41 @@ export class AppServerClient {
     const client = new AppServerClient(socket, timeoutMs, maxMessageBytes, maxBufferedNotifications, maxPendingRequests);
     await new Promise<void>((resolve, reject) => {
       let settled = false;
+      const cleanup = (): void => {
+        clearTimeout(timer);
+        socket.off("open", onOpen);
+        socket.off("error", onError);
+        socket.off("close", onClose);
+      };
+      const onOpen = (): void => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve();
+      };
+      const onError = (error: unknown): void => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(failure("Unable to connect to Codex app-server", error));
+      };
+      const onClose = (): void => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(failure("Codex app-server closed before connection"));
+      };
       const timer = setTimeout(() => {
         if (!settled) {
           settled = true;
+          cleanup();
           client.fail(failure("Timed out connecting to Codex app-server"));
           reject(client.terminalFailure);
         }
       }, timeoutMs);
-      socket.on("open", () => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        resolve();
-      });
-      socket.on("error", (error) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        reject(failure("Unable to connect to Codex app-server", error));
-      });
-      socket.on("close", () => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        reject(failure("Codex app-server closed before connection"));
-      });
+      socket.on("open", onOpen);
+      socket.on("error", onError);
+      socket.on("close", onClose);
     });
     return client;
   }
@@ -175,12 +195,12 @@ export class AppServerClient {
     this.initialized = true;
   }
 
-  request<T>(method: string, params: unknown, schema: z.ZodType<T>, signal?: AbortSignal): Promise<T> {
+  async request<T>(method: string, params: unknown, schema: z.ZodType<T>, signal?: AbortSignal): Promise<T> {
     if (!this.initialized) throw failure("Codex app-server client must be initialized before requests");
     return this.sendRequest(method, params, schema, signal);
   }
 
-  loadedThreads(signal?: AbortSignal): Promise<ThreadLoadedListResult> {
+  async loadedThreads(signal?: AbortSignal): Promise<ThreadLoadedListResult> {
     return this.request("thread/loaded/list", {}, ThreadLoadedListResultSchema, signal);
   }
 
@@ -211,23 +231,27 @@ export class AppServerClient {
     const id = this.nextId++;
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
-        if (!this.pending.delete(id)) return;
+        const current = this.pending.get(id);
+        if (!current) return;
+        this.pending.delete(id);
+        this.cleanupPending(current);
         reject(failure(`Codex app-server request timed out: ${method}`));
       }, this.timeoutMs);
-      const pending: PendingRequest<T> = { schema, resolve, reject, timer };
+      const pending: PendingRequest<T> = { schema, resolve, reject, timer, signal };
       this.pending.set(id, pending as PendingRequest<unknown>);
       const abort = () => {
         const current = this.pending.get(id);
         if (!current) return;
         this.pending.delete(id);
-        clearTimeout(current.timer);
+        this.cleanupPending(current);
         reject(failure(`Codex app-server request aborted: ${method}`));
       };
-      if (signal) signal.addEventListener("abort", abort, { once: true });
+      pending.abort = abort;
+      if (signal) signal.addEventListener("abort", pending.abort, { once: true });
       try { this.socket.send(JSON.stringify({ jsonrpc: "2.0", id, method, params })); }
       catch (error) {
         this.pending.delete(id);
-        clearTimeout(timer);
+        this.cleanupPending(pending);
         reject(failure(`Unable to send Codex app-server request: ${method}`, error));
       }
     });
@@ -257,9 +281,17 @@ export class AppServerClient {
 
   private resolveResponse(id: number, response: { result?: unknown; error?: { code: number; message: string; data?: unknown } }): void {
     const pending = this.pending.get(id);
-    if (!pending) { this.fail(failure(`Codex app-server returned unknown response id ${id}`)); return; }
+    // Responses may legitimately arrive after their caller timed out or
+    // aborted. IDs below nextId were issued by this client and are safe to
+    // discard once no longer pending; never let one late response tear down
+    // unrelated requests and notification streams.
+    if (!pending) {
+      if (id < this.nextId) return;
+      this.fail(failure(`Codex app-server returned unknown response id ${id}`));
+      return;
+    }
     this.pending.delete(id);
-    clearTimeout(pending.timer);
+    this.cleanupPending(pending);
     if (response.error) {
       pending.reject(failure(`Codex app-server request failed (${response.error.code}): ${response.error.message}`, response.error.data));
       return;
@@ -282,8 +314,15 @@ export class AppServerClient {
   private rejectPending(error: unknown): void {
     for (const [id, pending] of this.pending) {
       this.pending.delete(id);
-      clearTimeout(pending.timer);
+      this.cleanupPending(pending);
       pending.reject(error);
+    }
+  }
+
+  private cleanupPending<T>(pending: PendingRequest<T>): void {
+    clearTimeout(pending.timer);
+    if (pending.signal && pending.abort) {
+      pending.signal.removeEventListener("abort", pending.abort);
     }
   }
 }

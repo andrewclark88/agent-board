@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import WebSocket, { WebSocketServer, type WebSocket as WebSocketConnection } from "ws";
+import { z } from "zod";
 
 import { AgentBoardError } from "../../../src/domain/errors.js";
 import { AppServerClient } from "../../../src/integrations/codex/client.js";
@@ -72,6 +73,27 @@ test("times out and aborts requests independently", async () => {
   });
 });
 
+test("a late timed-out response does not close unrelated client work", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+      else if (request.method === "slow") {
+        setTimeout(() => socket.send(JSON.stringify({ id: request.id, result: { late: true } })), 35);
+      } else if (request.method === "thread/loaded/list") {
+        socket.send(JSON.stringify({ id: request.id, result: { data: [] } }));
+      }
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory, requestTimeoutMs: 20 });
+    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+    await assert.rejects(client.request("slow", {}, z.unknown()), /timed out/);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    assert.deepEqual((await client.loadedThreads()).data, []);
+    await client.close();
+  });
+});
+
 test("disconnect rejects pending requests and notification iterators", async () => {
   await withServer((socket) => {
     socket.on("message", (raw) => {
@@ -89,13 +111,15 @@ test("disconnect rejects pending requests and notification iterators", async () 
   });
 });
 
-test("rejects notification buffer overflow and oversized messages", async () => {
+test("rejects notification buffer overflow, oversized, and binary messages", async () => {
   await withServer((socket) => {
     socket.on("message", (raw) => {
       const request = JSON.parse(raw.toString()) as { id: number; method: string };
       if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
       else if (request.method === "oversized") socket.send("x".repeat(10_000));
-      else {
+      else if (request.method === "binary") socket.send(Buffer.from("binary"), { binary: true });
+      else if (request.method === "overflow") {
+        socket.send(JSON.stringify({ id: request.id, result: {} }));
         socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
         socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
       }
@@ -104,7 +128,18 @@ test("rejects notification buffer overflow and oversized messages", async () => 
     const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory, maxBufferedNotifications: 1, maxMessageBytes: 100 });
     await client.initialize({ name: "agent-board-test", version: "0.1.0" });
     const stream = client.notifications();
-    await assert.rejects(client.request("oversized", {}, ThreadLoadedListResultSchema), /message exceeds/);
-    assert.ok(stream);
+    await client.request("overflow", {}, z.unknown());
+    await assert.rejects(stream[Symbol.asyncIterator]().next(), /buffer overflow/);
+    await client.close();
+
+    const oversized = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory, maxMessageBytes: 100 });
+    await oversized.initialize({ name: "agent-board-test", version: "0.1.0" });
+    await assert.rejects(oversized.request("oversized", {}, z.unknown()), /message exceeds/);
+    await oversized.close();
+
+    const binary = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory });
+    await binary.initialize({ name: "agent-board-test", version: "0.1.0" });
+    await assert.rejects(binary.request("binary", {}, z.unknown()), /binary WebSocket message/);
+    await binary.close();
   });
 });
