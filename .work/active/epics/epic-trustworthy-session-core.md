@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core
 kind: epic
-stage: drafting
+stage: implementing
 tags: [state]
 parent: null
 depends_on: []
@@ -43,3 +43,35 @@ central transition/projection service.
 
 <!-- The /epic-design pass will fill in real child feature specifics into a
 ## Decomposition section below this one. -->
+
+## Design decisions
+
+- Keep the canonical session shape free of adapter-specific payloads beyond
+  bounded evidence metadata; adapters translate at the boundary.
+- Use one current schema rather than compatibility layers because V1 has no
+  external consumers or durable installed data.
+- Make projection a pure domain operation consumed by both titles and board
+  rows; diagnostics may use `?`, but no adapter invents another primary glyph.
+- Keep persistence behind a port so domain and projection tests are independent
+  from filesystem locking.
+
+## Pre-mortem
+
+- A loosely validated record could let one malformed observer write poison every
+  reader. Runtime schemas and fail-visible reads belong in the first feature.
+- Concurrent rename, observer, and reconciliation writes could lose fields.
+  Revision-aware locked mutations and contention tests belong in the store
+  feature.
+- Projection precedence could drift between call sites. Only the shared
+  projection feature may map normalized state to primary status.
+
+## Decomposition
+
+1. `epic-trustworthy-session-core-domain-contract` — normalized schemas,
+   registries, invariants, errors, and ports. `depends_on: []`.
+2. `epic-trustworthy-session-core-atomic-store` — versioned per-session files,
+   locks, atomic mutation, listing, and pruning primitives. Depends on the domain
+   contract.
+3. `epic-trustworthy-session-core-transition-projection` — validated state
+   transitions, freshness rules, and shared status/title/row projection. Depends
+   on the domain contract and atomic store.
