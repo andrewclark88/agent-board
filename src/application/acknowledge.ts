@@ -41,16 +41,21 @@ export async function acknowledgeCompletion(
   return store.mutate(sessionId, (latest) => {
     if (
       latest.agent.attention !== "completion_unread" ||
-      timestamp(observedAt) < timestamp(latest.agent.observedAt)
+      latest.agent.completionObservedAt === undefined ||
+      timestamp(observedAt) < timestamp(latest.agent.completionObservedAt)
     ) {
       return latest;
     }
 
-    const { detail: _detail, ...agentWithoutDetail } = latest.agent;
+    const {
+      detail: _detail,
+      completionObservedAt: _completionObservedAt,
+      ...agentWithoutAttentionEvidence
+    } = latest.agent;
     return {
       ...latest,
       agent: {
-        ...agentWithoutDetail,
+        ...agentWithoutAttentionEvidence,
         attention: "none",
         observedAt,
         evidenceKind: "board.acknowledgement",

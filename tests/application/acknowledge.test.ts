@@ -12,7 +12,7 @@ function record(attention: SessionRecord["agent"]["attention"] = "completion_unr
     schemaVersion: SCHEMA_VERSION, revision: 2, sessionId: "session-1",
     identity: { projectLabel: "board", createdAt: at },
     terminal: { adapter: "ghostty", windowId: "w", tabId: "t", terminalId: "term", presence: "visible", observedAt: at },
-    agent: { adapter: "codex", mode: "managed", activity: "idle", attention, health: "live", observedAt: at, evidenceKind: "turn.completed", confidence: "authoritative" },
+    agent: { adapter: "codex", mode: "managed", activity: "idle", attention, ...(attention === "completion_unread" ? { completionObservedAt: at } : {}), health: "live", observedAt: at, evidenceKind: "turn.completed", confidence: "authoritative" },
   };
 }
 function fakeStore(initial: SessionRecord, onMutate?: (latest: SessionRecord) => SessionRecord): SessionStore & { mutations: number } {
@@ -54,11 +54,27 @@ test("acknowledgement never clears input-required and skips no-ops", async () =>
 test("an older acknowledgement cannot clear a newer completion", async () => {
   const store = fakeStore(record(), (latest) => ({
     ...latest,
-    agent: { ...latest.agent, observedAt: "2026-08-14T18:02:00Z", evidenceKind: "turn.completed" },
+    agent: { ...latest.agent, observedAt: "2026-08-14T18:02:00Z", completionObservedAt: "2026-08-14T18:02:00Z", evidenceKind: "turn.completed" },
   }));
   const result = await acknowledgeCompletion(store, "session-1", "ghostty-focus", "2026-08-14T18:01:00Z");
   assert.equal(result.agent.attention, "completion_unread");
   assert.equal(store.mutations, 1);
+});
+
+test("an acknowledgement after completion survives a later attention-preserving observation", async () => {
+  const store = fakeStore({
+    ...record(),
+    agent: { ...record().agent, observedAt: "2026-08-14T18:00:30Z", evidenceKind: "idle-heartbeat" },
+  });
+  const result = await acknowledgeCompletion(store, "session-1", "ghostty-focus", "2026-08-14T18:00:20Z");
+  assert.equal(result.agent.attention, "none");
+  assert.equal(result.agent.completionObservedAt, undefined);
+});
+
+test("an acknowledgement at the exact completion boundary clears unread attention", async () => {
+  const store = fakeStore(record());
+  const result = await acknowledgeCompletion(store, "session-1", "explicit", at);
+  assert.equal(result.agent.attention, "none");
 });
 
 test("acknowledgement reports stable errors for missing sessions and malformed timestamps", async () => {

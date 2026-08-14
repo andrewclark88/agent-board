@@ -157,6 +157,7 @@ Project label, repo path, branch, and terminal position are not identity keys.
 ```text
 activity:    unknown | idle | working
 attention:   none | completion_unread | input_required
+completion_observed_at?: required while attention=completion_unread
 health:      live | stale | error
 observation:
   observed_at

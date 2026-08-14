@@ -14,7 +14,7 @@ const transitionSchemas = [
   z.object({ type: z.literal("error") }).merge(evidence).strict(),
   z.object({
     type: z.literal("process-exit"),
-    exitCode: z.number().int().safe().nullable(),
+    exitCode: z.number().int().nonnegative().safe().nullable(),
   }).merge(evidence).strict(),
 ] as const;
 
@@ -36,14 +36,26 @@ function withEvidence(
   transition: AgentTransition,
   fields: Partial<SessionRecord["agent"]>,
 ): SessionRecord {
-  const { detail: _oldDetail, ...agentWithoutDetail } = current.agent;
+  const {
+    detail: _oldDetail,
+    completionObservedAt: currentCompletionObservedAt,
+    ...agentWithoutTransientFields
+  } = current.agent;
+  const nextAttention = fields.attention ?? current.agent.attention;
+  const completionObservedAt = nextAttention === "completion_unread"
+    ? fields.attention === "completion_unread"
+      ? transition.observedAt
+      : currentCompletionObservedAt
+    : undefined;
+  const detail = transition.detail ?? fields.detail;
   const nextAgent = {
-    ...agentWithoutDetail,
+    ...agentWithoutTransientFields,
     ...fields,
     observedAt: transition.observedAt,
     evidenceKind: transition.evidenceKind,
     confidence: transition.confidence,
-    ...(transition.detail === undefined ? {} : { detail: transition.detail }),
+    ...(completionObservedAt === undefined ? {} : { completionObservedAt }),
+    ...(detail === undefined ? {} : { detail }),
   };
   return { ...current, agent: nextAgent };
 }
@@ -90,6 +102,14 @@ export function applyAgentTransition(
         health: "error",
       });
     case "process-exit":
-      return withEvidence(record, transition, { activity: "idle" });
+      return withEvidence(record, transition, transition.exitCode === 0
+        ? { activity: "idle" }
+        : {
+            activity: "idle",
+            health: "error",
+            detail: transition.exitCode === null
+              ? "agent process exited without a code"
+              : `agent process exited with code ${transition.exitCode}`,
+          });
   }
 }

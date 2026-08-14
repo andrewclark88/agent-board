@@ -82,7 +82,11 @@ test("accepts every registered enum value at its boundary", () => {
     assert.equal(AgentObservationSchema.safeParse({ ...validRecord().agent, activity }).success, true);
   }
   for (const attention of ATTENTIONS) {
-    assert.equal(AgentObservationSchema.safeParse({ ...validRecord().agent, attention }).success, true);
+    assert.equal(AgentObservationSchema.safeParse({
+      ...validRecord().agent,
+      attention,
+      ...(attention === "completion_unread" ? { completionObservedAt: timestamp } : {}),
+    }).success, true);
   }
   for (const health of HEALTH_STATES) {
     assert.equal(AgentObservationSchema.safeParse({ ...validRecord().agent, health }).success, true);

@@ -202,6 +202,7 @@ agent:
   launcher_pid?
   activity = unknown | idle | working
   attention = none | completion_unread | input_required
+  completion_observed_at?  # required while completion is unread
   health = live | stale | error
   observed_at
   evidence_kind

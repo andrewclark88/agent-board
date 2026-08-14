@@ -75,9 +75,22 @@ test("input-required attention is cleared only by input-resolved", () => {
 
 test("working clears completion unread while ordinary idle and process exit preserve it", () => {
   const completed = applyAgentTransition(record(), { type: "completed", ...evidence });
+  assert.equal(completed.agent.completionObservedAt, evidence.observedAt);
   assert.equal(applyAgentTransition(completed, { type: "idle", ...evidence }).agent.attention, "completion_unread");
+  assert.equal(applyAgentTransition(completed, { type: "idle", ...evidence }).agent.completionObservedAt, evidence.observedAt);
   assert.equal(applyAgentTransition(completed, { type: "process-exit", ...evidence, exitCode: 0 }).agent.attention, "completion_unread");
-  assert.equal(applyAgentTransition(completed, { type: "working", ...evidence }).agent.attention, "none");
+  const working = applyAgentTransition(completed, { type: "working", ...evidence });
+  assert.equal(working.agent.attention, "none");
+  assert.equal(working.agent.completionObservedAt, undefined);
+});
+
+test("nonzero or unknown process exit is an explicit error", () => {
+  for (const exitCode of [7, null] as const) {
+    const exited = applyAgentTransition(record(), { type: "process-exit", ...evidence, exitCode });
+    assert.equal(exited.agent.activity, "idle");
+    assert.equal(exited.agent.health, "error");
+    assert.match(exited.agent.detail ?? "", /exited/);
+  }
 });
 
 test("clean process exit does not invent an error or stale health", () => {

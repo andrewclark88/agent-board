@@ -9,11 +9,14 @@ const observedAt = "2026-08-14T18:00:00Z";
 const now = new Date("2026-08-14T18:01:00Z");
 
 function record(overrides: Partial<SessionRecord["agent"]> = {}, terminal: Partial<SessionRecord["terminal"]> = {}): SessionRecord {
+  const completionObservedAt = overrides.attention === "completion_unread"
+    ? overrides.completionObservedAt ?? observedAt
+    : undefined;
   return {
     schemaVersion: SCHEMA_VERSION, revision: 0, sessionId: "session-1",
     identity: { projectLabel: "agent-board", createdAt: observedAt },
     terminal: { adapter: "ghostty", windowId: "w", tabId: "t", terminalId: "term", presence: "visible", observedAt, ...terminal },
-    agent: { adapter: "codex", mode: "managed", activity: "idle", attention: "none", health: "live", observedAt, evidenceKind: "native", confidence: "authoritative", ...overrides },
+    agent: { adapter: "codex", mode: "managed", activity: "idle", attention: "none", health: "live", observedAt, evidenceKind: "native", confidence: "authoritative", ...overrides, ...(completionObservedAt === undefined ? {} : { completionObservedAt }) },
   };
 }
 

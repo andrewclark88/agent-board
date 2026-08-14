@@ -95,13 +95,30 @@ export const AgentObservationSchema = z
     launcherPid: z.number().int().nonnegative().safe().optional(),
     activity: z.enum(ACTIVITIES),
     attention: z.enum(ATTENTIONS),
+    completionObservedAt: rfc3339Timestamp.optional(),
     health: z.enum(HEALTH_STATES),
     observedAt: rfc3339Timestamp,
     evidenceKind: nonEmptyString,
     confidence: z.enum(CONFIDENCE_LEVELS),
     detail: z.string().min(1).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((agent, context) => {
+    if (agent.attention === "completion_unread" && agent.completionObservedAt === undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["completionObservedAt"],
+        message: "is required while completion attention is unread",
+      });
+    }
+    if (agent.attention !== "completion_unread" && agent.completionObservedAt !== undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["completionObservedAt"],
+        message: "is only valid while completion attention is unread",
+      });
+    }
+  });
 
 export const SessionRecordSchema = z
   .object({

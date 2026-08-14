@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-transition-projection
 kind: feature
-stage: review
+stage: done
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: [epic-trustworthy-session-core-domain-contract, epic-trustworthy-session-core-atomic-store]
@@ -235,6 +235,26 @@ one owner best preserves semantic coherence.
 - Review weight: standard, from `.work/CONVENTIONS.md`.
 - Files changed: `src/domain/transitions.ts`, `src/domain/projection.ts`, `src/application/observe-agent.ts`, `src/application/acknowledge.ts`, `tests/domain/transitions.test.ts`, `tests/domain/projection.test.ts`, `tests/application/observe-agent.test.ts`, and `tests/application/acknowledge.test.ts`.
 - Simplification: the closed transition union reuses the canonical observation schema; the application services delegate all serialization and revision ownership to `SessionStore.mutate`.
-- Discrepancies from design: the canonical record has no separate completion timestamp, so acknowledgement compares against the latest agent observation timestamp while completion attention remains unread; this conservatively prevents an older focus event from clearing newer evidence.
+- Discrepancies from design: initial implementation used the latest general agent-observation timestamp as a completion proxy. Review proved that an intervening idle observation could suppress a legitimate acknowledgement, so the canonical record now carries `completionObservedAt` only while completion is unread.
 - Adjacent issues parked: none.
 - Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (33 tests, 33 passed).
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with comments
+
+**Blockers**: none — fixed acknowledgement freshness against dedicated completion evidence
+**Important**: none — nonzero or unknown process exit now produces explicit error health and diagnostic detail
+**Nits**: none; exact-timestamp acknowledgement coverage was added during the fix
+**Rejected**: none
+
+**Notes**: Standard-weight cross-model review ran exactly one balanced pass
+against `31857be`. The receiver confirmed that the general agent `observedAt`
+could advance on an attention-preserving idle/process-exit event and therefore
+was not a safe completion clock. The normalized record now stores
+`completionObservedAt` only while unread completion exists, reducers maintain
+that invariant, and acknowledgement compares against it. Process exit codes are
+also no longer inert: zero remains clean, while nonzero or unknown exits become
+error health with bounded detail. Foundation schemas were rolled forward and
+the full suite passed 36/36 after fixes. Standard closure does not commission a
+second independent pass.
