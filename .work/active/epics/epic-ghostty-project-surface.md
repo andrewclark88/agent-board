@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface
 kind: epic
-stage: drafting
+stage: implementing
 tags: [integration, cli]
 parent: null
 depends_on: [epic-trustworthy-session-core]
@@ -43,3 +43,34 @@ and naming, and hierarchy-aware title/liveness reconciliation.
 
 <!-- The /epic-design pass will fill in real child feature specifics into a
 ## Decomposition section below this one. -->
+
+## Design decisions
+
+- Require Ghostty 1.3+ AppleScript support for V1; OSC is not a silent fallback.
+- Invoke constant AppleScript programs with positional arguments. Project labels
+  and IDs never enter generated script source.
+- Registration captures the active Ghostty window/tab/terminal hierarchy once
+  and deduplicates by terminal ID under the registry lock.
+- Presence is derived by re-enumerating the current hierarchy: current tree is
+  visible, app-enumerable outside the tree is hidden/undoable, and absence is
+  missing. PID alone is not liveness.
+- Title write/clear targets the registered tab and reconciles identity before
+  action. A mismatch becomes a diagnostic, never a best-guess write.
+
+## Pre-mortem
+
+- Automation permission or an incompatible Ghostty config could make commands
+  appear broken. The adapter feature returns typed diagnostics with remediation.
+- Re-registering the same terminal could create duplicate board rows. The naming
+  feature performs the lookup/create decision inside one registry lock.
+- Close/undo could leave a live process but no visible tab. The reconciliation
+  feature treats hierarchy placement and enumerability separately.
+
+## Decomposition
+
+1. `epic-ghostty-project-surface-applescript-adapter` — safe scripts, hierarchy
+   parsing, targeted title actions, version/config diagnostics. `depends_on: []`.
+2. `epic-ghostty-project-surface-registration-naming` — idempotent focused-tab
+   registration, repo context, and `agent-name`. Depends on the adapter.
+3. `epic-ghostty-project-surface-title-reconciliation` — presence classification,
+   canonical title rendering/clearing, and stale-safe repair. Depends on both.
