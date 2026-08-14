@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-transition-projection
 kind: feature
-stage: implementing
+stage: review
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: [epic-trustworthy-session-core-domain-contract, epic-trustworthy-session-core-atomic-store]
@@ -228,3 +228,13 @@ atomic-store feature and should not be duplicated here.
 
 None. Reducer, application services, and projection share one small state matrix;
 one owner best preserves semantic coherence.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Luna high, selected for state-machine and temporal correctness.
+- Review weight: standard, from `.work/CONVENTIONS.md`.
+- Files changed: `src/domain/transitions.ts`, `src/domain/projection.ts`, `src/application/observe-agent.ts`, `src/application/acknowledge.ts`, `tests/domain/transitions.test.ts`, `tests/domain/projection.test.ts`, `tests/application/observe-agent.test.ts`, and `tests/application/acknowledge.test.ts`.
+- Simplification: the closed transition union reuses the canonical observation schema; the application services delegate all serialization and revision ownership to `SessionStore.mutate`.
+- Discrepancies from design: the canonical record has no separate completion timestamp, so acknowledgement compares against the latest agent observation timestamp while completion attention remains unread; this conservatively prevents an older focus event from clearing newer evidence.
+- Adjacent issues parked: none.
+- Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (33 tests, 33 passed).

@@ -1,0 +1,67 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { AgentBoardError } from "../../src/domain/errors.js";
+import { SCHEMA_VERSION, type SessionRecord } from "../../src/domain/session.js";
+import { projectSession } from "../../src/domain/projection.js";
+
+const observedAt = "2026-08-14T18:00:00Z";
+const now = new Date("2026-08-14T18:01:00Z");
+
+function record(overrides: Partial<SessionRecord["agent"]> = {}, terminal: Partial<SessionRecord["terminal"]> = {}): SessionRecord {
+  return {
+    schemaVersion: SCHEMA_VERSION, revision: 0, sessionId: "session-1",
+    identity: { projectLabel: "agent-board", createdAt: observedAt },
+    terminal: { adapter: "ghostty", windowId: "w", tabId: "t", terminalId: "term", presence: "visible", observedAt, ...terminal },
+    agent: { adapter: "codex", mode: "managed", activity: "idle", attention: "none", health: "live", observedAt, evidenceKind: "native", confidence: "authoritative", ...overrides },
+  };
+}
+
+test("projection follows the five canonical precedence examples", () => {
+  const cases = [
+    [{ health: "error" as const }, "×", "error"],
+    [{ attention: "input_required" as const }, "!", "needs-input"],
+    [{ attention: "completion_unread" as const }, "✓", "finished"],
+    [{ activity: "working" as const }, "●", "working"],
+    [{ activity: "idle" as const }, "○", "idle"],
+  ] as const;
+  for (const [overrides, glyph, status] of cases) {
+    const projection = projectSession(record(overrides), { now, workingFreshForMs: 60_000 });
+    assert.equal(projection.glyph, glyph);
+    assert.equal(projection.status, status);
+    assert.equal(projection.title, `${glyph} agent-board`);
+  }
+});
+
+test("stale, future, hidden, and ambiguous records use diagnostic glyph", () => {
+  const cases = [
+    record({ activity: "working" }, {}),
+    record({ activity: "working", observedAt: "2026-08-14T18:02:00Z" }),
+    record({ activity: "unknown" }),
+    record({ activity: "idle", health: "stale" }),
+    record({ activity: "idle" }, { presence: "hidden" }),
+  ];
+  for (const value of cases) {
+    const projection = projectSession(value, { now, workingFreshForMs: 1 });
+    assert.equal(projection.glyph, "?");
+    assert.equal(projection.status, "diagnostic");
+    assert.equal(projection.title, "? agent-board");
+  }
+  const boundary = projectSession(record({ activity: "working" }), { now, workingFreshForMs: 60_000 });
+  assert.equal(boundary.glyph, "●");
+  assert.equal(boundary.diagnostics.length, 0);
+});
+
+test("attention glyphs remain visible while diagnostics are attached", () => {
+  const projection = projectSession(record({ attention: "completion_unread", health: "stale", confidence: "inferred", detail: "native detail" }, { presence: "missing" }), { now, workingFreshForMs: 60_000 });
+  assert.equal(projection.glyph, "✓");
+  assert.deepEqual(projection.diagnostics, ["agent health is stale", "terminal is missing", "evidence is inferred", "native detail"]);
+});
+
+test("projection validates options and is immutable", () => {
+  assert.throws(() => projectSession(record(), { now: new Date("invalid"), workingFreshForMs: 1 }), (error: unknown) => error instanceof AgentBoardError && error.code === "INVALID_RECORD");
+  assert.throws(() => projectSession(record(), { now, workingFreshForMs: -1 }), (error: unknown) => error instanceof AgentBoardError && error.code === "INVALID_RECORD");
+  const projection = projectSession(record(), { now, workingFreshForMs: 1 });
+  assert.throws(() => { (projection as { glyph: string }).glyph = "×"; }, TypeError);
+  assert.throws(() => { (projection.diagnostics as string[]).push("bad"); }, TypeError);
+});
