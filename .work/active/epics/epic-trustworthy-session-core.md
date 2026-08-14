@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core
 kind: epic
-stage: review
+stage: done
 tags: [state]
 parent: null
 depends_on: []
@@ -89,3 +89,15 @@ Aggregate verification: `npm run typecheck`, `npm run build`, and `npm test`
 pass with 36 tests. The core now exposes one validated record, atomic mutation
 boundary, closed transition union, completion acknowledgement service, and
 canonical immutable projection for downstream adapters.
+
+## Review (2026-08-14)
+
+Standard-weight aggregate review used one fresh-context cross-model pass with
+Claude Sonnet. The reviewer found no blocking, important, or nit-level issues
+at epic scope and confirmed the cross-feature validation, mutation,
+acknowledgement, projection, and downstream port contracts compose as designed.
+
+Receiver adjudication accepted the ready verdict without corrective changes.
+Final verification remained green: `npm run typecheck`, `npm run build`, and
+`npm test` (36/36). The epic is complete without a second review pass, as
+required by the project's standard review policy.
