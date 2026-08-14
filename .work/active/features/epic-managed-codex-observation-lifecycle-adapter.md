@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation-lifecycle-adapter
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, state]
 parent: epic-managed-codex-observation
 depends_on: [epic-managed-codex-observation-app-server-client]
@@ -106,9 +106,9 @@ type AgentTransition =
 
 **Acceptance criteria**:
 
-- [ ] Authoritative interruption clears an earlier corroborated completion and
+- [x] Authoritative interruption clears an earlier corroborated completion and
   leaves the session idle/live.
-- [ ] The runtime parser rejects unknown or malformed interruption evidence.
+- [x] The runtime parser rejects unknown or malformed interruption evidence.
 
 ### Unit 2: Root-thread binder
 
@@ -154,12 +154,12 @@ export function bindCodexThread(
 
 **Acceptance criteria**:
 
-- [ ] A thread starting between subscription and discovery is not lost.
-- [ ] Explicit children, cwd mismatches, foreign notifications, and multiple
+- [x] A thread starting between subscription and discovery is not lost.
+- [x] Explicit children, cwd mismatches, foreign notifications, and multiple
   roots never become the binding.
-- [ ] A unique metadata-complete root binds authoritatively; a unique
+- [x] A unique metadata-complete root binds authoritatively; a unique
   metadata-incomplete root binds only corroborated.
-- [ ] Timeout and abort release the iterator and return stable adapter failure.
+- [x] Timeout and abort release the iterator and return stable adapter failure.
 
 ### Unit 3: Pure Codex lifecycle mapper
 
@@ -207,10 +207,10 @@ export function mapCodexNotification(
 
 **Acceptance criteria**:
 
-- [ ] Working, both wait flags, wait resolution, inferred completion,
+- [x] Working, both wait flags, wait resolution, inferred completion,
   authoritative completion, interruption, failed turn, system error, retryable
   error, close, and foreign-thread cases match the architecture table.
-- [ ] Known-but-contradictory method/status combinations throw visibly instead
+- [x] Known-but-contradictory method/status combinations throw visibly instead
   of inventing state.
 
 ### Unit 4: Managed observer application service
@@ -258,13 +258,13 @@ export function observeManagedCodex(
 
 **Acceptance criteria**:
 
-- [ ] Only the bound root can mutate the session, and binding metadata persists
+- [x] Only the bound root can mutate the session, and binding metadata persists
   before lifecycle events.
-- [ ] Ordered observations use atomic store mutation and call the post-commit
+- [x] Ordered observations use atomic store mutation and call the post-commit
   callback with the exact committed record.
-- [ ] Ambiguity/protocol failure becomes visible session error and is rethrown;
+- [x] Ambiguity/protocol failure becomes visible session error and is rethrown;
   deliberate abort does not.
-- [ ] Concurrent rename or terminal reconciliation fields survive every Codex
+- [x] Concurrent rename or terminal reconciliation fields survive every Codex
   observation.
 
 ## Implementation order
@@ -312,3 +312,23 @@ needed.
   abusing unrelated state transitions.
 - **Abort versus failure**: only the caller-provided signal distinguishes
   intentional shutdown; all other unexpected stream endings fail visible.
+
+## Implementation Notes
+
+- Added the closed `interrupted` normalized transition. It clears completion
+  attention while preserving session identity and terminal fields.
+- Implemented subscription-before-discovery root binding with normalized cwd
+  and explicit-child filtering, conservative corroborated fallback, bounded
+  refresh, and iterator cleanup on timeout/abort.
+- Implemented pure lifecycle mapping for active/waiting/idle edges, detailed
+  turn outcomes, retryable errors, system errors, close evidence, and foreign
+  thread isolation. Prompt/response/error text is not persisted.
+- Implemented the managed observer service. It persists the native binding
+  before observations, routes transitions through `observeAgent`, calls the
+  post-commit callback, and records then rethrows unexpected adapter failures
+  while treating deliberate abort as clean shutdown.
+- Added hermetic unit/application tests for binding races, ambiguity and
+  cleanup, lifecycle semantics, late interruption correction, callback
+  ordering, binding ownership, failure visibility, and abort behavior.
+- Verification: `npm run typecheck`, `npm run build`, and `npm test` (82 tests)
+  all pass.

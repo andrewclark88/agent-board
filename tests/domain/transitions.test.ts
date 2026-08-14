@@ -48,6 +48,7 @@ test("transitions update only normalized agent state and preserve identity/termi
     [{ type: "input-required", ...evidence }, { activity: "idle", attention: "input_required", health: "live" }],
     [{ type: "input-resolved", ...evidence }, { activity: "working", attention: "none", health: "live" }],
     [{ type: "completed", ...evidence }, { activity: "idle", attention: "completion_unread", health: "live" }],
+    [{ type: "interrupted", ...evidence }, { activity: "idle", attention: "none", health: "live" }],
     [{ type: "error", ...evidence }, { activity: "idle", attention: "none", health: "error" }],
     [{ type: "process-exit", ...evidence, exitCode: 0 }, { activity: "idle", attention: "none", health: "live" }],
   ];
@@ -99,4 +100,14 @@ test("clean process exit does not invent an error or stale health", () => {
   assert.equal(exited.agent.health, "live");
   assert.equal(exited.agent.evidenceKind, "native");
   assert.equal(exited.agent.detail, "TUI exited cleanly");
+});
+
+test("authoritative interruption retracts an earlier inferred completion", () => {
+  const completed = applyAgentTransition(record(), { type: "completed", ...evidence, confidence: "corroborated" });
+  assert.equal(completed.agent.attention, "completion_unread");
+  const interrupted = applyAgentTransition(completed, { type: "interrupted", ...evidence });
+  assert.equal(interrupted.agent.activity, "idle");
+  assert.equal(interrupted.agent.attention, "none");
+  assert.equal(interrupted.agent.health, "live");
+  assert.equal(interrupted.agent.completionObservedAt, undefined);
 });

@@ -282,6 +282,14 @@ produce completion attention only at `corroborated` confidence and must retain
 that evidence detail. It must not convert a known failure or interruption into
 success.
 
+The lifecycle adapter keeps the app-server notification iterator established
+before discovery so a root-thread start/discovery race cannot lose the first
+event. It binds only one viable root in the dedicated process, persists the
+native thread binding before applying lifecycle observations, and refuses
+ambiguous or contradictory evidence. An authoritative interruption is a
+distinct normalized transition that clears completion attention; retryable
+Codex errors remain diagnostic evidence within the active lifecycle.
+
 ## Ghostty integration
 
 The adapter invokes `/usr/bin/osascript` with constant scripts and passes user

@@ -182,6 +182,11 @@ renderers. A clean agent-process exit is recorded as observation evidence, not
 as agent health. If the registered Ghostty tab remains live, the agent becomes
 idle; terminal disappearance is represented independently by terminal presence.
 
+The normalized transition boundary includes an explicit `interrupted` outcome.
+It produces `idle + attention=none + health=live`, allowing an authoritative
+Codex interruption to retract an earlier corroborated active-to-idle completion
+inference without pretending that an interruption was ordinary idle state.
+
 ## Functional requirements
 
 1. Re-registering a known current terminal updates its label rather than creating

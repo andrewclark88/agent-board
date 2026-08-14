@@ -11,6 +11,7 @@ const transitionSchemas = [
   z.object({ type: z.literal("input-required") }).merge(evidence).strict(),
   z.object({ type: z.literal("input-resolved") }).merge(evidence).strict(),
   z.object({ type: z.literal("completed") }).merge(evidence).strict(),
+  z.object({ type: z.literal("interrupted") }).merge(evidence).strict(),
   z.object({ type: z.literal("error") }).merge(evidence).strict(),
   z.object({
     type: z.literal("process-exit"),
@@ -93,6 +94,12 @@ export function applyAgentTransition(
       return withEvidence(record, transition, {
         activity: "idle",
         attention: record.agent.attention === "input_required" ? "input_required" : "completion_unread",
+        health: "live",
+      });
+    case "interrupted":
+      return withEvidence(record, transition, {
+        activity: "idle",
+        attention: "none",
         health: "live",
       });
     case "error":
