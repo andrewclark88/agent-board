@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface-applescript-adapter
 kind: feature
-stage: implementing
+stage: review
 tags: [integration]
 parent: epic-ghostty-project-surface
 depends_on: []
@@ -217,3 +217,13 @@ Ghostty window there.
 
 None. These units share one external-boundary protocol and fit one isolated
 implementation/review stride.
+
+## Implementation notes
+
+- Execution capability: high — bounded external-boundary feature with strict parser and fixture coverage; implementation remained within the settled design.
+- Review weight: standard (caller-directed).
+- Files changed: `src/integrations/process-runner.ts`, `src/integrations/ghostty/scripts.ts`, `src/integrations/ghostty/protocol.ts`, `src/integrations/ghostty/client.ts`, `src/integrations/ghostty/diagnostics.ts`, and the four adapter test files under `tests/integrations/`.
+- Tests added/removed: process argv/timeout/output tests; strict protocol, duplicate/unsafe row, client argv/error mapping, title action, version/config overlay, and diagnostic fixture tests.
+- Simplification: one shell-free process boundary and one constant-script client are shared by all Ghostty calls; no live integration path or OSC fallback was introduced.
+- Discrepancies from design: diagnostics treats `null`/`none` title values from default config as unset, while any other nonempty fixed title remains an error; optional working-directory enrichment leaves a valid active identity usable if that secondary query fails.
+- Adjacent issues parked: none.
