@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface-title-reconciliation
 kind: feature
-stage: review
+stage: done
 tags: [integration, state]
 parent: epic-ghostty-project-surface
 depends_on: [epic-ghostty-project-surface-applescript-adapter, epic-ghostty-project-surface-registration-naming]
@@ -304,3 +304,16 @@ The work is cohesive around one snapshot contract; no child stories are needed.
 - **Hidden title clearing**: the target is application-enumerable and exact, but
   installed validation remains prudent. Failure retains the record and makes
   unregister retryable.
+
+## Review (2026-08-14)
+
+Standard-weight review used one fresh-context cross-model pass with Claude
+Sonnet. It approved the dual-view snapshot, movement/undo classification,
+terminal-only mutation, diagnostic precedence, one-snapshot fanout, guarded
+title repair, and clear-before-remove recovery with no material findings.
+
+Receiver adjudication accepted two small cleanup proposals: remove an
+unreachable unknown-classification branch and add the explicit undo-hidden
+unregister acceptance test. Typecheck, build, focused tests, and the serialized
+full suite passed. Per standard policy, the feature closes after this one pass
+and verified cleanup without re-review.

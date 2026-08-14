@@ -34,6 +34,14 @@ test("unregister clears a visible target before removing its record", async () =
   assert.equal(store.value, null);
 });
 
+test("unregister clears an enumerable undo-hidden target before removal", async () => {
+  const store = new Store();
+  const terminal = new Terminal({ visible: [], enumerableTerminalIds: [identity.terminalId] });
+  await unregisterSession(deps(store, terminal), "s");
+  assert.deepEqual(terminal.events, ["snapshot", "clear:term"]);
+  assert.equal(store.value, null);
+});
+
 test("unregister removes a missing tombstone without a title action", async () => {
   const store = new Store();
   const terminal = new Terminal({ visible: [], enumerableTerminalIds: [] });

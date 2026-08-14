@@ -33,14 +33,11 @@ export async function unregisterSession(
   const record = await dependencies.store.get(sessionId);
   if (record === null) throw new AgentBoardError("NOT_FOUND", `Session not found: ${sessionId}`);
 
-  // No mutation occurs before this succeeds. Unknown presence therefore
+  // No mutation occurs before this succeeds. Snapshot failure therefore
   // retains the tombstone and makes the explicit operation retryable.
   const snapshot = await dependencies.terminal.snapshot();
   const observation = classifyTerminalPresence(identity(record), snapshot, timestamp(dependencies.clock));
 
-  if (observation.presence === "unknown") {
-    throw new AgentBoardError("ADAPTER_FAILURE", "Cannot unregister while Ghostty presence is unknown");
-  }
   if (observation.presence === "visible" || observation.presence === "hidden") {
     await dependencies.terminal.clearTitle(observation);
   }
