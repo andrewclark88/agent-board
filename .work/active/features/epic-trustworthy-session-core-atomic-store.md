@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-atomic-store
 kind: feature
-stage: drafting
+stage: implementing
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: [epic-trustworthy-session-core-domain-contract]
@@ -33,3 +33,183 @@ records as healthy state.
 
 - `docs/ARCHITECTURE.md` — State and concurrency model.
 - `docs/SPEC.md` — Local-first, atomic, inspectable persistence contract.
+
+## Design decisions
+
+- Use `proper-lockfile` only as a crash-aware lock primitive around explicit
+  lock-anchor paths; Agent Board still owns mutation and record semantics.
+- All public reads validate through `parseSessionRecord`. A corrupt canonical
+  record fails the operation with file context instead of being skipped.
+- `create` is exclusive by session id. Registration-level deduplication remains
+  an application use case serialized by an exported registry lock helper.
+- `mutate` owns revision increment and preserves `schemaVersion` and `sessionId`
+  regardless of mutation output. A mutation cannot silently redirect a record.
+- Remove is idempotent and session-scoped; broader stale-policy decisions remain
+  in reconciliation services.
+
+## Architectural choice
+
+Considered a single locked registry file, SQLite, and one JSON file per session.
+A registry file makes every observer contend on one write and increases the
+corruption blast radius. SQLite provides transactions but adds a database and
+migration surface before query needs justify it. Per-session JSON with a
+separate short registry lock matches the architecture, keeps records inspectable,
+and lets unrelated observers update concurrently.
+
+The trickiest unit is crash-safe mutation: lock acquisition, latest-read,
+validation, invariant preservation, file flush, same-directory rename, and
+cleanup must behave as one bounded operation.
+
+## Implementation Units
+
+### Unit 1: State paths and dependency wiring
+
+**Files**: `package.json`, `package-lock.json`, `src/infrastructure/state-paths.ts`
+
+```typescript
+export interface StatePaths {
+  root: string;
+  sessions: string;
+  locks: string;
+  sessionFile(sessionId: string): string;
+  sessionLockAnchor(sessionId: string): string;
+  registryLockAnchor: string;
+}
+export function resolveStatePaths(env?: NodeJS.ProcessEnv): StatePaths;
+export function assertSafeSessionId(sessionId: string): void;
+```
+
+Add `proper-lockfile` and its types. Default to
+`${AGENT_BOARD_STATE_DIR:-$HOME/.local/state/agent-board}/v1`; reject path
+separators, dot segments, controls, and empty session IDs before path joining.
+
+**Acceptance Criteria**:
+
+- [ ] Tests can isolate every operation with `AGENT_BOARD_STATE_DIR`.
+- [ ] Session IDs cannot escape the sessions or locks directories.
+
+### Unit 2: Bounded lock coordinator
+
+**File**: `src/infrastructure/file-lock.ts`
+
+```typescript
+export interface LockOptions { timeoutMs: number; staleMs: number; }
+export function withFileLock<T>(
+  anchorPath: string,
+  options: LockOptions,
+  operation: () => Promise<T>,
+): Promise<T>;
+export function withRegistryLock<T>(
+  paths: StatePaths,
+  operation: () => Promise<T>,
+): Promise<T>;
+```
+
+Create parent directories, acquire with `realpath:false`, bounded retry timing,
+and stale-lock recovery, always release in `finally`, and translate timeout or
+release errors to stable domain codes. Registry and session code must follow
+registry-before-session ordering when both are held.
+
+**Acceptance Criteria**:
+
+- [ ] Contending operations wait only within the configured bound.
+- [ ] Thrown operations release their lock.
+
+### Unit 3: Atomic validated record codec
+
+**File**: `src/infrastructure/session-files.ts`
+
+```typescript
+export async function readSessionFile(path: string): Promise<SessionRecord | null>;
+export async function writeSessionFileAtomic(path: string, record: SessionRecord): Promise<void>;
+```
+
+Read UTF-8, parse JSON, validate the schema, and wrap errors with the bounded
+path and cause. Write a uniquely named same-directory temporary file with
+exclusive creation, flush it, rename over the canonical path, best-effort flush
+the directory, and remove only that exact temporary file on failure.
+
+**Acceptance Criteria**:
+
+- [ ] Readers see either the old or new complete record, never partial JSON.
+- [ ] Malformed JSON and invalid schemas fail visibly with `INVALID_RECORD`.
+- [ ] Interrupted writes do not become listable canonical sessions.
+
+### Unit 4: File session store
+
+**File**: `src/infrastructure/json-session-store.ts`
+
+```typescript
+export interface JsonSessionStoreOptions {
+  paths?: StatePaths;
+  lock?: Partial<LockOptions>;
+}
+export class JsonSessionStore implements SessionStore {
+  constructor(options?: JsonSessionStoreOptions);
+  get(sessionId: string): Promise<SessionRecord | null>;
+  list(): Promise<readonly SessionRecord[]>;
+  create(record: SessionRecord): Promise<SessionRecord>;
+  mutate(sessionId: string, mutation: SessionMutation): Promise<SessionRecord>;
+  remove(sessionId: string): Promise<void>;
+  withRegistrationLock<T>(operation: () => Promise<T>): Promise<T>;
+}
+```
+
+`create` validates revision zero and conflicts on an existing id. `mutate` reads
+inside the session lock, calls the mutation on a deep-frozen or cloned current
+record, restores invariant keys, increments revision, validates, and atomically
+writes. `list` sorts by `sessionId` and ignores only known temporary/hidden
+entries—not corrupt canonical `.json` files.
+
+**Acceptance Criteria**:
+
+- [ ] Concurrent increments do not lose updates.
+- [ ] Mutations cannot change session id, schema version, or choose revision.
+- [ ] Missing mutation returns `NOT_FOUND`; duplicate create returns `CONFLICT`.
+- [ ] Remove is idempotent and never targets outside the state root.
+
+### Unit 5: Filesystem integration tests
+
+**Files**: `tests/infrastructure/session-files.test.ts`, `tests/infrastructure/json-session-store.test.ts`
+
+Use a fresh `mkdtemp` root per test and remove only that exact directory in
+test teardown. Cover exclusive create, get/list ordering, invalid canonical
+records, revision enforcement, mutation throw/release, concurrent increments,
+temp-file invisibility, path traversal rejection, idempotent remove, and lock
+timeout.
+
+**Acceptance Criteria**:
+
+- [ ] Concurrency tests exercise separate store instances against one root.
+- [ ] Tests leave no state under the user's real state directory.
+
+## Implementation Order
+
+1. Paths establish safe containment.
+2. Lock and record-file primitives establish crash/concurrency behavior.
+3. The store composes those primitives.
+4. Integration tests stress the complete filesystem boundary.
+
+## Testing
+
+Use real temporary directories and real concurrent promises; mock neither
+filesystem nor locks. Keep timing tests bounded with generous relative margins
+and assert stable error codes rather than dependency-specific messages.
+
+## Risks
+
+- **Lock library semantics**: `proper-lockfile` appends `.lock` and has retry
+  behavior that must match the explicit layout. Integration tests assert the
+  resulting paths and bounded timeout. Fallback: a small atomic-`mkdir` lock
+  adapter behind the same helper if the library cannot honor the contract.
+- **Directory fsync portability**: macOS and Linux differ on directory handles.
+  Treat file flush + rename as required and directory flush as best-effort with
+  only known unsupported errors ignored.
+- **Mutation aliasing**: shallow `Readonly` does not prevent nested mutation.
+  Pass a structured clone to the callback and validate the returned complete
+  record, avoiding a recursive freeze helper unless tests prove it necessary.
+
+## Child stories
+
+None. The five units form one filesystem consistency boundary and should be
+implemented and verified by one owner.
