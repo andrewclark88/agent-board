@@ -11,7 +11,8 @@ source_class: local-experiment
 
 The local Codex 0.147.0 experiment verified exact app-server lifecycle events,
 ordinary-looking remote TUI rendering, and concurrent observation of a remote
-TUI's active/idle transitions by a second initialized client.
+TUI's active/idle transitions by a second initialized client. It also verified
+that loopback port `0` resolves to an advertised ephemeral endpoint.
 
 ## Key passages
 
@@ -27,6 +28,8 @@ TUI's active/idle transitions by a second initialized client.
 - [5] Limits records that waiting flags remain schema-grounded, detailed turn
   events were connection-scoped in this pass, app-server remains experimental,
   and the visual check used a PTY rather than the live Ghostty tab.
+- [6] P5 records `ws://127.0.0.1:0` selecting and advertising an available
+  loopback WebSocket endpoint plus readiness and health URLs.
 
 ## Structural notes
 

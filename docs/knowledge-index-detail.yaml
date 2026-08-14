@@ -1,29 +1,34 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-14T21:30:01Z'
+generated_at: '2026-08-14T21:54:08Z'
 generated_from: frontmatter
 schema_version: 1
 documents:
   docs/ARCHITECTURE.md:
-    summary: 'Agent Board is organized around a normalized session domain with ports for agent evidence,
-      terminal control, storage, and clocks. Runtime probes validate Ghostty title/session control and
-      both Codex observation modes; the only remaining process-topology gate is whether managed-launch
-      friction is acceptable for the trustworthy default.
+    summary: 'Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no
+      permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote
+      TUI, and observer; normalized state is atomically persisted and projected through one policy into
+      Ghostty titles and the `agents` board.
 
       '
     decisions:
-    - The normalized session model is independent of Codex, Ghostty, storage format, and process topology.
-    - Agent and terminal integrations are separate adapters because they provide different evidence and
-      capabilities.
-    - One projection policy drives every status glyph and label.
-    - Ghostty 1.3+ AppleScript IDs and targeted tab-title actions are the validated primary terminal integration.
-    - The first store is local, versioned, atomically updated, and usable without a daemon.
-    - Codex managed-TUI and ordinary-TUI modes remain separate adapter capabilities until product taste
-      selects the default.
-    - Ghostty liveness reconciliation uses current window/tab ancestry plus surface existence because
-      undo-closed terminals remain enumerable.
-    - A composition root owns process wiring; domain logic does not import infrastructure adapters.
-    - External action capabilities are excluded from the first architecture boundary.
+    - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary Codex remains
+      an explicit degraded-confidence fallback.
+    - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group;
+      there is no global resident daemon.
+    - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external
+      boundaries.
+    - One versioned session record is the source of truth and is updated atomically under a per-session
+      lock.
+    - The domain stores orthogonal identity, activity, attention, health, adapter evidence, and terminal
+      presence; visible statuses are derived centrally.
+    - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
+    - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably
+      focused, with an explicit acknowledgement command as fallback.
+    - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than
+      being reclassified as native state.
+    - V1 exposes observation and naming only; focus navigation, notifications, semantic controls, GUI,
+      remote, and hardware remain outside the runtime boundary.
   docs/PRINCIPLES.md:
     summary: 'Agent Board optimizes for calm, trustworthy attention routing with minimal workflow friction.
       These principles govern how evidence, labels, adapters, future surfaces, and semantic capabilities
@@ -52,10 +57,11 @@ documents:
     - Project labels are human-controlled presentation and never session identity.
     - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical
       truth.
-    - Stale, exited, and ambiguous sessions never silently map to idle or error.
+    - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation
+      evidence.
     - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
-    - Codex ordinary-TUI and managed-TUI observation are distinct capability modes; the completed prototype
-      leaves their default as an explicit product-taste choice.
+    - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary-TUI observation remains
+      an explicitly degraded-confidence fallback.
     - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
     - The first release is observation-only and exposes no semantic agent actions.
   docs/VISION.md:
@@ -83,9 +89,8 @@ documents:
 
       '
   docs/research-plan.md:
-    summary: 'Scout and both focused pre-architecture engagements are complete. Detailed architecture
-      now waits only on the product-taste choice between ordinary Codex launch friction and managed remote-TUI
-      state fidelity.
+    summary: 'Scout and both focused pre-architecture engagements are complete. Managed remote TUI is
+      accepted as the V1 default, so no research blocker remains before delivery decomposition.
 
       '
     decisions:
@@ -100,6 +105,8 @@ documents:
       conditions are met.
     - Ghostty 1.3+ AppleScript IDs and targeted tab-title overrides are validated for V1, with hierarchy-aware
       liveness required for undo-close.
+    - Managed app-server plus remote TUI is the V1 default; ordinary Codex remains a degraded-confidence
+      fallback.
   .research/analysis/briefs/codex-detector-topology.md:
     summary: 'Managed app-server plus a remote Codex TUI preserves the recognizable terminal workflow
       and supplies exact active/idle state to a concurrent observer, but it changes launch topology and
@@ -144,8 +151,8 @@ documents:
       rather than stored as canonical state.
     - Ghostty 1.3+ AppleScript IDs and targeted set_tab_title actions are more reliable than OSC title
       ownership.
-    - Codex app-server provides high-fidelity state; the fetched official material does not document retroactive
-      attachment to an ordinary already-running TUI.
+    - With medium confidence, Codex app-server provides high-fidelity state while the fetched official
+      material does not document retroactive attachment to an ordinary already-running TUI.
     - An unchanged Codex TUI exposes useful completion, approval, stop, and delayed-session-end signals
       but not a complete working/idle model.
     - A local atomic store is sufficient for the first proof; a daemon becomes justified by subscriptions,

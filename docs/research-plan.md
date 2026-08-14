@@ -1,13 +1,13 @@
 ---
 name: agent-board-research-plan
-description: Read this to see which unknowns must be resolved before detailed architecture and which future research remains deliberately deferred.
+description: Read this for the completed pre-architecture research decisions and the entry conditions for deliberately deferred follow-up research.
 type: research-plan
 kind: planning
 status: draft
 nav_priority: high
 updated: 2026-08-14
 summary: |
-  Scout and both focused pre-architecture engagements are complete. Detailed architecture now waits only on the product-taste choice between ordinary Codex launch friction and managed remote-TUI state fidelity.
+  Scout and both focused pre-architecture engagements are complete. Managed remote TUI is accepted as the V1 default, so no research blocker remains before delivery decomposition.
 decisions:
   - No deep-research or research-program campaign is warranted before the first proof.
   - Codex detector topology is the first pre-architecture decision because it changes workflow friction and state fidelity.
@@ -15,6 +15,7 @@ decisions:
   - Store encoding and implementation language are well-understood reversible choices and need no external research yet.
   - Hardware, wireless, remote aggregation, and multi-agent research remain deferred until their entry conditions are met.
   - Ghostty 1.3+ AppleScript IDs and targeted tab-title overrides are validated for V1, with hierarchy-aware liveness required for undo-close.
+  - Managed app-server plus remote TUI is the V1 default; ordinary Codex remains a degraded-confidence fallback.
 ---
 
 # Agent Board research plan
@@ -55,9 +56,9 @@ Rationale: this finding changes the first supported adapter, install/startup
 experience, normalized confidence contract, and possibly process topology.
 
 Result: both topologies are viable, but only managed app-server plus remote TUI
-provided authoritative active/idle transitions to a concurrent observer. The
-remaining choice is a taste gate because managed mode changes startup topology
-and relies on an experimental interface.
+provided authoritative active/idle transitions to a concurrent observer. Andrew
+accepted the managed recommendation as the V1 default; the implementation must
+version-gate the experimental interface.
 
 ### 2. Ghostty registration and liveness contract — `/research` complete
 
@@ -104,5 +105,6 @@ reconciliation must distinguish visibility from process/surface existence.
 - repo and branch discovery; and
 - basic installation documentation.
 
-These are mainstream, reversible implementation choices. Detailed design should
-select them proportionately after the two blocking engagements land.
+These are mainstream, reversible implementation choices. The locked architecture
+selects Node.js/TypeScript, atomic versioned session files, and a small terminal
+renderer; feature design should refine them only within those boundaries.

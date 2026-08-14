@@ -3,7 +3,7 @@
 # Provides corpus situational awareness only. Read knowledge-index.yaml for full index.
 
 schema_version: 3
-generated_at: 2026-08-14T21:30:01Z
+generated_at: 2026-08-14T21:54:08Z
 generated_from: frontmatter
 total_docs: 16
 
@@ -15,7 +15,7 @@ by_kind:
 # Top 15 most-recently-updated docs (planning + research only).
 recent:
   - path: docs/ARCHITECTURE.md
-    title: "Agent Board high-level architecture"
+    title: "Architecture: Agent Board"
     kind: planning
     updated: 2026-08-14
   - path: docs/VISION.md
@@ -38,7 +38,7 @@ recent:
 # Docs flagged with nav_priority: high in frontmatter — read at session start.
 load_bearing:
   - path: docs/ARCHITECTURE.md
-    title: "Agent Board high-level architecture"
+    title: "Architecture: Agent Board"
     kind: planning
   - path: docs/VISION.md
     title: "Agent Board vision"

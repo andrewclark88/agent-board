@@ -12,9 +12,9 @@ decisions:
   - One supervised agent per Ghostty tab is the first-release operating constraint.
   - Project labels are human-controlled presentation and never session identity.
   - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical truth.
-  - Stale, exited, and ambiguous sessions never silently map to idle or error.
+  - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation evidence.
   - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
-  - Codex ordinary-TUI and managed-TUI observation are distinct capability modes; the completed prototype leaves their default as an explicit product-taste choice.
+  - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary-TUI observation remains an explicitly degraded-confidence fallback.
   - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
   - The first release is observation-only and exposes no semantic agent actions.
 ---
@@ -64,7 +64,7 @@ The desired visible semantics are:
 layer. Adapter detail may distinguish them for diagnostics.
 
 The completed runtime prototype keeps two integration modes deliberately
-distinct while the supported default awaits a product-taste decision:
+distinct. Managed-TUI observation is the supported default:
 
 - Ordinary-TUI observation preserves an unchanged `codex` launch and uses
   documented hooks and notifications. Its incomplete working/idle coverage must
@@ -124,9 +124,8 @@ diagnostic annotation. The tab remains intentionally compact.
 
 A native completion event sets completion attention to unread. Acknowledgement
 must be caused by an explicit or reliably observed operator interaction, not by
-elapsed time alone. The pre-architecture prototype must determine which focus,
-prompt, or manual acknowledgement signals are reliable in the selected Codex
-mode.
+elapsed time alone. Implementation validation must prove reliable Ghostty-focus
+acknowledgement and retain explicit `agent-board ack` as the fallback.
 
 The board reconciles registered Ghostty identities during reads and state writes.
 A missing terminal surface becomes disconnected/stale, not idle or error. A
@@ -158,7 +157,7 @@ Project label, repo path, branch, and terminal position are not identity keys.
 ```text
 activity:    unknown | idle | working
 attention:   none | completion_unread | input_required
-health:      live | stale | exited | error
+health:      live | stale | error
 observation:
   observed_at
   evidence_kind
@@ -174,11 +173,13 @@ attention=input_required               -> ! needs input
 attention=completion_unread             -> ✓ finished / unread
 activity=working and observation fresh -> ● working
 activity=idle and health=live           -> ○ idle
-stale/exited/ambiguous                  -> diagnostic/expiry policy, not a false glyph
+stale/ambiguous                         -> diagnostic/expiry policy, not a false glyph
 ```
 
 The projection policy is a single source of truth shared by title and board
-renderers.
+renderers. A clean agent-process exit is recorded as observation evidence, not
+as agent health. If the registered Ghostty tab remains live, the agent becomes
+idle; terminal disappearance is represented independently by terminal presence.
 
 ## Functional requirements
 
@@ -209,7 +210,8 @@ renderers.
   rendering work without internet access.
 - Responsive: observed transitions should appear on the relevant surfaces at
   human-immediate, sub-second scale when the selected adapter supplies an event;
-  the prototype will establish an exact budget.
+  implementation-time integration tests will establish and enforce the exact
+  budget.
 - Crash-tolerant: interrupted writes never leave a partially readable canonical
   record.
 - Inspectable: a user can determine why a state was chosen, how fresh it is, and
@@ -242,12 +244,11 @@ without visiting each tab. State changes are timely, uncertainty is not hidden,
 dead sessions are reconciled, and installation/usage can be repeated from the
 documentation.
 
-Before that boundary is locked, Andrew must decide whether the measured managed-
-TUI launch change is acceptable as the default. Its activity coverage is
-sufficient for the core contract; human-wait and acknowledgement behavior still
-require implementation-level integration tests. If ordinary mode is selected as
-the default, the specification must narrow the promise rather than relabel
-inference as certainty.
+Managed-TUI launch is accepted as the default. Its activity coverage is
+sufficient for the core contract; human-wait, detailed turn outcome, and
+acknowledgement behavior remain required implementation-level integration tests.
+Ordinary mode may be offered only with a visibly narrower confidence promise;
+it must never relabel inference as equivalent native state.
 
 ## Preserved future options
 

@@ -21,14 +21,16 @@ individually through the retained workflow.
 
 ## Current state
 
-This repository is at a concept checkpoint. The initial thesis and review are in
-`docs/project-brief.md`. No product discovery, prior-art engagement,
-architecture, implementation plan, or hardware commitment is complete yet.
+This repository has completed foundation ideation, a verified prior-art Scout,
+and the two blocking runtime engagements. The managed Codex app-server plus
+remote-TUI topology is the accepted V1 default, the Ghostty 1.3+ AppleScript
+contract is validated, and `docs/ARCHITECTURE.md` is locked.
 
-The next arc begins with `research-pipeline:ideate`, including its prior-art
-Scout engagement. Use Agentic Research for consequential unknowns. Bootstrap
-`.work/` only when foundation scope is stable enough to decompose into delivery
-items.
+The current arc is delivery: bootstrap `.work/`, preserve deferred product ideas
+in the backlog, decompose the terminal V1 into dependency-linked work items, and
+run the agile-workflow queue through implementation and review. Use Agentic
+Research only when a consequential unresolved question would change a delivery
+decision; do not reopen settled research by default.
 
 ## Product guardrails
 

@@ -8,7 +8,9 @@ Agent Board will keep each registered tab titled with a machine-controlled statu
 and human-controlled project label, while an `agents` command renders the same
 local state across the swarm.
 
-The project has completed foundation ideation and a verified prior-art Scout.
+The project has completed foundation ideation, a verified prior-art Scout, and
+focused Codex and Ghostty runtime research. Managed Codex app-server plus remote
+TUI is the accepted V1 default, and the implementation architecture is locked.
 Current product truth lives in [VISION](docs/VISION.md), [SPEC](docs/SPEC.md),
 [ARCHITECTURE](docs/ARCHITECTURE.md), [PRINCIPLES](docs/PRINCIPLES.md), and the
 [research plan](docs/research-plan.md).
@@ -29,7 +31,6 @@ not as simultaneous implementation breadth.
 
 ## Current next step
 
-Run the two focused engagements in `docs/research-plan.md`: prototype Codex
-ordinary-TUI versus managed app-server-backed TUI observation, and validate the
-Ghostty AppleScript registration/title/liveness contract. Detailed architecture
-and `.work/` decomposition follow those decisions.
+Bootstrap the `.work/` delivery substrate, preserve deferred product options as
+backlog ideas, decompose the terminal V1, and execute the ready queue. The
+completed runtime findings remain available in `.research/analysis/briefs/`.

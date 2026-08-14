@@ -75,6 +75,28 @@ The TUI displayed `REMOTE_PROBE_OK`. This establishes that a separately
 initialized client can discover a remote-TUI thread and observe its global
 thread-status transitions without proxying terminal bytes.
 
+## P5 — ephemeral loopback endpoint
+
+Started the installed app-server with:
+
+```text
+codex app-server --listen ws://127.0.0.1:0
+```
+
+It selected an available loopback port, reported the resolved WebSocket,
+readiness, and health endpoints, and remained running until interrupted:
+
+```text
+codex app-server (WebSockets)
+  listening on: ws://127.0.0.1:51380
+  readyz: http://127.0.0.1:51380/readyz
+  healthz: http://127.0.0.1:51380/healthz
+  note: binds localhost only (use SSH port-forwarding for remote access)
+```
+
+The selected port is ephemeral probe data; the contract is that port `0`
+resolves to a reported loopback endpoint rather than a fixed number.
+
 ## Limits
 
 - The experiment did not force a real human approval or question wait, so the

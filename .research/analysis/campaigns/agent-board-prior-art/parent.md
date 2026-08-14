@@ -10,7 +10,7 @@ key_findings:
   - The new Ghostty/Codex-first notes are a better V1 than the earlier daemon, tmux, multi-agent, simulated-device scope.
   - The five visible symbols should be derived from identity, activity, attention, health, and evidence rather than stored as canonical state.
   - Ghostty 1.3+ AppleScript IDs and targeted set_tab_title actions are more reliable than OSC title ownership.
-  - Codex app-server provides high-fidelity state; the fetched official material does not document retroactive attachment to an ordinary already-running TUI.
+  - With medium confidence, Codex app-server provides high-fidelity state while the fetched official material does not document retroactive attachment to an ordinary already-running TUI.
   - An unchanged Codex TUI exposes useful completion, approval, stop, and delayed-session-end signals but not a complete working/idle model.
   - A local atomic store is sufficient for the first proof; a daemon becomes justified by subscriptions, proactive notifications, or multiple live consumers.
   - Deferred daemon, adapters, focus, software surfaces, simulator, hardware, and remote aggregation should be preserved with evidence-based entry conditions.
@@ -282,7 +282,7 @@ and README, so migration is a correction of canonical intent:
 ## Disconfirming analysis
 
 The new notes initially assumed OSC ownership and a reliably detectable five-state
-Codex model. Official Ghostty evidence defeats OSC exclusivity, while the
+Codex model. Official Ghostty evidence does not support OSC exclusivity, while the
 fetched Codex evidence does not support non-invasive full-fidelity observation of an arbitrary
 already-running TUI [ghostty-zsh-title]{1} [app-server-protocol]{2}
 [app-server-protocol]{5} [app-server-protocol]{6}
