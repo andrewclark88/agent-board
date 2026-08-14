@@ -1,0 +1,58 @@
+# Auto-generated. DO NOT EDIT BY HAND. Run /knowledge-index to regenerate.
+# Navigator layer — auto-loaded at session start (capped at 10KB by harness).
+# Provides corpus situational awareness only. Read knowledge-index.yaml for full index.
+
+schema_version: 3
+generated_at: 2026-08-14T21:08:07Z
+generated_from: frontmatter
+total_docs: 14
+
+by_kind:
+  planning: 5
+  research: 8
+  historical: 1
+
+# Top 15 most-recently-updated docs (planning + research only).
+recent:
+  - path: docs/ARCHITECTURE.md
+    title: "Agent Board high-level architecture"
+    kind: planning
+    updated: 2026-08-14
+  - path: docs/VISION.md
+    title: "Agent Board vision"
+    kind: planning
+    updated: 2026-08-14
+  - path: docs/PRINCIPLES.md
+    title: "Agent Board principles"
+    kind: planning
+    updated: 2026-08-14
+  - path: docs/research-plan.md
+    title: "Agent Board research plan"
+    kind: planning
+    updated: 2026-08-14
+  - path: docs/SPEC.md
+    title: "Agent Board specification"
+    kind: planning
+    updated: 2026-08-14
+
+# Docs flagged with nav_priority: high in frontmatter — read at session start.
+load_bearing:
+  - path: docs/ARCHITECTURE.md
+    title: "Agent Board high-level architecture"
+    kind: planning
+  - path: docs/VISION.md
+    title: "Agent Board vision"
+    kind: planning
+  - path: docs/PRINCIPLES.md
+    title: "Agent Board principles"
+    kind: planning
+  - path: docs/research-plan.md
+    title: "Agent Board research plan"
+    kind: planning
+  - path: docs/SPEC.md
+    title: "Agent Board specification"
+    kind: planning
+
+# On-demand layers (Read tool):
+full_index_path: docs/knowledge-index.yaml
+detail_index_path: docs/knowledge-index-detail.yaml

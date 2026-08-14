@@ -1,0 +1,118 @@
+# Auto-generated. DO NOT EDIT BY HAND.
+# On-demand layer — load when surfacing a specific doc's full context.
+generated_at: '2026-08-14T21:08:07Z'
+generated_from: frontmatter
+schema_version: 1
+documents:
+  docs/ARCHITECTURE.md:
+    summary: 'Agent Board is organized around a normalized session domain with ports for agent evidence,
+      terminal control, storage, and clocks. Thin CLI, Codex, Ghostty, store, and renderer adapters compose
+      into a local event-to-projection flow; detailed process topology waits on two focused prototypes.
+
+      '
+    decisions:
+    - The normalized session model is independent of Codex, Ghostty, storage format, and process topology.
+    - Agent and terminal integrations are separate adapters because they provide different evidence and
+      capabilities.
+    - One projection policy drives every status glyph and label.
+    - Ghostty 1.3+ AppleScript IDs and targeted tab-title actions are the candidate primary terminal integration.
+    - The first store is local, versioned, atomically updated, and usable without a daemon.
+    - Codex managed-TUI and ordinary-TUI modes remain separate adapter capabilities until prototyped.
+    - A composition root owns process wiring; domain logic does not import infrastructure adapters.
+    - External action capabilities are excluded from the first architecture boundary.
+  docs/PRINCIPLES.md:
+    summary: 'Agent Board optimizes for calm, trustworthy attention routing with minimal workflow friction.
+      These principles govern how evidence, labels, adapters, future surfaces, and semantic capabilities
+      earn their place.
+
+      '
+    decisions:
+    - Attention before control.
+    - Truth before apparent precision.
+    - Peripheral first, deliberate detail on demand.
+    - One source of truth, many projections.
+    - Human meaning and machine observation remain separate.
+    - Narrow proof before platform breadth.
+    - Local usefulness before connectivity.
+    - Future surfaces earn entry through observed demand.
+    - Semantic actions require semantic capabilities.
+  docs/SPEC.md:
+    summary: 'The first Agent Board release registers one Codex session per Ghostty tab, stores identity
+      and observed state locally, projects five attention symbols into machine-maintained tab titles,
+      and renders the same records through an `agents` command. The contract separates activity, attention,
+      health, and evidence so simple labels remain truthful.
+
+      '
+    decisions:
+    - One supervised agent per Ghostty tab is the first-release operating constraint.
+    - Project labels are human-controlled presentation and never session identity.
+    - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical
+      truth.
+    - Stale, exited, and ambiguous sessions never silently map to idle or error.
+    - Registration captures stable Ghostty identity and renders the complete tab-title override.
+    - Codex ordinary-TUI and managed-TUI observation are distinct capability modes until the pre-architecture
+      prototype settles the supported default.
+    - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
+    - The first release is observation-only and exposes no semantic agent actions.
+  docs/VISION.md:
+    summary: 'Agent Board is a local attention router for one operator supervising several terminal coding
+      agents. Its first proof makes trustworthy Codex state visible in Ghostty tab titles and a shared
+      terminal board without requiring tmux, a GUI, or hardware.
+
+      '
+    decisions:
+    - Attention routing, not faster input or agent control, is the product wedge.
+    - The first user and workflow are Andrew supervising Codex sessions in Ghostty tabs on macOS.
+    - The first proof is tab titles plus a terminal board backed by one local state model.
+    - State confidence and liveness remain visible rather than being collapsed into confident-looking
+      labels.
+    - The software control plane must prove value before GUI, remote, or hardware surfaces are commissioned.
+    - Vendor neutrality is preserved through adapter boundaries, not simultaneous V1 integrations.
+    - Semantic actions require native capabilities and are outside the first proof.
+  docs/project-brief.md:
+    summary: Historical checkpoint for the earlier daemon, tmux, multi-agent, simulated-device, and premium-hardware
+      concept. Current product truth lives in VISION, SPEC, ARCHITECTURE, PRINCIPLES, and the verified
+      Scout landscape.
+    supersession_note: 'Superseded by the 2026-08-14 Ghostty/Codex-first foundation set. Retained because
+      its trust, capability, adapter, and future hardware observations remain useful historical input
+      and preserved future options.
+
+      '
+  docs/research-plan.md:
+    summary: 'Scout is complete. Two focused pre-architecture engagements remain: compare Codex ordinary-TUI
+      and managed-TUI observation in the real Ghostty workflow, and validate Ghostty registration/title/liveness
+      behavior against the installed application.
+
+      '
+    decisions:
+    - No deep-research or research-program campaign is warranted before the first proof.
+    - Codex detector topology is the first pre-architecture decision because it changes workflow friction
+      and state fidelity.
+    - Ghostty scripting behavior requires an empirical integration check in addition to documentation
+      research.
+    - Store encoding and implementation language are well-understood reversible choices and need no external
+      research yet.
+    - Hardware, wireless, remote aggregation, and multi-agent research remain deferred until their entry
+      conditions are met.
+  .research/analysis/campaigns/agent-board-prior-art/parent.md:
+    summary: 'The landscape supports a narrow Ghostty-first attention board, a multidimensional internal
+      state projected into five simple symbols, and machine-maintained Ghostty tab-title overrides. Codex
+      state fidelity depends on a consequential launch-topology choice: partial side-channel observation
+      of an ordinary TUI or a managed remote TUI backed by app-server.
+
+      '
+    key_findings:
+    - The new Ghostty/Codex-first notes are a better V1 than the earlier daemon, tmux, multi-agent, simulated-device
+      scope.
+    - The five visible symbols should be derived from identity, activity, attention, health, and evidence
+      rather than stored as canonical state.
+    - Ghostty 1.3+ AppleScript IDs and targeted set_tab_title actions are more reliable than OSC title
+      ownership.
+    - Codex app-server provides high-fidelity state; the fetched official material does not document retroactive
+      attachment to an ordinary already-running TUI.
+    - An unchanged Codex TUI exposes useful completion, approval, stop, and delayed-session-end signals
+      but not a complete working/idle model.
+    - A local atomic store is sufficient for the first proof; a daemon becomes justified by subscriptions,
+      proactive notifications, or multiple live consumers.
+    - Deferred daemon, adapters, focus, software surfaces, simulator, hardware, and remote aggregation
+      should be preserved with evidence-based entry conditions.
