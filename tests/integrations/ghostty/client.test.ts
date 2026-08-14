@@ -42,3 +42,13 @@ test("client maps permission failures without exposing script details", async ()
     return typeof error === "object" && error !== null && "ghosttyCode" in error && error.ghosttyCode === "GHOSTTY_PERMISSION_DENIED";
   });
 });
+
+test("client obtains the dual-view snapshot in one shell-free request", async () => {
+  const runner = new FakeRunner([{ stdout: "VISIBLE\tw\tt\tterm\nENUMERABLE\tterm\n", stderr: "", exitCode: 0 }]);
+  const snapshot = await new GhosttyClient({ runner }).snapshot();
+  assert.deepEqual(snapshot.enumerableTerminalIds, ["term"]);
+  assert.equal(snapshot.visible[0]?.terminalId, "term");
+  assert.equal(runner.requests.length, 1);
+  assert.equal(runner.requests[0]?.command, "/usr/bin/osascript");
+  assert.equal(runner.requests[0]?.args.includes("--"), true);
+});

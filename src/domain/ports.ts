@@ -40,6 +40,19 @@ export interface RegistrationTerminalPort {
   setTitle(identity: TerminalIdentity, title: string): Promise<void>;
 }
 
+/** One atomic view of the current Ghostty hierarchy and live terminals. */
+export interface TerminalSnapshot {
+  readonly visible: readonly TerminalIdentity[];
+  readonly enumerableTerminalIds: readonly string[];
+}
+
+/** Terminal operations used by reconciliation and explicit unregister. */
+export interface ReconciliationTerminalPort {
+  snapshot(): Promise<TerminalSnapshot>;
+  setTitle(identity: TerminalIdentity, title: string): Promise<void>;
+  clearTitle(identity: TerminalIdentity): Promise<void>;
+}
+
 export interface RepositoryContext {
   readonly repoPath?: string;
   readonly gitBranch?: string;

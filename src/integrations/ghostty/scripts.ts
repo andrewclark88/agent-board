@@ -28,6 +28,32 @@ export const HIERARCHY_SCRIPT = String.raw`on run argv
   end tell
 end run`;
 
+/**
+ * Emit one atomic view of both the visible hierarchy and Ghostty's
+ * application-wide live-terminal collection.  The markers are deliberately
+ * machine-readable; values are output data rather than interpolated script.
+ */
+export const SNAPSHOT_SCRIPT = String.raw`on run argv
+  tell application "Ghostty"
+    set rows to ""
+    repeat with windowRef in every window
+      set w to contents of windowRef
+      repeat with tabRef in every tab of w
+        set t to contents of tabRef
+        repeat with terminalRef in every terminal of t
+          set term to contents of terminalRef
+          set rows to rows & "VISIBLE" & (ASCII character 9) & (id of w as text) & (ASCII character 9) & (id of t as text) & (ASCII character 9) & (id of term as text) & (ASCII character 10)
+        end repeat
+      end repeat
+    end repeat
+    repeat with terminalRef in every terminal
+      set term to contents of terminalRef
+      set rows to rows & "ENUMERABLE" & (ASCII character 9) & (id of term as text) & (ASCII character 10)
+    end repeat
+    return rows
+  end tell
+end run`;
+
 export const WORKING_DIRECTORY_SCRIPT = String.raw`on run argv
   tell application "Ghostty"
     set term to terminal id (item 1 of argv)

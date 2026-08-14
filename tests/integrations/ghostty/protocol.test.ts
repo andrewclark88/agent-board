@@ -7,6 +7,7 @@ import {
   parseActionEcho,
   parseActiveContext,
   parseHierarchy,
+  parseGhosttySnapshot,
   parseWorkingDirectory,
 } from "../../../src/integrations/ghostty/protocol.js";
 
@@ -20,6 +21,14 @@ test("Ghostty protocol parses strict active and hierarchy rows", () => {
   assert.equal(parseWorkingDirectory("AGENT_BOARD_NO_WORKING_DIRECTORY\n"), undefined);
 });
 
+test("Ghostty protocol parses one dual-view snapshot", () => {
+  assert.deepEqual(parseGhosttySnapshot("VISIBLE\tw-1\tt-1\tterm-1\nENUMERABLE\tterm-1\nENUMERABLE\tterm-hidden\n"), {
+    visible: [{ adapter: "ghostty", windowId: "w-1", tabId: "t-1", terminalId: "term-1" }],
+    enumerableTerminalIds: ["term-1", "term-hidden"],
+  });
+  assert.deepEqual(parseGhosttySnapshot(""), { visible: [], enumerableTerminalIds: [] });
+});
+
 test("process errors recognize straight-apostrophe application failures", () => {
   const error = ghosttyProcessError("Application isn't running", 1);
   assert.equal(error.ghosttyCode, "GHOSTTY_UNSUPPORTED");
@@ -29,6 +38,10 @@ test("Ghostty protocol rejects malformed, duplicate, and unsafe rows", () => {
   assert.throws(() => parseActiveContext("w\tt\n"), (error: unknown) => error instanceof GhosttyAdapterError && error.ghosttyCode === "GHOSTTY_PROTOCOL_ERROR");
   assert.throws(() => parseHierarchy("w\tt\tterm\nw\tt2\tterm\n"), /duplicate terminal ID/);
   assert.throws(() => parseHierarchy("w\tt\tterm\n\n"), /exactly 3 fields/);
+  assert.throws(() => parseGhosttySnapshot("VISIBLE\tw\tt\tterm\nENUMERABLE\tother\n"), /absent from enumerable/);
+  assert.throws(() => parseGhosttySnapshot("ENUMERABLE\tterm\nENUMERABLE\tterm\n"), /duplicate enumerable/);
+  assert.throws(() => parseGhosttySnapshot("VISIBLE\tw\tt\tterm\nVISIBLE\tw2\tt2\tterm\nENUMERABLE\tterm\n"), /duplicate visible/);
+  assert.throws(() => parseGhosttySnapshot("OTHER\tterm\n"), /unknown marker/);
 });
 
 test("title action acknowledgements distinguish target and action failures", () => {

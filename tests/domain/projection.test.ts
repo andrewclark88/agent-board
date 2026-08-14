@@ -55,9 +55,10 @@ test("stale, future, hidden, and ambiguous records use diagnostic glyph", () => 
   assert.equal(boundary.diagnostics.length, 0);
 });
 
-test("attention glyphs remain visible while diagnostics are attached", () => {
+test("disconnected terminal diagnostics outrank attention glyphs", () => {
   const projection = projectSession(record({ attention: "completion_unread", health: "stale", confidence: "inferred", detail: "native detail" }, { presence: "missing" }), { now, workingFreshForMs: 60_000 });
-  assert.equal(projection.glyph, "✓");
+  assert.equal(projection.glyph, "?");
+  assert.equal(projection.status, "diagnostic");
   assert.deepEqual(projection.diagnostics, ["agent health is stale", "terminal is missing", "evidence is inferred", "native detail"]);
 });
 

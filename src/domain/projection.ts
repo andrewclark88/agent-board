@@ -64,6 +64,10 @@ export function projectSession(
   let glyph: ProjectionGlyph;
   let status: ProjectionStatus;
   switch (true) {
+    case record.terminal.presence !== "visible":
+      glyph = "?";
+      status = "diagnostic";
+      break;
     case record.agent.health === "error":
       glyph = "×";
       status = "error";

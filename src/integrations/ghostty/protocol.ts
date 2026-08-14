@@ -24,6 +24,11 @@ export interface GhosttyContext extends TerminalIdentity {
 
 export interface GhosttyHierarchyEntry extends TerminalIdentity {}
 
+export interface GhosttySnapshot {
+  readonly visible: readonly GhosttyHierarchyEntry[];
+  readonly enumerableTerminalIds: readonly string[];
+}
+
 const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/u;
 
 function fail(message: string, cause?: unknown): never {
@@ -59,6 +64,41 @@ export function parseHierarchy(stdout: string): readonly GhosttyHierarchyEntry[]
     seen.add(entry.terminalId);
   }
   return entries;
+}
+
+export function parseGhosttySnapshot(stdout: string): GhosttySnapshot {
+  const body = withoutOneTrailingLineBreak(stdout);
+  if (body.length === 0) return { visible: [], enumerableTerminalIds: [] };
+
+  const visible: GhosttyHierarchyEntry[] = [];
+  const enumerableTerminalIds: string[] = [];
+  const visibleIds = new Set<string>();
+  const enumerableIds = new Set<string>();
+  for (const row of body.split("\n")) {
+    const fields = row.split("\t");
+    const marker = fields[0];
+    if (marker === "VISIBLE") {
+      const entry = parseIdentity(fields.slice(1), row);
+      if (visibleIds.has(entry.terminalId)) fail(`Ghostty snapshot contains duplicate visible terminal ID ${entry.terminalId}`);
+      visibleIds.add(entry.terminalId);
+      visible.push(entry);
+      continue;
+    }
+    if (marker === "ENUMERABLE") {
+      if (fields.length !== 2) fail(`Ghostty enumerable row must contain exactly 2 fields: ${JSON.stringify(row)}`);
+      const terminalId = fields[1];
+      if (terminalId.length === 0 || CONTROL_CHARACTERS.test(terminalId)) fail("Ghostty enumerable terminal ID is empty or contains a control character");
+      if (enumerableIds.has(terminalId)) fail(`Ghostty snapshot contains duplicate enumerable terminal ID ${terminalId}`);
+      enumerableIds.add(terminalId);
+      enumerableTerminalIds.push(terminalId);
+      continue;
+    }
+    fail(`Ghostty snapshot row has unknown marker: ${JSON.stringify(marker)}`);
+  }
+  for (const terminalId of visibleIds) {
+    if (!enumerableIds.has(terminalId)) fail(`Ghostty visible terminal ${terminalId} is absent from enumerable terminals`);
+  }
+  return { visible, enumerableTerminalIds };
 }
 
 export function parseWorkingDirectory(stdout: string): string | undefined {

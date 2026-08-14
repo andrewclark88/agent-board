@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface-title-reconciliation
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, state]
 parent: epic-ghostty-project-surface
 depends_on: [epic-ghostty-project-surface-applescript-adapter, epic-ghostty-project-surface-registration-naming]
@@ -282,6 +282,15 @@ The work is cohesive around one snapshot contract; no child stories are needed.
   recovery.
 - No default test opens, renames, focuses, or closes a real Ghostty surface.
   Installed move/undo behavior remains an opt-in integration check.
+
+## Implementation notes
+- Execution capability: GPT-5.6 Luna high; cohesive integration feature with race-sensitive title/liveness behavior.
+- Review weight: standard, inherited from the managed autopilot caller.
+- Files changed: `src/integrations/ghostty/{scripts,protocol,client}.ts`, `src/domain/{ports,projection}.ts`, `src/application/{reconcile-session,render-title,unregister-session}.ts`, and focused protocol/domain/application tests.
+- Tests added/removed: dual-view parser/client fixtures; pure visible/hidden/missing classification; one-snapshot fanout; diagnostic precedence; snapshot/title race demotion; clear-before-remove unregister recovery.
+- Simplification: reused the existing shell-free process boundary, atomic session mutation, canonical projection, and terminal-ID title action; no liveness probes, title cache, or pruning path added.
+- Discrepancies from design: none.
+- Adjacent issues parked: none.
 
 ## Risks
 

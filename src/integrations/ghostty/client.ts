@@ -6,11 +6,12 @@ import {
   parseActionEcho,
   parseActiveContext,
   parseHierarchy,
+  parseGhosttySnapshot,
   parseWorkingDirectory,
   type GhosttyContext,
   type GhosttyHierarchyEntry,
 } from "./protocol.js";
-import { ACTIVE_CONTEXT_SCRIPT, CLEAR_TAB_TITLE_SCRIPT, HIERARCHY_SCRIPT, SET_TAB_TITLE_SCRIPT, WORKING_DIRECTORY_SCRIPT } from "./scripts.js";
+import { ACTIVE_CONTEXT_SCRIPT, CLEAR_TAB_TITLE_SCRIPT, HIERARCHY_SCRIPT, SET_TAB_TITLE_SCRIPT, SNAPSHOT_SCRIPT, WORKING_DIRECTORY_SCRIPT } from "./scripts.js";
 
 const COMMAND = "/usr/bin/osascript";
 const DEFAULT_TIMEOUT_MS = 2_000;
@@ -45,6 +46,10 @@ export class GhosttyClient {
 
   async hierarchy(): Promise<readonly GhosttyHierarchyEntry[]> {
     return parseHierarchy(await this.execute(HIERARCHY_SCRIPT));
+  }
+
+  async snapshot() {
+    return parseGhosttySnapshot(await this.execute(SNAPSHOT_SCRIPT));
   }
 
   async workingDirectory(terminalId: string): Promise<string | undefined> {
