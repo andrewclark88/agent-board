@@ -15,10 +15,12 @@
     "test": "tsx --test"
   },
   "dependencies": {
+    "proper-lockfile": "^4.1.2",
     "zod": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/proper-lockfile": "^4.1.4",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0"
   }

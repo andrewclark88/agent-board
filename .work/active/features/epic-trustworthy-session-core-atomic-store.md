@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-atomic-store
 kind: feature
-stage: implementing
+stage: review
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: [epic-trustworthy-session-core-domain-contract]
@@ -213,3 +213,14 @@ and assert stable error codes rather than dependency-specific messages.
 
 None. The five units form one filesystem consistency boundary and should be
 implemented and verified by one owner.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Luna high, selected for filesystem concurrency, crash-safe replacement, and lock-library semantics.
+- Review weight: standard, from `.work/CONVENTIONS.md`.
+- Files changed: `package.json`, `package-lock.json`, `src/infrastructure/state-paths.ts`, `src/infrastructure/file-lock.ts`, `src/infrastructure/session-files.ts`, `src/infrastructure/json-session-store.ts`, `tests/infrastructure/session-files.test.ts`, and `tests/infrastructure/json-session-store.test.ts`.
+- Tests added/removed: Added 18 total filesystem/domain tests (10 new store/file tests) covering canonical atomic round trips, malformed records, temporary-file invisibility, deterministic listing, revision and invariant enforcement, concurrent increments across store instances, mutation failure lock release, path traversal, idempotent removal, and bounded lock timeout; none removed.
+- Simplification: Kept locking and filesystem codecs as small functional helpers; used `structuredClone` for mutation isolation and `proper-lockfile`'s own stale/retry machinery rather than adding a custom lock protocol.
+- Discrepancies from design: `proper-lockfile` enforces a 2-second minimum stale interval, so the adapter clamps smaller `staleMs` values to the library's safe minimum while preserving the caller's bounded acquisition timeout. No domain-port correction was needed.
+- Adjacent issues parked: none.
+- Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (18 tests, 18 passed).
