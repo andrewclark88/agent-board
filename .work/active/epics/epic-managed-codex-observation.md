@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation
 kind: epic
-stage: drafting
+stage: implementing
 tags: [integration, cli]
 parent: null
 depends_on: [epic-trustworthy-session-core]
@@ -45,3 +45,38 @@ observer, and supervised managed-launch workflow with visible degradation.
 
 <!-- The /epic-design pass will fill in real child feature specifics into a
 ## Decomposition section below this one. -->
+
+## Design decisions
+
+- Treat app-server as an experimental external boundary: initialize explicitly,
+  validate only required methods/events, allow additive fields, and fail visibly
+  on missing semantics.
+- Bind loopback WebSocket port `0`, parse the advertised endpoint, and never
+  expose or persist it beyond the launcher lifetime.
+- Bind one observer to one remote-TUI root thread using dedicated process scope,
+  loaded-thread events, cwd, and parent metadata; ambiguity is diagnostic.
+- Global `thread/status/changed` is authoritative for working/idle. Waiting flags
+  and turn outcome/error events map through the closed transition union.
+- The launcher owns bounded readiness, TUI/app-server process cleanup, signals,
+  and exit classification. Terminal bytes flow directly between Ghostty and
+  `codex --remote`.
+
+## Pre-mortem
+
+- Codex protocol drift could silently misclassify work. Runtime schemas and a
+  version compatibility gate live in the protocol feature.
+- Observer thread selection could attach to a child or unrelated thread. The
+  lifecycle feature refuses ambiguity instead of guessing.
+- Failed startup or terminal hangup could leak app-server processes. The launcher
+  feature owns one abort tree and bounded cleanup tests.
+
+## Decomposition
+
+1. `epic-managed-codex-observation-app-server-client` — readiness discovery,
+   JSON-RPC transport, initialization, narrow schemas, and compatibility checks.
+   `depends_on: []`.
+2. `epic-managed-codex-observation-lifecycle-adapter` — thread binding and
+   Codex-event to normalized-transition mapping. Depends on the client.
+3. `epic-managed-codex-observation-supervised-launcher` — `agent-codex` process
+   topology, remote TUI handoff, signal/exit handling, and visible degradation.
+   Depends on both.
