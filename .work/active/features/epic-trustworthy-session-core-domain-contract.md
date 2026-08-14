@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-domain-contract
 kind: feature
-stage: review
+stage: done
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: []
@@ -217,3 +217,20 @@ implementation stride; splitting them would create handoff overhead.
 - Discrepancies from design: None. The domain uses the camelCase names specified by the unit signatures while preserving the architecture's nested identity, terminal, and agent dimensions.
 - Adjacent issues parked: none.
 - Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (8 tests, 8 passed).
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with comments
+
+**Blockers**: none
+**Important**: none — the two accepted findings were fixed in this review commit
+**Nits**: shared observation fields can be composed later if repetition grows; unsupported-schema causes are intentionally bounded and need not match validator causes
+**Rejected**: none
+
+**Notes**: Standard-weight cross-model review ran exactly one balanced pass
+against commit `575cd22`. It found two acceptance gaps: agent mode values were
+declared outside the enum registry, and the normal typecheck excluded test files
+that carried compile-time port use sites. The receiver confirmed both, added the
+shared registry plus a test-inclusive no-emit TypeScript config, and reran the
+full build/typecheck/test suite. No second independent pass is permitted or
+needed under standard closure.

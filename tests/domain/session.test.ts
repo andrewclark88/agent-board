@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { AgentBoardError } from "../../src/domain/errors.js";
 import {
   ACTIVITIES,
+  AGENT_MODES,
   ATTENTIONS,
   CONFIDENCE_LEVELS,
   HEALTH_STATES,
@@ -74,6 +75,9 @@ test("parses the canonical session record and preserves independent dimensions",
 });
 
 test("accepts every registered enum value at its boundary", () => {
+  for (const mode of AGENT_MODES) {
+    assert.equal(AgentObservationSchema.safeParse({ ...validRecord().agent, mode }).success, true);
+  }
   for (const activity of ACTIVITIES) {
     assert.equal(AgentObservationSchema.safeParse({ ...validRecord().agent, activity }).success, true);
   }

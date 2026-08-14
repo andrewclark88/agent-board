@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AgentBoardError } from "./errors.js";
 import {
   ACTIVITIES,
+  AGENT_MODES,
   ATTENTIONS,
   CONFIDENCE_LEVELS,
   HEALTH_STATES,
@@ -89,7 +90,7 @@ export const SessionIdentitySchema = z
 export const AgentObservationSchema = z
   .object({
     adapter: z.literal("codex"),
-    mode: z.enum(["managed", "ordinary"]),
+    mode: z.enum(AGENT_MODES),
     nativeThreadId: nonEmptyString.optional(),
     launcherPid: z.number().int().nonnegative().safe().optional(),
     activity: z.enum(ACTIVITIES),
