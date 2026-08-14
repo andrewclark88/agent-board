@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface
 kind: epic
-stage: implementing
+stage: review
 tags: [integration, cli]
 parent: null
 depends_on: [epic-trustworthy-session-core]
@@ -74,3 +74,19 @@ and naming, and hierarchy-aware title/liveness reconciliation.
    registration, repo context, and `agent-name`. Depends on the adapter.
 3. `epic-ghostty-project-surface-title-reconciliation` — presence classification,
    canonical title rendering/clearing, and stale-safe repair. Depends on both.
+
+## Child features reviewed and complete
+
+- `epic-ghostty-project-surface-applescript-adapter` — done after safe argv,
+  configuration/error hardening, and standard cross-model review.
+- `epic-ghostty-project-surface-registration-naming` — done after locked
+  terminal-ID deduplication, advisory repository discovery, CLI wiring, and a
+  corrected package build root.
+- `epic-ghostty-project-surface-title-reconciliation` — done after dual-view
+  hierarchy evidence, diagnostic projection, canonical title repair, and
+  recoverable unregister review.
+
+Aggregate verification passes typecheck, build, and the serialized 95-test
+suite. The completed arc exposes explicit registration/naming, strict Ghostty
+diagnostics and scripting, hierarchy-aware visibility, canonical title parity,
+and safe unregister without a multiplexer or resident process.
