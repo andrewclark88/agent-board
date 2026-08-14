@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   GhosttyAdapterError,
+  ghosttyProcessError,
   parseActionEcho,
   parseActiveContext,
   parseHierarchy,
@@ -16,6 +17,12 @@ test("Ghostty protocol parses strict active and hierarchy rows", () => {
   assert.equal(parseHierarchy("w-1\tt-1\tterm-1\nw-1\tt-2\tterm-2\n").length, 2);
   assert.deepEqual(parseHierarchy(""), []);
   assert.equal(parseWorkingDirectory("/tmp/project\n"), "/tmp/project");
+  assert.equal(parseWorkingDirectory("AGENT_BOARD_NO_WORKING_DIRECTORY\n"), undefined);
+});
+
+test("process errors recognize straight-apostrophe application failures", () => {
+  const error = ghosttyProcessError("Application isn't running", 1);
+  assert.equal(error.ghosttyCode, "GHOSTTY_UNSUPPORTED");
 });
 
 test("Ghostty protocol rejects malformed, duplicate, and unsafe rows", () => {

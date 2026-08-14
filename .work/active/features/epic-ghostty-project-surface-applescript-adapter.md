@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface-applescript-adapter
 kind: feature
-stage: review
+stage: done
 tags: [integration]
 parent: epic-ghostty-project-surface
 depends_on: []
@@ -227,3 +227,17 @@ implementation/review stride.
 - Simplification: one shell-free process boundary and one constant-script client are shared by all Ghostty calls; no live integration path or OSC fallback was introduced.
 - Discrepancies from design: diagnostics treats `null`/`none` title values from default config as unset, while any other nonempty fixed title remains an error; optional working-directory enrichment leaves a valid active identity usable if that secondary query fails.
 - Adjacent issues parked: none.
+
+## Review (2026-08-14)
+
+Standard-weight review used one fresh-context cross-model pass with Claude
+Sonnet. It found no blockers and proposed two important corrections: explicit
+tests for disabled AppleScript/fixed-title diagnostics, and recognition of the
+straight-apostrophe macOS “application isn't running” message. Both were
+accepted and fixed. Receiver cleanup also removed an unused export and
+unreachable process-runner branches, made the working-directory missing-value
+sentinel reachable, and aligned the architecture's label-validation ownership.
+
+Post-fix verification passed `npm run typecheck`, `npm run build`, and the full
+test suite. Per standard review policy, the feature closes after this one pass,
+receiver adjudication, fixes, and verification without re-review.

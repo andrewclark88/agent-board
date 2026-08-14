@@ -40,3 +40,26 @@ test("diagnostics report version and config incompatibilities", async () => {
   assert.equal(report.automationReady, false);
   assert.equal(report.diagnostics.some((item) => item.code === "GHOSTTY_VERSION_UNSUPPORTED"), true);
 });
+
+test("diagnostics reject disabled AppleScript and a fixed global title", async () => {
+  class ConflictingConfigRunner extends DiagnosticRunner {
+    override async run(request: ProcessRequest): Promise<ProcessResult> {
+      this.requests.push(request);
+      if (request.command === "ghostty" && request.args[0] === "--version") {
+        return { stdout: "Ghostty 1.3.1\n", stderr: "", exitCode: 0 };
+      }
+      if (request.command === "ghostty" && request.args[1] === "--default") {
+        return { stdout: "macos-applescript = true\ntitle = \n", stderr: "", exitCode: 0 };
+      }
+      if (request.command === "ghostty") {
+        return { stdout: "macos-applescript = false\ntitle = fixed project\n", stderr: "", exitCode: 0 };
+      }
+      return { stdout: "w\tt\tterm\n", stderr: "", exitCode: 0 };
+    }
+  }
+
+  const report = await diagnoseGhostty(new ConflictingConfigRunner());
+  assert.equal(report.automationReady, false);
+  assert.equal(report.diagnostics.some((item) => item.code === "GHOSTTY_APPLESCRIPT_DISABLED"), true);
+  assert.equal(report.diagnostics.some((item) => item.code === "GHOSTTY_FIXED_TITLE"), true);
+});

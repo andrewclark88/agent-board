@@ -31,7 +31,9 @@ end run`;
 export const WORKING_DIRECTORY_SCRIPT = String.raw`on run argv
   tell application "Ghostty"
     set term to terminal id (item 1 of argv)
-    return working directory of term as text
+    set directoryValue to working directory of term
+    if directoryValue is missing value then return "AGENT_BOARD_NO_WORKING_DIRECTORY"
+    return directoryValue as text
   end tell
 end run`;
 

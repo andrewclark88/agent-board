@@ -47,10 +47,7 @@ export class NodeProcessRunner implements ProcessRunner {
       const stderr: Buffer[] = [];
       let outputBytes = 0;
       let settled = false;
-      let timedOut = false;
-      let overflowed = false;
       const timer = setTimeout(() => {
-        timedOut = true;
         child.kill("SIGTERM");
         fail(new AgentBoardError("ADAPTER_FAILURE", `Integration process timed out after ${request.timeoutMs}ms`));
       }, request.timeoutMs);
@@ -65,7 +62,6 @@ export class NodeProcessRunner implements ProcessRunner {
       const collect = (target: Buffer[], chunk: Buffer): void => {
         outputBytes += chunk.byteLength;
         if (outputBytes > request.maxOutputBytes) {
-          overflowed = true;
           child.kill("SIGTERM");
           fail(new AgentBoardError("ADAPTER_FAILURE", `Integration process output exceeded ${request.maxOutputBytes} bytes`));
           return;
@@ -81,7 +77,6 @@ export class NodeProcessRunner implements ProcessRunner {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
-        if (timedOut || overflowed) return;
         resolve({
           stdout: Buffer.concat(stdout).toString("utf8"),
           stderr: Buffer.concat(stderr).toString("utf8"),

@@ -70,7 +70,7 @@ export function parseWorkingDirectory(stdout: string): string | undefined {
 
 export function parseActionEcho(stdout: string, terminalId: string): void {
   const value = withoutOneTrailingLineBreak(stdout);
-  if (value === "MISSING_TARGET" || value === `MISSING_TARGET:${terminalId}`) {
+  if (value === "MISSING_TARGET") {
     throw new GhosttyAdapterError("GHOSTTY_TARGET_NOT_FOUND", `Ghostty terminal ${terminalId} was not found`);
   }
   if (value === "AGENT_BOARD_ACTION_FAILED") {
@@ -86,7 +86,7 @@ export function ghosttyProcessError(stderr: string, exitCode: number): GhosttyAd
   if (lower.includes("not authorized") || lower.includes("not permitted") || lower.includes("automation") || lower.includes("apple events")) {
     return new GhosttyAdapterError("GHOSTTY_PERMISSION_DENIED", "macOS Automation permission denied for Ghostty", { cause: stderr });
   }
-  if (lower.includes("no such application") || lower.includes("can't get application") || lower.includes("application isn’t running") || lower.includes("application is not running")) {
+  if (lower.includes("no such application") || lower.includes("can't get application") || lower.includes("application isn't running") || lower.includes("application isn’t running") || lower.includes("application is not running")) {
     return new GhosttyAdapterError("GHOSTTY_UNSUPPORTED", "Ghostty is not running or does not expose AppleScript", { cause: stderr });
   }
   if (lower.includes("missing value") || lower.includes("can't get") || lower.includes("cannot get")) {

@@ -286,7 +286,8 @@ success.
 
 The adapter invokes `/usr/bin/osascript` with constant scripts and passes user
 data as positional arguments, never by interpolating labels into AppleScript.
-It validates tab labels before transport and rejects control characters.
+The application boundary validates tab labels before adapter transport and
+rejects control characters.
 
 Registration captures window, tab, and terminal IDs from the active hierarchy.
 Title rendering targets the terminal ID with `set_tab_title:<glyph> <label>`.

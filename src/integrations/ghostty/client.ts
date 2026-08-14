@@ -1,4 +1,4 @@
-import type { ProcessRequest, ProcessResult, ProcessRunner } from "../process-runner.js";
+import type { ProcessRequest, ProcessRunner } from "../process-runner.js";
 import { NodeProcessRunner } from "../process-runner.js";
 import type { TerminalIdentity } from "../../domain/session.js";
 import {
@@ -70,8 +70,4 @@ export class GhosttyClient {
     if (result.exitCode !== 0) throw ghosttyProcessError(result.stderr, result.exitCode);
     return result.stdout;
   }
-}
-
-export function isProcessResult(value: unknown): value is ProcessResult {
-  return typeof value === "object" && value !== null && "stdout" in value && "stderr" in value && "exitCode" in value;
 }
