@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface-registration-naming
 kind: feature
-stage: review
+stage: done
 tags: [integration, cli, state]
 parent: epic-ghostty-project-surface
 depends_on: [epic-ghostty-project-surface-applescript-adapter]
@@ -328,5 +328,19 @@ This is one cohesive implementation stride, so no child stories are warranted.
   with all eight new tests green.
 - Discrepancies from design: none.
 - Adjacent issues parked: none.
+
+## Review (2026-08-14)
+
+Standard-weight review used one fresh-context cross-model pass with Claude
+Sonnet. Registration, locking, rename ownership, Git discovery, durable title
+failure, and the eight focused tests were approved. The reviewer found one
+material packaging blocker: TypeScript's build root emitted
+`dist/src/cli/agent-name.js` while the npm binary correctly targeted the intended
+`dist/cli/agent-name.js` surface.
+
+Receiver adjudication fixed the build root at `src`, preserving test-inclusive
+typechecking through the existing override. Typecheck, build, focused tests, and
+the emitted binary path were then verified. Per standard policy, the feature
+closes after this single pass and verified fix without re-review.
 - **Repository paths may be unusual**: all values remain argv data and label
   derivation passes through the canonical label parser.
