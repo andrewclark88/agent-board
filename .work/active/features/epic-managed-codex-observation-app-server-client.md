@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation-app-server-client
 kind: feature
-stage: implementing
+stage: review
 tags: [integration]
 parent: epic-managed-codex-observation
 depends_on: []
@@ -191,3 +191,25 @@ No live Codex dependency in the default suite.
 
 None. Endpoint, schemas, transport, and fixtures are one wire-compatibility
 boundary best owned and reviewed together.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Luna high; protocol and transport work is
+  security-sensitive but bounded to one adapter boundary.
+- Review weight: standard, from project convention; implementation stops at
+  `stage: review` for the orchestrator's independent feature review.
+- Files changed: `src/integrations/codex/{endpoint,compatibility,protocol,websocket-port,client}.ts`,
+  `tests/fixtures/codex/app-server.jsonl`,
+  `tests/integrations/codex/{endpoint,protocol,client}.test.ts`,
+  `package.json`, and `package-lock.json`.
+- Tests added/removed: endpoint security and version-gating tests; captured
+  protocol parsing/schema tests; loopback `ws` tests for concurrent request
+  correlation, timeout, abort, ordered notifications, disconnect, and bounded
+  message handling. The test command now explicitly discovers nested test
+  files.
+- Simplification: kept a generic JSON-RPC envelope and a narrow set of
+  method-specific schemas rather than introducing generated protocol bindings
+  or a second transport abstraction.
+- Discrepancies from design: the options type includes `maxPendingRequests` so
+  the pending-request bound is explicit and testable; otherwise none.
+- Adjacent issues parked: none.

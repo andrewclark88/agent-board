@@ -1,0 +1,110 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import WebSocket, { WebSocketServer, type WebSocket as WebSocketConnection } from "ws";
+
+import { AgentBoardError } from "../../../src/domain/errors.js";
+import { AppServerClient } from "../../../src/integrations/codex/client.js";
+import { parseAdvertisedEndpoint } from "../../../src/integrations/codex/endpoint.js";
+import { ThreadLoadedListResultSchema } from "../../../src/integrations/codex/protocol.js";
+import type { WebSocketFactory } from "../../../src/integrations/codex/websocket-port.js";
+
+function endpoint(port: number) {
+  return parseAdvertisedEndpoint(`listening on: ws://127.0.0.1:${port}`);
+}
+
+async function withServer(handler: (socket: WebSocketConnection) => void, run: (port: number) => Promise<void>): Promise<void> {
+  const server = new WebSocketServer({ host: "127.0.0.1", port: 0 });
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  server.on("connection", handler);
+  try { await run(address.port); } finally { await new Promise<void>((resolve) => server.close(() => resolve())); }
+}
+
+const defaultFactory: WebSocketFactory = (url) => {
+  // The factory seam is exercised with an in-process loopback server; no Codex
+  // process or external network is involved in the default suite.
+  return new WebSocket(url);
+};
+
+test("correlates concurrent requests and delivers ordered notifications", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: { ok: true } }));
+      else if (request.method === "thread/loaded/list") {
+        setTimeout(() => socket.send(JSON.stringify({ id: request.id, result: { data: [{ id: "thread-1", status: { type: "idle" } }] } })), request.id % 2 ? 15 : 1);
+      }
+    });
+    setTimeout(() => {
+      socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "active", activeFlags: [] } } }));
+      socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
+    }, 2);
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory });
+    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+    const stream = client.notifications();
+    const first = stream[Symbol.asyncIterator]().next();
+    const [one, two] = await Promise.all([client.loadedThreads(), client.loadedThreads()]);
+    assert.equal(one.data[0].id, "thread-1");
+    assert.equal(two.data[0].id, "thread-1");
+    assert.equal((await first).value.params.status.type, "active");
+    assert.equal((await stream[Symbol.asyncIterator]().next()).value.params.status.type, "idle");
+    await client.close();
+  });
+});
+
+test("times out and aborts requests independently", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory, requestTimeoutMs: 25 });
+    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+    await assert.rejects(client.loadedThreads(), /timed out/);
+    const controller = new AbortController();
+    const pending = client.request("never", {}, ThreadLoadedListResultSchema, controller.signal);
+    controller.abort();
+    await assert.rejects(pending, /aborted/);
+    await client.close();
+  });
+});
+
+test("disconnect rejects pending requests and notification iterators", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+      else setTimeout(() => socket.close(), 5);
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory, requestTimeoutMs: 200 });
+    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+    const stream = client.notifications();
+    const next = stream[Symbol.asyncIterator]().next();
+    await assert.rejects(client.loadedThreads(), (error: unknown) => error instanceof AgentBoardError && error.code === "ADAPTER_FAILURE");
+    await assert.rejects(next, (error: unknown) => error instanceof AgentBoardError && error.code === "ADAPTER_FAILURE");
+  });
+});
+
+test("rejects notification buffer overflow and oversized messages", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+      else if (request.method === "oversized") socket.send("x".repeat(10_000));
+      else {
+        socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
+        socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
+      }
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory, maxBufferedNotifications: 1, maxMessageBytes: 100 });
+    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+    const stream = client.notifications();
+    await assert.rejects(client.request("oversized", {}, ThreadLoadedListResultSchema), /message exceeds/);
+    assert.ok(stream);
+  });
+});
