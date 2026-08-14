@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core-domain-contract
 kind: feature
-stage: implementing
+stage: review
 tags: [state]
 parent: epic-trustworthy-session-core
 depends_on: []
@@ -206,3 +206,14 @@ schema boundary tests; do not snapshot Zod internals or implementation details.
 
 None. The units share one small foundational type surface and fit a single
 implementation stride; splitting them would create handoff overhead.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Luna high, selected for the foundational cross-module contract and its runtime-validation boundary.
+- Review weight: standard, from `.work/CONVENTIONS.md`.
+- Files changed: `package.json`, `package-lock.json`, `tsconfig.json`, `.gitignore`, `src/domain/errors.ts`, `src/domain/registries.ts`, `src/domain/session.ts`, `src/domain/ports.ts`, and `tests/domain/session.test.ts`.
+- Tests added/removed: Added eight contract tests covering canonical records, all registry boundaries, strict nested objects, unsafe labels, RFC3339/revision failures, unsupported schemas, process-exit evidence, and compile-time port use sites; none removed.
+- Simplification: Kept the domain functional and adapter-free; schemas are the sole runtime/type contract, and parse helpers expose bounded stable errors instead of leaking validator output as the public API.
+- Discrepancies from design: None. The domain uses the camelCase names specified by the unit signatures while preserving the architecture's nested identity, terminal, and agent dimensions.
+- Adjacent issues parked: none.
+- Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (8 tests, 8 passed).
