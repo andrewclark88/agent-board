@@ -24,6 +24,31 @@ export interface SessionStore {
   remove(sessionId: string): Promise<void>;
 }
 
+/** The focused terminal snapshot used when a session is first registered. */
+export type FocusedTerminalContext = TerminalIdentity & {
+  readonly workingDirectory?: string;
+};
+
+/** Serializes terminal-ID lookup/create across all store instances. */
+export interface RegistrationStore extends SessionStore {
+  withRegistrationLock<T>(operation: () => Promise<T>): Promise<T>;
+}
+
+/** The small terminal surface required by registration and title rendering. */
+export interface RegistrationTerminalPort {
+  current(): Promise<FocusedTerminalContext>;
+  setTitle(identity: TerminalIdentity, title: string): Promise<void>;
+}
+
+export interface RepositoryContext {
+  readonly repoPath?: string;
+  readonly gitBranch?: string;
+}
+
+export interface RepositoryContextPort {
+  discover(workingDirectory?: string): Promise<RepositoryContext>;
+}
+
 export interface TerminalPort {
   current(): Promise<TerminalObservation>;
   inspect(identity: TerminalIdentity): Promise<TerminalObservation>;

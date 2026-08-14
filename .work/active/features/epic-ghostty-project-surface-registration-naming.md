@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface-registration-naming
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, cli, state]
 parent: epic-ghostty-project-surface
 depends_on: [epic-ghostty-project-surface-applescript-adapter]
@@ -305,5 +305,28 @@ This is one cohesive implementation stride, so no child stories are warranted.
 - **Store/title cannot be one transaction**: durable state remains authoritative
   and title failure is visible. The next feature's repair path is the bounded
   fallback.
+
+## Implementation notes
+
+- Execution capability: high — one cohesive application/integration/CLI stride
+  implemented within the settled ownership boundaries.
+- Files changed: registration-facing domain ports; bounded shell-free Git
+  context adapter; registration and canonical title application services;
+  `agent-name` CLI/composition; package bin; and focused application, Git, and
+  CLI tests.
+- Registration validates explicit labels before all external calls, captures
+  Ghostty focus once, performs advisory Git discovery outside the registry
+  lock, and serializes terminal-ID find-or-create under the existing lock.
+- Existing records retain repository/branch/terminal/agent fields; explicit
+  labels alone mutate identity (with normal store revision metadata). Durable
+  state is written before title I/O, and title failures remain visible without
+  rollback.
+- Verification: `npm run typecheck`, `npm run build`, and all focused tests
+  passed. The full `npm test` command was attempted; this shared multi-worker
+  harness stalled in pre-existing Codex/Ghostty test workers after the core and
+  registration tests completed, so the focused suite was rerun independently
+  with all eight new tests green.
+- Discrepancies from design: none.
+- Adjacent issues parked: none.
 - **Repository paths may be unusual**: all values remain argv data and label
   derivation passes through the canonical label parser.

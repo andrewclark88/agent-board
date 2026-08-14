@@ -9,6 +9,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "agent-name": "dist/cli/agent-name.js"
+  },
   "scripts": {
     "typecheck": "tsc -p tsconfig.typecheck.json",
     "build": "tsc",
