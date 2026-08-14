@@ -1,7 +1,7 @@
 ---
 id: epic-trustworthy-session-core
 kind: epic
-stage: implementing
+stage: review
 tags: [state]
 parent: null
 depends_on: []
@@ -75,3 +75,17 @@ central transition/projection service.
 3. `epic-trustworthy-session-core-transition-projection` — validated state
    transitions, freshness rules, and shared status/title/row projection. Depends
    on the domain contract and atomic store.
+
+## Child features reviewed and complete
+
+- `epic-trustworthy-session-core-domain-contract` — done after standard review;
+  enum registry ownership and test-inclusive typechecking were corrected.
+- `epic-trustworthy-session-core-atomic-store` — done after standard review;
+  filename/listability and registry-lock namespace invariants were corrected.
+- `epic-trustworthy-session-core-transition-projection` — done after standard
+  review; dedicated completion evidence and abnormal-exit semantics were added.
+
+Aggregate verification: `npm run typecheck`, `npm run build`, and `npm test`
+pass with 36 tests. The core now exposes one validated record, atomic mutation
+boundary, closed transition union, completion acknowledgement service, and
+canonical immutable projection for downstream adapters.
