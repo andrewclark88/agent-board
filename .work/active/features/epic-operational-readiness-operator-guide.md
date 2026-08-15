@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-operator-guide
 kind: feature
-stage: implementing
+stage: review
 tags: [prose]
 parent: epic-operational-readiness
 depends_on: [epic-operational-readiness-doctor-command, epic-operational-readiness-packaged-e2e]
@@ -45,3 +45,16 @@ Ghostty configuration, checkout installation, readiness checks, the first
 managed session, daily commands, status semantics, diagnostics, limitations,
 tests, uninstall, and project navigation. Use verified literal commands and
 keep optional customization separate from the required path.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 inline prose lane. The verified commands and
+  completed runtime contracts supplied the required grounding.
+- Deliverable: rewrote `README.md` as the operator landing page.
+- Verification: checked command grammar against all four CLI entry points,
+  state paths against production composition, Ghostty remediation against the
+  diagnostic adapter, and npm unlink syntax against the installed npm help.
+- Scope: documented only managed Codex, one agent per Ghostty tab, local state,
+  and current controls. Deferred adapters, GUI, remote, and hardware remain
+  backlog options.
+- Adjacent issues parked: none.
