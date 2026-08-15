@@ -15,6 +15,7 @@ tag-based
 
 - integration — an external-process or platform boundary such as Codex or Ghostty
 - cli — a user-facing terminal command or command-line workflow
+- ui — a user-facing visual or native interaction surface
 - state — normalized domain state, persistence, reconciliation, or projection
 - security — validation, secrets, permissions, process boundaries, or supply chain
 - perf — throughput, latency, or memory work; routes to perf-design
