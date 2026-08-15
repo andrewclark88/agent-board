@@ -174,7 +174,8 @@ Find the command path with `command -v agent-name`, use a macOS Shortcut's
 **Run Shell Script** action with `exec /absolute/path/to/agent-name`, then in
 **Shortcut Details** choose **Add Keyboard Shortcut** and press `⌘⇧R`. Leave
 the Ghostty chord unbound so its app keybinds do not intercept the keystroke.
-The first invocation may request a distinct macOS Automation permission.
+The first Shortcut invocation may request its own macOS Automation permission
+to inspect and retitle the focused Ghostty tab.
 
 While the managed launcher runs, it acknowledges unread completion when the
 registered Ghostty tab becomes frontmost. After the launcher exits, or when

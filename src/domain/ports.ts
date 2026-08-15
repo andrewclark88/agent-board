@@ -67,6 +67,11 @@ export interface RepositoryContextPort {
   discover(workingDirectory?: string): Promise<RepositoryContext>;
 }
 
+/** Native user interaction for editing a project label. Null means Cancel. */
+export interface ProjectRenamePromptPort {
+  prompt(currentLabel: string): Promise<string | null>;
+}
+
 export interface TerminalPort {
   current(): Promise<TerminalObservation>;
   inspect(identity: TerminalIdentity): Promise<TerminalObservation>;

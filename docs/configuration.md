@@ -118,7 +118,7 @@ exec /absolute/path/to/agent-name
 Replace the placeholder with the path returned by `command -v`. In **Shortcut
 Details**, choose **Add Keyboard Shortcut** and press `⌘⇧R`. The first Shortcut
 invocation may show a distinct macOS Automation permission prompt; grant it if
-you want the Shortcut to launch the native rename dialog.
+you want the Shortcut-launched command to inspect and retitle Ghostty.
 
 The direct shell command remains available when the Shortcut is inconvenient.
 Agent Board then retains the label while status changes update only the leading

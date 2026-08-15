@@ -2,16 +2,18 @@
 
 import { AgentBoardError } from "../domain/errors.js";
 import type { RegisterSessionInput, RegisterSessionResult } from "../application/register-session.js";
+import type { PromptRenameSessionResult } from "../application/prompt-rename-session.js";
 import { createAgentNameCommand } from "../composition/create-agent-name.js";
 import { isMain } from "./is-main.js";
 
 export interface AgentNameCommandDependencies {
   register(input: RegisterSessionInput): Promise<RegisterSessionResult>;
+  promptRename(): Promise<PromptRenameSessionResult>;
   stdout: Pick<NodeJS.WriteStream, "write">;
   stderr: Pick<NodeJS.WriteStream, "write">;
 }
 
-const USAGE = "Usage: agent-name <label>\n";
+const USAGE = "Usage: agent-name [label]\n";
 
 function errorMessage(error: unknown): string {
   if (error instanceof AgentBoardError) return `${error.code}: ${error.message}`;
@@ -22,12 +24,19 @@ export async function runAgentName(
   argv: readonly string[],
   dependencies: AgentNameCommandDependencies,
 ): Promise<number> {
-  if (argv.length !== 1) {
+  if (argv.length > 1) {
     dependencies.stderr.write(USAGE);
     return 2;
   }
 
   try {
+    if (argv.length === 0) {
+      const result = await dependencies.promptRename();
+      if (result.status === "renamed") {
+        dependencies.stdout.write(`Renamed ${result.record.identity.projectLabel}\n`);
+      }
+      return 0;
+    }
     const result = await dependencies.register({ projectLabel: argv[0] });
     dependencies.stdout.write(`${result.created ? "Registered" : "Renamed"} ${result.record.identity.projectLabel}\n`);
     return 0;

@@ -1,7 +1,7 @@
 ---
 id: feature-hotkey-project-rename
 kind: feature
-stage: implementing
+stage: review
 tags: [cli, integration, ui]
 parent: null
 depends_on: [feature-companion-terminal-configuration]
@@ -231,3 +231,27 @@ export interface AgentNameCommand {
 - **Native-dialog variation**: OS wording or layout can vary across macOS
   releases. **Fallback**: depend only on AppleScript's stable returned value and
   cancellation semantics, not pixels or accessibility-tree details.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 inline implementation; the feature is one
+  cohesive CLI/application/AppleScript path and benefits from one owner retaining
+  the focus-ordering context.
+- Review weight: `standard`, from `.work/CONVENTIONS.md`.
+- Files changed: added `prompt-rename-session.ts` and the macOS prompt adapter;
+  extended the domain port, composition root, CLI, packaged fixture, companion
+  configuration, README, specification, and architecture map.
+- Tests added: application tests protect focus-before-prompt ordering,
+  cancellation, label validation, field preservation, projection, and identity
+  races; adapter tests protect the shell-free argv/protocol boundary; CLI and
+  packaged golden tests protect public routing and installed behavior.
+- Simplification: reused the existing target resolver, store mutation, label
+  validator, title renderer, process runner, binary, and osascript override. No
+  helper daemon, extra command, Ghostty manual override, or text injection was
+  added.
+- Discrepancies from design: none. The implementation uses the designed
+  15-minute bounded prompt timeout and 4 KiB result limit.
+- Verification: `npm run typecheck`, `npm run build`, targeted unit tests,
+  packaged golden e2e, full `npm test`, Ghostty config validation, and
+  `git diff --check` pass.
+- Adjacent issues parked: none.

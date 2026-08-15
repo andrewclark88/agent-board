@@ -10,6 +10,10 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..")
 const fixtures = join(projectRoot, "tests/e2e/fixtures");
 
 export interface Scenario {
+  readonly renamePrompt?: {
+    readonly response?: string;
+    readonly cancel?: boolean;
+  };
   readonly ghostty: {
     readonly frontmost?: boolean;
     readonly focusedTerminalId?: string;

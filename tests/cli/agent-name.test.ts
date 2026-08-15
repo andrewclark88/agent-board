@@ -14,16 +14,17 @@ function streams() {
   };
 }
 
-test("agent-name requires exactly one label without invoking registration", async () => {
+test("agent-name routes zero arguments to the prompt and rejects multiple labels", async () => {
   const output = streams();
   let calls = 0;
   const register = async () => { calls += 1; throw new Error("should not run"); };
+  const promptRename = async () => ({ status: "cancelled" as const });
 
-  assert.equal(await runAgentName([], { register, ...output.output }), 2);
-  assert.equal(await runAgentName(["one", "two"], { register, ...output.output }), 2);
+  assert.equal(await runAgentName([], { register, promptRename, ...output.output }), 0);
+  assert.equal(await runAgentName(["one", "two"], { register, promptRename, ...output.output }), 2);
   assert.equal(calls, 0);
   assert.equal(output.stdout, "");
-  assert.equal(output.stderr, "Usage: agent-name <label>\nUsage: agent-name <label>\n");
+  assert.equal(output.stderr, "Usage: agent-name [label]\n");
 });
 
 test("agent-name writes terse success and stable typed failure output", async () => {
@@ -33,6 +34,7 @@ test("agent-name writes terse success and stable typed failure output", async ()
       created: true,
       record: { identity: { projectLabel: input.projectLabel ?? "" } } as never,
     }),
+    promptRename: async () => ({ status: "cancelled" }),
     ...success.output,
   });
   assert.equal(result, 0);
@@ -42,8 +44,31 @@ test("agent-name writes terse success and stable typed failure output", async ()
   const failure = streams();
   assert.equal(await runAgentName(["bad"], {
     register: async () => { throw new AgentBoardError("CONFLICT", "already registered"); },
+    promptRename: async () => ({ status: "cancelled" }),
     ...failure.output,
   }), 1);
   assert.equal(failure.stdout, "");
   assert.equal(failure.stderr, "CONFLICT: already registered\n");
+});
+
+test("agent-name prints prompted renames and keeps cancellation silent", async () => {
+  const renamed = streams();
+  assert.equal(await runAgentName([], {
+    register: async () => { throw new Error("should not run"); },
+    promptRename: async () => ({
+      status: "renamed",
+      record: { identity: { projectLabel: "acquisition" } } as never,
+    }),
+    ...renamed.output,
+  }), 0);
+  assert.equal(renamed.stdout, "Renamed acquisition\n");
+
+  const cancelled = streams();
+  assert.equal(await runAgentName([], {
+    register: async () => { throw new Error("should not run"); },
+    promptRename: async () => ({ status: "cancelled" }),
+    ...cancelled.output,
+  }), 0);
+  assert.equal(cancelled.stdout, "");
+  assert.equal(cancelled.stderr, "");
 });

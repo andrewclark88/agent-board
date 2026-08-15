@@ -34,7 +34,10 @@ const terminals = scenario.ghostty?.terminals ?? {};
 const focused = scenario.ghostty?.focusedTerminalId ?? Object.keys(terminals)[0];
 const terminal = focused ? terminals[focused] : undefined;
 
-if (script.includes("frontmost is false")) {
+if (script.includes("display dialog \"Rename project\"")) {
+  if (scenario.renamePrompt?.cancel === true) process.stdout.write("AGENT_BOARD_CANCELLED\n");
+  else process.stdout.write(`AGENT_BOARD_RENAMED\u001e${scenario.renamePrompt?.response ?? values[0] ?? ""}\n`);
+} else if (script.includes("frontmost is false")) {
   if (scenario.ghostty?.frontmost === false) process.stdout.write("AGENT_BOARD_NOT_FRONTMOST\n");
   else if (!terminal) fail("application isn't running");
   else process.stdout.write(`FRONTMOST\t${terminal.windowId}\t${terminal.tabId}\t${terminal.terminalId}\n`);
