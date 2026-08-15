@@ -51,8 +51,14 @@ function viable(thread: LoadedThread, expectedWorkingDirectory: string | undefin
   return true;
 }
 
-function confidenceFor(thread: LoadedThread): "authoritative" | "corroborated" {
-  return thread.cwd !== undefined && (thread.parentThreadId === undefined || thread.parentThreadId === null)
+function confidenceFor(
+  thread: LoadedThread,
+  expectedWorkingDirectory: string | undefined,
+): "authoritative" | "corroborated" {
+  return expectedWorkingDirectory !== undefined &&
+    thread.cwd !== undefined &&
+    normalizedPath(thread.cwd) === expectedWorkingDirectory &&
+    thread.parentThreadId === null
     ? "authoritative"
     : "corroborated";
 }
@@ -112,13 +118,29 @@ export async function bindCodexThread(
   const iterator = stream[Symbol.asyncIterator]();
   let bound = false;
 
+  // The production subscription has no iterator.return(). This wrapper keeps
+  // the caller's abort linked for the full observation lifetime and provides a
+  // single release seam regardless of the underlying iterator shape.
+  const linkedIterator: AsyncIterator<CodexNotification> = {
+    next: () => iterator.next(),
+    return: async () => {
+      options.signal?.removeEventListener("abort", abort);
+      controller.abort();
+      try {
+        return await iterator.return?.() ?? { done: true, value: undefined };
+      } catch {
+        return { done: true, value: undefined };
+      }
+    },
+  };
+
   const finish = (thread: LoadedThread): BoundCodexThread => {
     bound = true;
     return {
       threadId: thread.id,
       initialStatus: thread.status,
-      confidence: confidenceFor(thread),
-      notifications: iterator,
+      confidence: confidenceFor(thread, expectedWorkingDirectory),
+      notifications: linkedIterator,
     };
   };
 
@@ -155,8 +177,8 @@ export async function bindCodexThread(
     if (error instanceof AgentBoardError) throw error;
     throw failure("Codex root-thread binding failed", error);
   } finally {
-    options.signal?.removeEventListener("abort", abort);
     if (!bound) {
+      options.signal?.removeEventListener("abort", abort);
       controller.abort();
       try { await iterator.return?.(); } catch { /* cleanup must not mask binding failure */ }
     }

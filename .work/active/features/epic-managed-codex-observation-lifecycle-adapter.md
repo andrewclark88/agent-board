@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation-lifecycle-adapter
 kind: feature
-stage: review
+stage: done
 tags: [integration, state]
 parent: epic-managed-codex-observation
 depends_on: [epic-managed-codex-observation-app-server-client]
@@ -332,3 +332,20 @@ needed.
   ordering, binding ownership, failure visibility, and abort behavior.
 - Verification: `npm run typecheck`, `npm run build`, and `npm test` (82 tests)
   all pass.
+
+## Review (2026-08-14)
+
+Standard-weight review used one fresh-context cross-model pass with Claude
+Sonnet. The mapper, ambiguity refusal, atomic ownership, and failure semantics
+were approved, but the reviewer reproduced one material shutdown bug: after a
+successful bind, caller abort was unlinked from the real notification iterator,
+which has no `return()` method. The pass also found overconfident binding when
+cwd had not actually been compared to an expected directory.
+
+Receiver adjudication kept the caller's abort link for the full observation
+lifetime behind an always-present wrapper iterator, tightened authoritative
+confidence to an explicit root plus verified cwd match, and added regressions
+for the production-shaped no-return iterator and missing expectations/metadata.
+Typecheck, build, focused tests, and the serialized full suite passed. Per
+standard policy, the feature closes after this one pass and verified fixes
+without re-review.

@@ -40,7 +40,7 @@ test("subscribes before discovery and retains a root started during discovery", 
     notifications: () => { subscribed = true; return queue; },
     loadedThreads: async () => {
       assert.equal(subscribed, true);
-      queue.push({ method: "thread/started", params: { thread: { id: "root", status: idle, cwd: "/repo" } } });
+      queue.push({ method: "thread/started", params: { thread: { id: "root", status: idle, cwd: "/repo", parentThreadId: null } } });
       queue.push({ method: "thread/status/changed", params: { threadId: "root", status: idle } });
       return result;
     },
@@ -72,6 +72,18 @@ test("allows one metadata-incomplete root only at corroborated confidence", asyn
   const bound = await bindCodexThread(client(new Queue(), loaded([{ id: "root", status: idle }])), { timeoutMs: 100, expectedWorkingDirectory: "/repo" });
   assert.equal(bound.threadId, "root");
   assert.equal(bound.confidence, "corroborated");
+});
+
+test("cwd presence without an expected match is never authoritative", async () => {
+  const noExpectation = await bindCodexThread(client(new Queue(), loaded([
+    { id: "root", status: idle, cwd: "/repo", parentThreadId: null },
+  ])), { timeoutMs: 100 });
+  assert.equal(noExpectation.confidence, "corroborated");
+
+  const missingParent = await bindCodexThread(client(new Queue(), loaded([
+    { id: "root", status: idle, cwd: "/repo" },
+  ])), { timeoutMs: 100, expectedWorkingDirectory: "/repo" });
+  assert.equal(missingParent.confidence, "corroborated");
 });
 
 test("timeout releases the notification iterator", async () => {

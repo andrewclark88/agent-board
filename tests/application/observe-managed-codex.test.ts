@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { AgentBoardError } from "../../src/domain/errors.js";
 import type { SessionStore } from "../../src/domain/ports.js";
 import { SCHEMA_VERSION, type SessionRecord } from "../../src/domain/session.js";
 import { observeManagedCodex } from "../../src/application/observe-managed-codex.js";
@@ -94,4 +95,35 @@ test("records and rethrows binding failure, while deliberate abort remains clean
     client: fakeClient(new Stream([]), { data: [] }), store: cleanStore, clock: { now: () => new Date("2026-08-14T18:01:00Z") }, bindTimeoutMs: 100,
   }, { sessionId: "session-1" }, abort.signal);
   assert.equal((await cleanStore.get("session-1"))!.agent.health, "live");
+});
+
+test("caller abort stops a bound production-shaped subscription without iterator return", async () => {
+  const abort = new AbortController();
+  const productionShaped: ThreadBindingClient = {
+    loadedThreads: async () => ({ data: [{ id: "root", cwd: "/repo", parentThreadId: null, status: { type: "idle" } }] }),
+    notifications: (signal) => ({
+      [Symbol.asyncIterator]() {
+        return {
+          next: () => new Promise<IteratorResult<CodexNotification>>((_resolve, reject) => {
+            if (signal?.aborted) {
+              reject(new AgentBoardError("ADAPTER_FAILURE", "aborted"));
+              return;
+            }
+            signal?.addEventListener("abort", () => reject(new AgentBoardError("ADAPTER_FAILURE", "aborted")), { once: true });
+          }),
+        };
+      },
+    }),
+  };
+  const store = storeFor(record());
+  const observing = observeManagedCodex({
+    client: productionShaped,
+    store,
+    clock: { now: () => new Date("2026-08-14T18:01:00Z") },
+    bindTimeoutMs: 100,
+  }, { sessionId: "session-1", expectedWorkingDirectory: "/repo" }, abort.signal);
+  await new Promise((resolve) => setImmediate(resolve));
+  abort.abort();
+  await observing;
+  assert.equal((await store.get("session-1"))!.agent.health, "live");
 });
