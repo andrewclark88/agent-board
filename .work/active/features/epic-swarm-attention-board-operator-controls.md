@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board-operator-controls
 kind: feature
-stage: implementing
+stage: review
 tags: [cli, state]
 parent: epic-swarm-attention-board
 depends_on: [epic-swarm-attention-board-board-command]
@@ -208,3 +208,27 @@ share the same target-resolution and command contract.
 
 Review weight is standard: one independent feature pass, receiver
 adjudication/fixes, green verification, and closure without re-review.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 high; cohesive single-owner feature with shared
+  target-resolution and mutation contracts.
+- Review weight: standard, from the feature design and autopilot policy; stop at
+  review for the independent feature pass.
+- Files changed: `src/application/resolve-session-target.ts`,
+  `src/application/acknowledge-session.ts`,
+  `src/application/unregister-agent-session.ts`,
+  `src/composition/create-agent-board.ts`, `src/cli/agent-board.ts`,
+  `package.json`, `tests/application/operator-controls.test.ts`, and
+  `tests/cli/agent-board.test.ts`.
+- Tests added: resolver identity/ambiguity/error tests, acknowledgement
+  transition and title-convergence tests, and injected CLI grammar/output/error
+  tests.
+- Simplification: both controls share one exact-ID/focused-identity resolver;
+  the router uses a typed command registry and delegates unregister's existing
+  clear-before-remove operation without duplicating it.
+- Discrepancies from design: none.
+- Adjacent issues parked: none.
+- Verification: focused operator-control and CLI tests pass (13 tests); typecheck
+  and build pass; `dist/cli/agent-board.js` is emitted; uncontended full suite
+  passes (135 tests).
