@@ -5,7 +5,7 @@ type: spec
 kind: planning
 status: draft
 nav_priority: high
-updated: 2026-08-14
+updated: 2026-08-15
 summary: |
   The first Agent Board release registers one Codex session per Ghostty tab, stores identity and observed state locally, projects five attention symbols into machine-maintained tab titles, and renders the same records through an `agents` command. The contract separates activity, attention, health, and evidence so simple labels remain truthful.
 decisions:
@@ -44,6 +44,13 @@ context when available, adapter identity, and Ghostty window/tab/terminal IDs.
 
 Renaming changes only the display label. It does not change session identity,
 machine state, repo path, or adapter binding.
+
+With no label, `agent-name` captures the focused registered Ghostty session
+before opening the native macOS rename prompt. Cancel is a silent successful
+no-op. Confirming a label changes only `identity.projectLabel` and the canonical
+title projection; it preserves session identity, agent state, and terminal
+binding. One-label invocation retains the direct rename behavior, while more
+than one label returns `Usage: agent-name [label]`.
 
 ### Observe Codex state
 

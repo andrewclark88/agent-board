@@ -113,8 +113,8 @@ TUI. It forwards supported extra Codex arguments unchanged; Agent Board reserves
 the remote transport and terminal-title override, so arguments that set
 `--remote` or `tui.terminal_title` are rejected.
 
-You may omit `agent-name`. The launcher then registers the current tab with a
-label derived from its repository or working directory.
+You may omit the separate `agent-name` step. The launcher then registers the
+current tab with a label derived from its repository or working directory.
 
 Start another project in another Ghostty tab. Repeat the same commands there.
 
@@ -157,6 +157,24 @@ agent-name data-platform
 ```
 
 The label changes independently from agent state and session identity.
+
+For a native macOS rename prompt, run the command without a label:
+
+```bash
+agent-name
+```
+
+It captures the focused registered Ghostty session before opening the dialog.
+Cancel is a silent successful no-op; Rename changes only the stored label and
+canonical title. Passing more than one label prints `Usage: agent-name [label]`.
+
+To bind the prompt to `⌘⇧R`, follow the [Shortcut setup in the companion
+configuration guide](docs/configuration.md#title-ownership-and-rename-shortcut).
+Find the command path with `command -v agent-name`, use a macOS Shortcut's
+**Run Shell Script** action with `exec /absolute/path/to/agent-name`, then in
+**Shortcut Details** choose **Add Keyboard Shortcut** and press `⌘⇧R`. Leave
+the Ghostty chord unbound so its app keybinds do not intercept the keystroke.
+The first invocation may request a distinct macOS Automation permission.
 
 While the managed launcher runs, it acknowledges unread completion when the
 registered Ghostty tab becomes frontmost. After the launcher exits, or when

@@ -73,23 +73,54 @@ The fragment provides this workflow:
 New tabs and splits inherit the current working directory. Ghostty displays tabs
 in the macOS title bar.
 
-### Title ownership
+### Title ownership and rename shortcut
 
-The earlier workflow used this binding:
+Do not bind `cmd+shift+r` to Ghostty's `prompt_tab_title` for registered Agent
+Board tabs. A manual Ghostty title override competes with Agent Board's
+machine-rendered `<status> <project>` title. Leave that Ghostty chord unbound so
+the macOS Shortcut can receive it; Ghostty app keybinds would intercept the
+keystroke first.
 
-```text
-keybind = cmd+shift+r=prompt_tab_title
-```
-
-Do not use that binding for registered Agent Board tabs. A manual Ghostty title
-override competes with Agent Board's machine-rendered `<status> <project>` title.
-
-Rename the focused registered tab from a shell prompt:
+For a direct rename, pass one label from a shell prompt:
 
 ```bash
 agent-name data-platform
 ```
 
+For a native macOS rename prompt, run `agent-name` with no label:
+
+```bash
+agent-name
+```
+
+Agent Board captures the focused registered Ghostty session before opening the
+dialog. Rename changes only the stored project label and canonical title; it
+does not change session identity, agent state, or terminal binding. Cancel is a
+silent successful no-op. Passing more than one label prints:
+
+```text
+Usage: agent-name [label]
+```
+
+To bind the no-argument prompt to `⌘⇧R`, first find the installed command's
+absolute path:
+
+```bash
+command -v agent-name
+```
+
+Create a macOS Shortcut with a **Run Shell Script** action containing:
+
+```bash
+exec /absolute/path/to/agent-name
+```
+
+Replace the placeholder with the path returned by `command -v`. In **Shortcut
+Details**, choose **Add Keyboard Shortcut** and press `⌘⇧R`. The first Shortcut
+invocation may show a distinct macOS Automation permission prompt; grant it if
+you want the Shortcut to launch the native rename dialog.
+
+The direct shell command remains available when the Shortcut is inconvenient.
 Agent Board then retains the label while status changes update only the leading
 glyph.
 
@@ -168,5 +199,6 @@ Unregister the tab before removing the configuration:
 agent-board unregister
 ```
 
-Remove the merged Agent Board lines if you no longer want this workflow. You may
-restore `cmd+shift+r=prompt_tab_title` after Agent Board no longer owns the tab.
+Remove the merged Agent Board lines if you no longer want this workflow. Delete
+the Shortcut if it is no longer wanted. You may restore
+`cmd+shift+r=prompt_tab_title` only after Agent Board no longer owns the tab.

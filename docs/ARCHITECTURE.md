@@ -99,8 +99,10 @@ service.
 
 ### Independent CLI invocations
 
-- `agent-name <label>` registers or renames the focused Ghostty tab, then
-  re-renders from the latest complete session record.
+- `agent-name [label]` registers or renames the focused Ghostty tab, then
+  re-renders from the latest complete session record. With no label, it captures
+  the focused registered session before opening the native macOS rename prompt;
+  Cancel is a successful no-op and Rename changes only the project label/title.
 - `agents` reconciles Ghostty presence, renders every registered session, and
   repairs stale title projection where safe.
 - `agent-board doctor` validates versions, executables, Automation permission,
@@ -131,6 +133,7 @@ src/
     list-sessions.ts        board query and diagnostic annotations
     observe-agent.ts        apply validated Codex observations
     observe-managed-codex.ts managed Codex lifecycle observation
+    prompt-rename-session.ts focused-session capture and native rename application
     reconcile-session.ts    terminal/launcher presence and expiry
     register-session.ts     idempotent register/rename use case
     render-title.ts         locked read-current-state then targeted render
@@ -143,6 +146,7 @@ src/
     codex/                  app-server protocol, WebSocket client, lifecycle,
                             thread binding, compatibility, and process hosting
     ghostty/                AppleScript client/protocol, title actions, and diagnostics
+    macos/                  native rename prompt through macOS Automation
     git/                    repository context lookup
     command-config.ts       absolute executable override validation
     process-runner.ts       bounded external-process execution
