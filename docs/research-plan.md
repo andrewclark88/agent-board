@@ -3,11 +3,11 @@ name: agent-board-research-plan
 description: Read this for the completed pre-architecture research decisions and the entry conditions for deliberately deferred follow-up research.
 type: research-plan
 kind: planning
-status: draft
+status: complete
 nav_priority: high
 updated: 2026-08-14
 summary: |
-  Scout and both focused pre-architecture engagements are complete. Managed remote TUI is accepted as the V1 default, so no research blocker remains before delivery decomposition.
+  Scout and both focused pre-architecture engagements are complete. Managed remote TUI is accepted as the V1 default, and the terminal V1 delivery arc is now implemented and verified. Follow-up research remains deliberately deferred until its entry conditions are met.
 decisions:
   - No deep-research or research-program campaign is warranted before the first proof.
   - Codex detector topology is the first pre-architecture decision because it changes workflow friction and state fidelity.

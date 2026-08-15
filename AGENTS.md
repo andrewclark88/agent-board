@@ -26,11 +26,12 @@ and the two blocking runtime engagements. The managed Codex app-server plus
 remote-TUI topology is the accepted V1 default, the Ghostty 1.3+ AppleScript
 contract is validated, and `docs/ARCHITECTURE.md` is locked.
 
-The current arc is delivery: bootstrap `.work/`, preserve deferred product ideas
-in the backlog, decompose the terminal V1 into dependency-linked work items, and
-run the agile-workflow queue through implementation and review. Use Agentic
-Research only when a consequential unresolved question would change a delivery
-decision; do not reopen settled research by default.
+The terminal V1 delivery arc is complete: the dependency-linked work items have
+been implemented, reviewed, and verified, including the packaged end-to-end
+journeys and operator doctor. Deferred product ideas remain preserved in the
+backlog for deliberate promotion. Use Agentic Research only when a consequential
+unresolved question would change a future delivery decision; do not reopen
+settled research by default.
 
 ## Product guardrails
 
