@@ -1,74 +1,200 @@
-# Documentation Review Report
+# Doc Review Report
 
-Date: 2026-08-14
+**Project:** agent-board
+**Date:** 2026-08-14
+**Review basis:** fresh independent audit after `e852d47` and `a5aeac9`
+**Documents reviewed:** 6 current foundation/planning docs, 1 superseded historical concept doc, `AGENTS.md`, `README.md`, `MIGRATION_REPORT.md`, the indexed research corpus, all current source/test surfaces, and the `.work/` substrate
+**Module docs:** none discovered; the architecture's source-module map was checked directly against the repository
+**Passes run:** 1 system-level pass plus source, test, work-substrate, link, frontmatter, provenance, and blocking-brief audits
 
-Scope: system-level review of `AGENTS.md`, `README.md`, the five foundation
-documents, the knowledge index, and the blocking research artifacts. No module
-pass applied because implementation modules do not exist yet.
+## Exit gate
 
-## Initial independent audit
+**PASS — 0 Critical, 0 High.**
 
-Verdict: **2 Critical, 1 High, 3 Medium, 0 Low**. The initial pass did not meet
-the 0 Critical / 0 High exit gate.
+The prior Critical/High findings are resolved:
 
-### Critical
+- `AGENTS.md` now describes the completed foundation and delivery arc rather
+  than routing back to the concept checkpoint.
+- The canonical health contract is `live | stale | error`; clean process exit
+  remains evidence and is covered by the domain tests.
+- `README.md` documents the installed four-command workflow and operational
+  phase rather than directing the operator to rerun completed research or
+  bootstrap decomposition.
 
-1. `AGENTS.md` still described the superseded concept/ideation checkpoint and
-   routed work back to Scout instead of delivery.
-2. `docs/SPEC.md` included `health=exited`, while the locked architecture used
-   only `live | stale | error` and treated clean process exit as idle in a
-   still-registered tab.
+No Critical/High auto-fix loop was required. Per the review request, this pass
+does not edit planning or implementation docs; the report is the only artifact
+written.
 
-### High
+## Findings
 
-1. `README.md` directed readers to rerun the two completed runtime engagements.
+### Critical (0)
 
-### Medium
+None.
 
-1. The architecture selected ephemeral loopback WebSocket without recording why
-   it superseded the Codex brief's provisional Unix-socket recommendation.
-2. The architecture summary said three CLI surfaces while defining four binaries.
-3. `docs/research-plan.md` retained pre-architecture navigation and conclusion
-   wording after the architecture was locked.
+### High (0)
 
-### Informational checks that passed
+None.
 
-- All five planning documents had the required frontmatter.
-- All relative Markdown document links and canonical process references resolved.
-- The Scout parent and both focused research briefs existed, were locked, and had
-  an approved verification record.
-- The repository did not claim implementation completion, and the absence of a
-  `.work/` substrate was consistent with its pre-bootstrap state.
-- Deferred daemon, adapter, tmux, GUI, remote, hardware, and control ideas remained
-  represented in the planning corpus.
+### Medium (4)
 
-## Remediation
+#### M1. Knowledge indexes are stale relative to current docs and substrate
 
-- Updated `AGENTS.md` and `README.md` to route into delivery.
-- Removed `exited` from canonical health. Clean process exit is observation
-  evidence; a live registered tab projects idle, while terminal presence owns
-  disconnection.
-- Recorded the verified concurrent-observer reason for loopback WebSocket and
-  retained Unix-socket multi-client validation as a possible simplification.
-- Corrected the binary count and converted the research plan into a completed
-  decision record with explicit optional follow-ups.
-- Regenerated the three-layer knowledge index with 0 errors and 0 warnings.
+**Files:** `docs/knowledge-index.yaml:40-46`, `docs/knowledge-index-detail.yaml:91-95`, `docs/knowledge-index-nav.yaml:15-24`, `docs/research-plan.md:6-10`, `.work/`
 
-## Exit verification
+**What:** The source research plan is `status: complete` and says the terminal
+V1 arc is implemented and verified, but the generated terse index still says
+`status: draft`, the detail index retains the pre-delivery summary, and the
+navigator reports the old substrate shape (`active: epic=5, feature=3, story=0;
+backlog=1`). A fresh generator run against a read-only copy produced
+`active: epic=0, feature=0, story=0; backlog=4` and the current research-plan
+summary/status. The stale navigator can misroute a future session.
 
-A fresh independent full audit passed mechanically with **0 Critical and 0
-High**. It found three non-blocking Medium drift items:
+**Fix:** Regenerate the three knowledge-index layers from the current
+frontmatter and substrate after resolving M2.
 
-1. `AGENTS.md` and `README.md` still describe substrate bootstrap/decomposition
-   as the current next step even though delivery is active.
-2. The architecture describes all four intended binaries in present tense while
-   `agents` and `agent-board` remain in the active delivery queue.
-3. The architecture module map still uses several intended/pre-implementation
-   paths instead of distinguishing them from the modules now on disk.
+#### M2. `research-plan` frontmatter uses an unrecognized status
 
-These findings do not fail the doc-review exit gate. The first and third belong
-to the final documentation roll-forward; the second resolves naturally when the
-swarm-board epic delivers the remaining binaries. All blocking briefs exist,
-completed substrate scopes match their code and tests, internal links resolve,
-and the normalized state contract is consistent across SPEC, architecture, and
-implementation.
+**Files:** `docs/research-plan.md:4-8`
+
+**What:** The source declares `status: complete`. The knowledge-index linter
+reports this as a warning because its known foundation-document statuses are
+`draft`, `in-progress`, `legacy`, `locked`, and `superseded`; the generated index
+therefore does not reliably preserve the source status. This is the metadata
+cause of part of M1.
+
+**Fix:** Choose the project’s intended recognized terminal status (for example,
+`locked`) or extend the index status vocabulary deliberately, then regenerate
+the index. The review did not make that taste/metadata choice autonomously.
+
+#### M3. README overstates forwarding of Codex arguments
+
+**Files:** `README.md:106-107`, `src/integrations/codex/process.ts:97-108,231-237`, `tests/integrations/codex/process.test.ts:36-47`
+
+**What:** README says `agent-codex` “forwards extra Codex arguments unchanged.”
+The implementation intentionally rejects topology-owned arguments such as
+`--remote`, remote-auth/url variants, `--`, and attempts to override
+`tui.terminal_title`, then appends its own `--remote` endpoint and title config.
+This is the correct safety behavior, but the user-facing claim is too broad.
+
+**Fix:** Say that supported extra Codex arguments are forwarded unchanged while
+Agent Board reserves the remote-transport and terminal-title options, with a
+short error/remediation note.
+
+#### M4. Bootstrap report retains an obsolete next step
+
+**Files:** `MIGRATION_REPORT.md:1-9,56-59`, `AGENTS.md:22-34`, `.work/` query via `.work/bin/work-view --scope all`
+
+**What:** The bootstrap report correctly records its historical source shape,
+but its unqualified “Next step” still instructs the operator to run
+`research-pipeline:epicize` and design the queue. The repository now has a
+completed delivery substrate: all 5 epics, 14 features, and 6 stories are
+`stage: done`, and the current guidance says the terminal V1 arc is complete.
+An operator reading the root report could restart an obsolete phase.
+
+**Fix:** Mark the report explicitly historical or replace the next-step section
+with a completed-bootstrap note that points to current `.work/` state.
+
+### Low (1)
+
+#### L1. Architecture summary wording can be clearer about board administration
+
+**Files:** `docs/ARCHITECTURE.md:20`, `docs/ARCHITECTURE.md:100-113`, `docs/SPEC.md:113-128`
+
+**What:** The architecture decision says V1 “exposes observation and naming
+only,” while the shipped V1 also exposes `ack` and `unregister`. The surrounding
+architecture and specification make the intended distinction—no semantic agent
+controls—clear, so this is not a capability contradiction, but the summary can
+be read too literally.
+
+**Fix:** Clarify the phrase as “observation, naming, and board administration;
+no semantic agent actions.”
+
+### Info (2)
+
+- `docs/project-brief.md` is correctly treated as historical and superseded by
+  its frontmatter; its broader daemon/tmux/hardware ideas remain preserved in
+  the backlog and current specification.
+- `VISION.md`, `SPEC.md`, and `PRINCIPLES.md` remain `status: draft` while the
+  architecture is locked and V1 is shipped. This is acceptable if these are
+  living product-truth documents rather than release records; no contradiction
+  was found.
+
+## System-level consistency checks
+
+### Clean areas
+
+- The five-state projection and orthogonal health/activity/attention/evidence
+  model agree across `docs/VISION.md`, `docs/SPEC.md`,
+  `docs/ARCHITECTURE.md`, source registries/projection, and tests. There is no
+  `health: exited` schema value; clean process exit is evidence.
+- The architecture's module map matches the current `src/` tree, including the
+  `command-config.ts` executable seam, four composition modules, doctor output,
+  and packaged/opt-in test directories.
+- The four public npm bins are consistent across `package.json`, README,
+  architecture, composition, CLI entry points, and packaged e2e coverage:
+  `agent-codex`, `agent-name`, `agents`, and `agent-board`.
+- The loopback WebSocket choice is explicitly documented as superseding the
+  research brief's provisional Unix-socket recommendation, with the concurrent
+  observer/remote-TUI verification rationale and a bounded future simplification
+  condition (`docs/ARCHITECTURE.md:57-65`).
+- The completed research plan accurately records Scout plus both focused
+  engagements, the managed Codex default, Ghostty validation, and deferred
+  follow-up entry conditions (`docs/research-plan.md:23-110`).
+- README setup, doctor, launcher, board, acknowledgement/unregister, recovery,
+  testing, and uninstall instructions match the implemented command surfaces.
+  The only command-usage drift found is the reserved-argument overstatement in
+  M3.
+- Relative Markdown links in the reviewed docs resolve. The canonical absolute
+  process references in `AGENTS.md` also exist on disk.
+- The source-level completion claims are backed by the substrate: `.work/bin/work-view
+  --scope all` reports 5 done epics, 14 done features, 6 done stories, and 4
+  intentionally preserved backlog ideas.
+- `npm test` completed with 159 passing tests, 0 failures, and 2 intentionally
+  skipped opt-in live probes (Codex schema and disposable Ghostty).
+
+## Blocking briefs status
+
+| Brief/artifact | Blocks | Exists on disk? | Status |
+|---|---|---:|---|
+| `.research/analysis/campaigns/agent-board-prior-art/parent.md` | foundation/architecture context | Yes | locked, verified Scout |
+| `.research/analysis/briefs/codex-detector-topology.md` | Codex adapter topology | Yes | locked, `/research` complete |
+| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity/title/liveness | Yes | locked, `/research` complete |
+| `.research/analysis/briefs/runtime-research-verification.txt` | runtime evidence record | Yes | present verification artifact |
+
+No blocking brief listed by the current foundation or work items is missing.
+
+## DONE phase verification
+
+| Completed arc | Expected surface | Files/tests present? | Result |
+|---|---|---:|---|
+| Trustworthy session core | domain contracts, projection/transitions, atomic store/locks | Yes | verified |
+| Ghostty project surface | AppleScript adapter, registration/naming, title/presence reconciliation | Yes | verified |
+| Managed Codex observation | app-server client, lifecycle adapter, supervised launcher | Yes | verified |
+| Swarm attention board | board rendering, shared projection, operator controls | Yes | verified |
+| Operational readiness | doctor, packaged e2e, operator guide/README | Yes | verified |
+
+All tracked delivery items are done; no DONE item claims an absent source or
+test output.
+
+## Research provenance summary
+
+The decision-bearing brief corpus contains:
+
+| `research_method` | Briefs | Latest updated |
+|---|---:|---|
+| `/research` | 2 | 2026-08-14 |
+| `/scout` | 1 | 2026-08-14 |
+
+The remaining indexed research files are campaign decomposition/specialist
+artifacts or attestations rather than separate decision briefs. There are no
+refresh candidates: the lower-tier Scout parent and the higher-tier focused
+briefs all carry the same update date, so none satisfies the review rule of
+being older than the latest higher-tier brief.
+
+## Fresh audit conclusion
+
+The shipped V1 documentation is substantively aligned with source, tests,
+research, and completed work. The exit gate passes mechanically because there
+are no Critical or High findings. Before the next autonomous work cycle, resolve
+the generated-index drift/status warning (M1/M2), then consider the README
+reserved-argument clarification and bootstrap-report archival (M3/M4).
