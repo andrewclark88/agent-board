@@ -20,13 +20,16 @@ function row(overrides: Partial<BoardRow> = {}): BoardRow {
   };
 }
 
-test("renderBoard aligns rows, maps needs-input, and appends diagnostics", () => {
+test("renderBoard renders the exact five-state board and appends diagnostics", () => {
   assert.equal(
     renderBoard([
-      row(),
-      row({ sessionId: "session-2", label: "acquisition", displayLabel: "acquisition", glyph: "!", status: "needs-input", diagnostics: ["agent mode is ordinary"] }),
+      row({ label: "data-platform", displayLabel: "data-platform", glyph: "●", status: "working" }),
+      row({ sessionId: "session-2", label: "acquisition", displayLabel: "acquisition", glyph: "!", status: "needs-input" }),
+      row({ sessionId: "session-3", label: "agent-board", displayLabel: "agent-board", glyph: "✓", status: "finished" }),
+      row({ sessionId: "session-4", label: "legacy-engine", displayLabel: "legacy-engine", glyph: "○", status: "idle" }),
+      row({ sessionId: "session-5", label: "reporting", displayLabel: "reporting", glyph: "×", status: "error", diagnostics: ["agent mode is ordinary"] }),
     ]),
-    "AGENT BOARD\n\n● data-platform        working\n! acquisition          needs input [agent mode is ordinary]\n",
+    "AGENT BOARD\n\n● data-platform        working\n! acquisition          needs input\n✓ agent-board          finished\n○ legacy-engine        idle\n× reporting            error [agent mode is ordinary]\n",
   );
 });
 

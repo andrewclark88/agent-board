@@ -1,5 +1,8 @@
+#!/usr/bin/env node
+
 import { AgentBoardError } from "../domain/errors.js";
 import { createAgentCodexCommand, type AgentCodexCommand } from "../composition/create-agent-codex.js";
+import { isMain } from "./is-main.js";
 
 export interface AgentCodexCommandDependencies {
   launch(args: readonly string[], signal: AbortSignal): Promise<{ outcome: "clean" | "failed" | "terminated"; exitCode: number }>;
@@ -60,7 +63,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2)): Pro
   }, process);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url, process.argv[1])) {
   main().then((code) => { process.exitCode = code; }).catch((error: unknown) => {
     process.stderr.write(`${errorMessage(error)}\n`);
     process.exitCode = 1;

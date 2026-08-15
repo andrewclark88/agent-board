@@ -154,6 +154,22 @@ test("accepts normal Unicode labels but rejects blank and terminal-unsafe labels
   }
 });
 
+test("rejects terminal-unsafe observation details before CLI rendering", () => {
+  for (const detail of ["line one\nline two", "unsafe\u001b[31m", "unsafe\u0085", "unsafe\u2028"]) {
+    assert.equal(ObservationSchema.safeParse({
+      observedAt: timestamp,
+      evidenceKind: "test",
+      confidence: "authoritative",
+      detail,
+    }).success, false);
+    assert.equal(AgentObservationSchema.safeParse({ ...validRecord().agent, detail }).success, false);
+  }
+  assert.equal(AgentObservationSchema.safeParse({
+    ...validRecord().agent,
+    detail: "managed TUI exited cleanly",
+  }).success, true);
+});
+
 test("parse helpers expose stable domain error codes", () => {
   assert.throws(
     () => parseSessionRecord({ ...validRecord(), schemaVersion: 2 }),

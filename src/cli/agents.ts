@@ -1,6 +1,9 @@
+#!/usr/bin/env node
+
 import { createAgentsCommand } from "../composition/create-agents.js";
 import { formatCliError, renderBoard, renderBoardJson } from "./output.js";
 import type { BoardRow } from "../application/list-sessions.js";
+import { isMain } from "./is-main.js";
 
 export interface AgentsCommandDependencies {
   readonly list: () => Promise<readonly BoardRow[]>;
@@ -39,7 +42,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2)): Pro
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url, process.argv[1])) {
   main().then((code) => {
     process.exitCode = code;
   }).catch((error: unknown) => {

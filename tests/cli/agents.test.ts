@@ -50,4 +50,8 @@ test("runAgents rejects grammar before querying and separates typed failures", a
   assert.equal(failed.output.stdout, "");
   assert.equal(failed.output.stderr, "ADAPTER_FAILURE: Ghostty unavailable\n");
   assert.equal(calls, 1);
+
+  const unknown = streams();
+  assert.equal(await runAgents([], { list: async () => { throw 42; }, ...unknown }), 1);
+  assert.equal(unknown.output.stderr, "Unexpected failure\n");
 });

@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board-board-command
 kind: feature
-stage: review
+stage: done
 tags: [cli, state]
 parent: epic-swarm-attention-board
 depends_on: []
@@ -314,3 +314,27 @@ small read model and fit one implementation stride.
 - Discrepancies from design: None.
 - Adjacent issues parked: none.
 - Verification: `npm run typecheck` passed; `npm run build` passed and produced `dist/cli/agents.js`; full serialized `npm test` passed.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with fixes
+
+**Blockers fixed**: npm-installed bin invocation could silently skip `main()`
+through symlink/realpath or URL-escaping differences. Added executable shebangs
+and one realpath-aware `isMain` boundary shared by all existing bins, with a
+symlink and space-containing-path regression test.
+
+**Important fixes**: terminal-unsafe control characters are now rejected from
+observation detail before diagnostics reach a TTY; exact five-state human output
+and unknown CLI failures now have durable tests.
+
+**Nits rejected/deferred**: kept the explicit corroborated-evidence annotation,
+RFC3339 timestamp ordering, test-file placement, and UUID-prefix behavior because
+they are correct under the validated domain contract and changing them would add
+churn without material V1 risk. Terminal-cell width remains an acknowledged V1
+display limitation.
+
+**Notes**: Standard weight, one independent cross-model feature pass. Receiver
+adjudication accepted the concrete installed-command and terminal-safety risks,
+applied the bounded fixes across the shared CLI boundary, and verified typecheck,
+build, and the uncontended full suite at 135/135 passing. No re-review required.

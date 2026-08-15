@@ -46,6 +46,10 @@ const rfc3339Timestamp = z.string().refine(
 );
 
 const unsafeLabelCharacters = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/u;
+const terminalSafeDetail = z.string().min(1).refine(
+  (value) => !unsafeLabelCharacters.test(value),
+  { message: "contains terminal-unsafe control characters" },
+);
 export const ProjectLabelSchema = z.string().superRefine((value, context) => {
   if (value.trim().length === 0) {
     context.addIssue({ code: "custom", message: "must not be empty or whitespace-only" });
@@ -60,7 +64,7 @@ export const ObservationSchema = z
     observedAt: rfc3339Timestamp,
     evidenceKind: nonEmptyString,
     confidence: z.enum(CONFIDENCE_LEVELS),
-    detail: z.string().min(1).optional(),
+    detail: terminalSafeDetail.optional(),
   })
   .strict();
 
@@ -100,7 +104,7 @@ export const AgentObservationSchema = z
     observedAt: rfc3339Timestamp,
     evidenceKind: nonEmptyString,
     confidence: z.enum(CONFIDENCE_LEVELS),
-    detail: z.string().min(1).optional(),
+    detail: terminalSafeDetail.optional(),
   })
   .strict()
   .superRefine((agent, context) => {
