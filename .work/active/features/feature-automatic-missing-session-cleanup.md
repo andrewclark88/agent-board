@@ -1,7 +1,7 @@
 ---
 id: feature-automatic-missing-session-cleanup
 kind: feature
-stage: review
+stage: done
 tags: [state, cli, integration]
 parent: null
 depends_on: [epic-ghostty-project-surface-title-reconciliation, epic-swarm-attention-board-board-command]
@@ -218,3 +218,24 @@ small, tightly coupled implementation stride.
 - `npm test` — full suite green, including packaged end-to-end journeys
 - Focused application reconciliation/list tests — 11 passed
 - Focused packaged golden journey — passed against the packed install
+
+## Review (2026-08-15)
+
+**Verdict**: Request changes → Approve after verified blocker fix
+
+**Blockers**: The standard fresh-context pass found that a successful record
+deletion followed by a file-lock release failure caused `agents` to abort. The
+receiver accepted and fixed it: when reload proves the record is already absent,
+batch reconciliation now omits it and continues; a delete-then-reject regression
+proves the remaining visible record still reconciles.
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Standard review weight, one independent pass. Applicable lenses were
+correctness, persistence partial failure, concurrency/lifecycle, tests, design
+economy, CLI behavior, and documentation alignment. Per standard closure policy,
+the accepted blocker is fixed and verified without a second independent pass.
