@@ -2,181 +2,64 @@
 
 **Project:** agent-board
 **Date:** 2026-08-15
-**Review basis:** focused complete audit after `21efe95` and `30279a9`
-**Documents reviewed:** 7 current foundation/planning docs (including `docs/configuration.md`), 1 superseded historical concept doc, `AGENTS.md`, `README.md`, `MIGRATION_REPORT.md`, the indexed research corpus, all current source/test surfaces relevant to configuration, and the `.work/` substrate
-**Module docs:** none discovered; the architecture's source-module map was checked directly against the repository
-**Passes run:** 1 complete system-level pass plus source, test, work-substrate, link, frontmatter, provenance, and blocking-brief audits
+**Review basis:** fresh full audit after the native project-rename prompt and
+`⌘⇧R` Shortcut documentation
+**Documents reviewed:** 6 system planning docs, `AGENTS.md`, `README.md`, one
+superseded historical brief, current code/tests, research briefs, knowledge
+indexes, and the `.work/` substrate
+**Module docs:** none discovered
+**Passes run:** 1 fresh complete system-level pass
 
 ## Exit gate
 
-**PASS — 0 Critical, 0 High, 0 Medium, 1 Low.**
+**PASS — 0 Critical, 0 High, 0 Medium, 0 Low, 0 Info.**
 
-The fresh audit found no documentation blockers or material cross-document drift. All
-five findings from the prior report are resolved:
-
-| Prior finding | Resolution verified |
-|---|---|
-| M1 — stale knowledge indexes | `docs/knowledge-index.yaml`, `docs/knowledge-index-detail.yaml`, and `docs/knowledge-index-nav.yaml` now reflect current source frontmatter and the complete substrate; a fresh generator comparison differs only in timestamps. |
-| M2 — unrecognized research-plan status | `docs/research-plan.md:6` and the generated index now use recognized `status: locked`. |
-| M3 — README overstated Codex argument forwarding | `README.md:107-109` now documents supported forwarding and reserved remote/title arguments. |
-| M4 — obsolete bootstrap next step | `MIGRATION_REPORT.md:1-4,59-63` now marks the report historical and records the completed outcome. |
-| Prior L1 — architecture wording | `docs/ARCHITECTURE.md:20` now explicitly says V1 includes board administration but no semantic agent actions. |
-
-The prior Critical/High findings remain resolved: health is `live | stale |
-error` with clean process exit represented as evidence, and README/AGENTS route
-operators to the shipped V1 workflow.
-
-## Critical (0)
+## Findings
 
 None.
 
-## High (0)
+## Clean areas
 
-None.
-
-## Medium (0)
-
-None.
-
-## Low (1)
-
-### L1. Architecture body date trails its frontmatter date
-
-**Files:** `docs/ARCHITECTURE.md:8,25`
-
-**What:** The frontmatter is updated to `2026-08-15` after the stale-lock
-semantics clarification, but the duplicate prose marker still says `Last
-updated: 2026-08-14`. Frontmatter is authoritative for indexing, so this is
-non-blocking metadata drift, but readers can see conflicting dates.
-
-**Fix:** Remove the duplicate prose date or update it to `2026-08-15`; prefer
-frontmatter as the single maintained date.
-
-## Info (2)
-
-- `docs/project-brief.md` is correctly historical and superseded by its
-  frontmatter; the old daemon/tmux/hardware ideas remain preserved in the
-  backlog and current specification.
-- `VISION.md`, `SPEC.md`, and `PRINCIPLES.md` remain living product-truth docs
-  with `status: draft`, while the architecture and research plan are locked.
-  This is intentional document-role metadata, not a contradiction.
-
-## System-level consistency checks
-
-### Knowledge index and frontmatter
-
-- The committed knowledge indexes are `schema_version: 2` for the terse and
-  detail layers, with the navigator at schema version 3.
-- A fresh run of the prescribed generator against a read-only project copy
-  reported **0 errors and 0 warnings**, 17 indexed documents, and 31 substrate
-  items. The generated content matches the committed indexes apart from
-  `generated_at` timestamps.
-- All 17 indexed docs have the expected index metadata. The historical
-  `MIGRATION_REPORT.md` is intentionally a root operational report, not an
-  indexable planning document.
-
-### Product and architecture consistency
-
-- The five-state projection and orthogonal health/activity/attention/evidence
-  model agree across `docs/VISION.md`, `docs/SPEC.md`,
-  `docs/ARCHITECTURE.md`, source registries/projection, and tests. No canonical
-  `health: exited` value exists; clean process exit remains evidence.
-- The architecture module map matches the current `src/` tree, including the
-  command-config seam, four composition modules, doctor output, and packaged
-  and opt-in integration test directories.
-- The four public npm bins are consistent across `package.json`, README,
-  architecture, composition, CLI entry points, and packaged e2e coverage:
-  `agent-codex`, `agent-name`, `agents`, and `agent-board`.
-- The loopback WebSocket choice is explicitly documented as superseding the
-  research brief's provisional Unix-socket recommendation, including the
-  concurrent observer/remote-TUI verification rationale and future
-  simplification condition (`docs/ARCHITECTURE.md:57-65`).
-- The completed research plan accurately records Scout plus both focused
-  engagements, the managed Codex default, Ghostty validation, and deferred
-  follow-up entry conditions (`docs/research-plan.md:23-110`).
-- README setup, doctor, launcher, board, acknowledgement/unregister, recovery,
-  testing, and uninstall instructions match the implemented command surfaces.
-  Reserved Codex argument behavior is now stated accurately.
-- All reviewed relative Markdown links resolve. Canonical absolute process
-  references in `AGENTS.md` and all blocking research artifacts exist.
-
-### Companion configuration consistency
-
-- `docs/configuration.md` is indexed as a locked `type: design` document with
-  complete frontmatter. Its README link and both example-fragment links resolve.
-- The Ghostty fragment enables AppleScript, includes `no-title`, omits a fixed
-  `title`, and avoids the manual `prompt_tab_title` binding. These values match
-  the production diagnostics and the title-ownership contracts in SPEC and
-  ARCHITECTURE.
-- The Codex fragment matches the documented tested 0.147.x `/statusline`
-  output, merges into an existing `[tui]` table, and preserves the detailed
-  project/branch/model/context surface distinct from Agent Board's attention
-  glyph.
-- The tab, prompt-navigation, working-directory inheritance, and macOS title-bar
-  settings reflect the supplied Ghostty workflow. The guide explicitly treats
-  examples as merge fragments and gives rollback steps rather than overwriting
-  personal configuration.
-
-### Delivery and code verification
-
-- `.work/bin/work-view --scope all` reports 5 done epics, 15 done features,
-  6 done stories, and 5 intentionally preserved backlog ideas. The navigator's
-  active-tier counts correctly include completed active-tier records by design.
-- The completed arcs' expected source and test surfaces are present: session
-  core, Ghostty project surface, managed Codex observation, swarm board, and
-  operational readiness.
-- The prior completed delivery verification recorded 159 passing tests, 0
-  failures, and 2 explicitly skipped opt-in live probes (installed Codex schema
-  and disposable Ghostty). The full npm suite was intentionally not rerun in
-  this prose/configuration-only review.
-- Done work items retain their original design checklists in several bodies,
-  but their stage, implementation notes, review records, and verification
-  sections provide the authoritative completion evidence; no missing shipped
-  output was found.
+- The rename contract is consistent across specification, architecture, README,
+  configuration guide, example config, implementation, and tests:
+  `agent-name [label]`, a no-argument native prompt, focus captured before the
+  dialog, silent cancellation, and stored-label-only mutation.
+- Shortcut guidance consistently uses the absolute installed command path,
+  binds `⌘⇧R` through macOS Shortcuts, leaves the Ghostty chord unbound, and
+  explains the separate Shortcut Automation grant.
+- The architecture module map includes the focused-session rename use case and
+  the macOS prompt adapter actually present in source.
+- Product boundaries, state/title ownership, deferred ideas, and macOS/Ghostty
+  constraints remain consistent across the foundation corpus.
+- All reviewed cross-references resolve, including the two blocking runtime
+  briefs and companion configuration examples.
+- The knowledge indexes regenerated with 0 errors and 0 warnings.
 
 ## Blocking briefs status
 
-| Brief/artifact | Blocks | Exists on disk? | Status |
+| Brief | Blocks | Exists | Status |
 |---|---|---:|---|
-| `.research/analysis/campaigns/agent-board-prior-art/parent.md` | foundation/architecture context | Yes | locked, verified Scout |
-| `.research/analysis/briefs/codex-detector-topology.md` | Codex adapter topology | Yes | locked, `/research` complete |
-| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity/title/liveness | Yes | locked, `/research` complete |
-| `.research/analysis/briefs/runtime-research-verification.txt` | runtime evidence record | Yes | present verification artifact |
+| `.research/analysis/briefs/codex-detector-topology.md` | Codex V1 topology | Yes | locked, `/research` |
+| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty registration/liveness | Yes | locked, `/research` |
 
-No blocking brief listed by the current foundation or work items is missing.
+No blocking brief is missing.
 
-## DONE phase verification
+## DONE verification
 
-| Completed arc | Expected surface | Files/tests present? | Result |
-|---|---|---:|---|
-| Trustworthy session core | domain contracts, projection/transitions, atomic store/locks | Yes | verified |
-| Ghostty project surface | AppleScript adapter, registration/naming, title/presence reconciliation | Yes | verified |
-| Managed Codex observation | app-server client, lifecycle adapter, supervised launcher | Yes | verified |
-| Swarm attention board | board rendering, shared projection, operator controls | Yes | verified |
-| Operational readiness | doctor, packaged e2e, operator guide/README | Yes | verified |
+| Scope | Work state | Verification |
+|---|---|---|
+| Terminal V1 arc | 5 epics, 15 features, and 6 stories are `done` | Corresponding implementation and tests are present. |
+| Hotkey project rename | `review` at audit time | Implementation, focused tests, packaged e2e, full-suite, Ghostty-config, and diff-check evidence are recorded in the feature. |
 
-All tracked delivery items are done; no DONE item claims an absent source or
-test output.
+No completed item claims an absent implementation or test surface.
 
 ## Research provenance summary
 
-The decision-bearing brief corpus contains:
-
-| `research_method` | Briefs | Latest updated |
+| `research_method` | Decision-bearing artifacts | Latest updated |
 |---|---:|---|
 | `/research` | 2 | 2026-08-14 |
 | `/scout` | 1 | 2026-08-14 |
 
-The remaining indexed research files are campaign decomposition/specialist
-artifacts or attestations rather than separate decision briefs. There are no
-refresh candidates: the lower-tier Scout parent and the higher-tier focused
-briefs all carry the same update date, so none satisfies the review rule of
-being older than the latest higher-tier brief.
-
-## Fresh audit conclusion
-
-The current documentation corpus is aligned with source, tests, research, and
-completed work, with one non-blocking duplicate-date nit. The prescribed exit
-gate passes with zero Critical, High, or Medium findings. No planning or
-implementation docs were edited during this review; only this report artifact
-was updated.
+No refresh candidate was identified. The locked runtime briefs remain the
+accepted basis for the current V1 decisions, and no later higher-fidelity
+engagement supersedes them.
