@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation
 kind: epic
-stage: review
+stage: done
 tags: [integration, cli]
 parent: null
 depends_on: [epic-trustworthy-session-core]
@@ -93,3 +93,24 @@ observer, and supervised managed-launch workflow with visible degradation.
   outcome state ownership, and bounded process cleanup behind `agent-codex`.
 - Every child feature completed one standard independent review pass and green
   integrated verification. The aggregate Codex capability is ready for epic review.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with comments
+
+**Blockers**: none
+**Important**: `idea-observer-failure-degradation` — preserve the option to keep
+a healthy interactive TUI alive when only the passive observer fails, if real
+usage shows the V1 single-abort-tree tradeoff is too disruptive.
+**Nits**: Removed an unused type-only compatibility re-export from the launcher.
+**Rejected**: Missing `agents`/`agent-board` bins are sibling-epic scope, not a
+Codex capability gap; rejecting bare `--` is an already-reviewed topology-safety
+decision.
+
+**Notes**: Standard weight, one cross-model aggregate pass. End-to-end review
+confirmed subscription/binding cancellation, normalized state mutation,
+confidence semantics, title reconciliation, version/endpoint gating, process
+cleanup, and CLI composition across all three child features. The review's own
+full-suite attempt was confounded by concurrent test processes, so closure uses
+the subsequent uncontended implementation-owner run: typecheck and build green,
+`npm test` 121/121 passing, and the built `agent-codex` entry present.

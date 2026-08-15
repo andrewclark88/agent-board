@@ -4,7 +4,6 @@ import { reconcileSession } from "./reconcile-session.js";
 import { watchCompletionFocus } from "./watch-completion-focus.js";
 import type { RegisterSessionResult } from "./register-session.js";
 import type { ReconciliationTerminalPort, SessionStore, Clock } from "../domain/ports.js";
-import type { AppServerClient } from "../integrations/codex/client.js";
 import type { CodexProcessHost, ManagedChild, ProcessExit, StartedAppServer } from "../integrations/codex/process.js";
 import type { ThreadBindingClient } from "../integrations/codex/thread-binding.js";
 import { AgentBoardError } from "../domain/errors.js";
@@ -212,7 +211,3 @@ export async function launchManagedCodex(
   }
   return { sessionId, outcome: finalOutcome, exitCode: finalOutcome === "clean" ? 0 : finalOutcome === "terminated" ? 143 : 1 };
 }
-
-// Kept as a type-only compatibility alias for composition/tests that import
-// the concrete client contract from the application boundary.
-export type { AppServerClient };
