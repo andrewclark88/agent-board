@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-operator-guide
 kind: feature
-stage: review
+stage: done
 tags: [prose]
 parent: epic-operational-readiness
 depends_on: [epic-operational-readiness-doctor-command, epic-operational-readiness-packaged-e2e]
@@ -58,3 +58,21 @@ keep optional customization separate from the required path.
   and current controls. Deferred adapters, GUI, remote, and hardware remain
   backlog options.
 - Adjacent issues parked: none.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with one accuracy fix.
+
+**Blockers**: none.
+
+**Important fix**: scoped automatic focus acknowledgement to the lifetime of
+the managed launcher. After that process exits, the guide now directs the
+operator to explicit acknowledgement.
+
+**Nits adjudicated**: clarified that warnings do not block managed operation;
+made rename instructions require a focused registered tab; retained the safer
+instruction to remove a global title setting; retained npm as an explicit tool
+requirement for readers who use alternate Node installations.
+
+Standard review weight: one independent cross-model pass, receiver edits, and
+closure without re-review.

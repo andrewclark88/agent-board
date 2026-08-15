@@ -71,7 +71,8 @@ The first AppleScript check may cause a macOS Automation prompt. Grant the
 requested Ghostty control, then run the doctor again.
 
 The doctor checks the runtime, local state directory, Codex, and Ghostty. It
-returns nonzero when an error blocks managed operation. Warnings remain usable.
+returns nonzero when an error blocks managed operation. Warnings do not block
+managed operation.
 
 Use JSON for automation:
 
@@ -135,7 +136,7 @@ title synchronization failures. Agent Board does not relabel uncertainty as idle
 
 ## Rename, acknowledge, and unregister
 
-Rename the current Ghostty tab at any time:
+Focus a registered Ghostty tab, then rename it:
 
 ```bash
 agent-name data-platform
@@ -143,9 +144,9 @@ agent-name data-platform
 
 The label changes independently from agent state and session identity.
 
-Managed sessions acknowledge unread completion when the registered Ghostty tab
-becomes frontmost. Use the explicit command when automatic focus evidence is not
-available:
+While the managed launcher runs, it acknowledges unread completion when the
+registered Ghostty tab becomes frontmost. After the launcher exits, or when
+focus evidence is unavailable, use the explicit command:
 
 ```bash
 agent-board ack
