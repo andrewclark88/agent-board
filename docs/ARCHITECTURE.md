@@ -17,7 +17,7 @@ decisions:
   - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
   - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably focused, with an explicit acknowledgement command as fallback.
   - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than being reclassified as native state.
-  - V1 exposes observation and naming only; focus navigation, notifications, semantic controls, GUI, remote, and hardware remain outside the runtime boundary.
+  - V1 exposes observation, naming, and board administration, with no semantic agent actions; focus navigation, notifications, GUI, remote, and hardware remain outside the runtime boundary.
 ---
 
 # Architecture: Agent Board

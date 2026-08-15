@@ -104,7 +104,9 @@ agent-board doctor --json
    ```
 
 `agent-codex` starts a private Codex app-server and connects the normal remote
-TUI. It forwards extra Codex arguments unchanged.
+TUI. It forwards supported extra Codex arguments unchanged; Agent Board reserves
+the remote transport and terminal-title override, so arguments that set
+`--remote` or `tui.terminal_title` are rejected.
 
 You may omit `agent-name`. The launcher then registers the current tab with a
 label derived from its repository or working directory.

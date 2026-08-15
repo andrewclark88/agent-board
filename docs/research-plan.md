@@ -3,7 +3,7 @@ name: agent-board-research-plan
 description: Read this for the completed pre-architecture research decisions and the entry conditions for deliberately deferred follow-up research.
 type: research-plan
 kind: planning
-status: complete
+status: locked
 nav_priority: high
 updated: 2026-08-14
 summary: |

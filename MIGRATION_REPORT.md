@@ -1,4 +1,7 @@
-# Agile-Workflow Bootstrap Report
+# Agile-Workflow Bootstrap Report (Historical — completed)
+
+> Historical migration record. Bootstrap and delivery are complete; current
+> project truth lives in `AGENTS.md`, `docs/`, and `.work/`.
 
 Date: 2026-08-14
 
@@ -53,7 +56,8 @@ No legacy tracking artifacts, duplicate entrypoints, project skill roots, or
 Claude rules were found. No convergence candidates, content moves, reference
 rewrites, shims, deletions, or other cleanup actions were necessary.
 
-## Next step
+## Historical outcome
 
-Run `research-pipeline:epicize`, then design the resulting epics and features
-before agile-workflow autopilot drains the ready implementation queue.
+The bootstrap substrate was subsequently populated, decomposed, implemented,
+reviewed, and verified through the completed V1 delivery arc. Deferred ideas
+remain in `.work/backlog/` for deliberate future promotion.
