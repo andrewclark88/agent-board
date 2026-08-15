@@ -1,7 +1,7 @@
 ---
 id: feature-hotkey-project-rename
 kind: feature
-stage: review
+stage: done
 tags: [cli, integration, ui]
 parent: null
 depends_on: [feature-companion-terminal-configuration]
@@ -255,3 +255,23 @@ export interface AgentNameCommand {
   packaged golden e2e, full `npm test`, Ghostty config validation, and
   `git diff --check` pass.
 - Adjacent issues parked: none.
+
+## Review (2026-08-15)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Standard-weight feature review used one same-harness OpenAI
+fresh-context pass. The reviewer verified focus-before-dialog ordering, guarded
+mutation and latest-record title rendering, the shell-free bounded AppleScript
+protocol, zero/one/many-argument CLI behavior, packaged coverage, and Shortcut
+guidance. Nineteen focused tests and typecheck passed during review. The pass
+returned `ready` with no findings; no second independent pass was run, per the
+standard closure policy.
