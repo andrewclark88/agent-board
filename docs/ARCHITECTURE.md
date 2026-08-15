@@ -22,7 +22,7 @@ decisions:
 
 # Architecture: Agent Board
 
-*Last updated: 2026-08-14*
+*Last updated: 2026-08-15*
 
 > How the system is built. For product intent, see [Vision](VISION.md),
 > [Specification](SPEC.md), and [Principles](PRINCIPLES.md). Runtime decisions
