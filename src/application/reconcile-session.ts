@@ -177,7 +177,6 @@ async function reconcileLoaded(
   } catch (error) {
     if (hasGhosttyCode(error, "GHOSTTY_TARGET_NOT_FOUND")) {
       await persistUnknown(dependencies, record.sessionId);
-      throw error;
     }
     throw error;
   }

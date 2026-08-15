@@ -1,7 +1,7 @@
 ---
 id: epic-ghostty-project-surface
 kind: epic
-stage: review
+stage: done
 tags: [integration, cli]
 parent: null
 depends_on: [epic-trustworthy-session-core]
@@ -90,3 +90,17 @@ Aggregate verification passes typecheck, build, and the serialized 95-test
 suite. The completed arc exposes explicit registration/naming, strict Ghostty
 diagnostics and scripting, hierarchy-aware visibility, canonical title parity,
 and safe unregister without a multiplexer or resident process.
+
+## Review (2026-08-14)
+
+Standard-weight aggregate review used one fresh-context cross-model pass with
+Claude Sonnet in an isolated worktree. It verified the complete scripting,
+registration, liveness, title, diagnostic, packaging, and unregister flow with
+95/95 committed tests and found no blockers.
+
+One non-blocking integration observation was accepted as a downstream board
+design input: a resilient bulk pass can report `titleRendered: false` without a
+durable Ghostty error field, so the board must surface that result instead of
+silently assuming title parity. The note now lives on the board epic. A cosmetic
+duplicate throw branch was simplified. The epic closes after this single pass
+without re-review, per standard policy.

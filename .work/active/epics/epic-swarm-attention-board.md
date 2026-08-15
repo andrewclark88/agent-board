@@ -44,5 +44,13 @@ outside this epic.
 Provisional seams are the board query/renderer, attention acknowledgement, and
 safe stale/unregister operations.
 
+## Inherited implementation evidence
+
+- Bulk Ghostty reconciliation returns `titleRendered: false` for a per-session
+  title action or permission failure so the rest of the board can still render.
+  Board design must surface that transient repair failure as an operator-facing
+  diagnostic rather than treating a stored `presence: visible` record as proof
+  that its title is synchronized.
+
 <!-- The /epic-design pass will fill in real child feature specifics into a
 ## Decomposition section below this one. -->
