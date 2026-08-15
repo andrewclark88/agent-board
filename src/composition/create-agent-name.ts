@@ -6,6 +6,7 @@ import type { RegistrationStore, RegistrationTerminalPort, RepositoryContextPort
 import { JsonSessionStore } from "../infrastructure/json-session-store.js";
 import { GitRepositoryContext } from "../integrations/git/repository-context.js";
 import { GhosttyClient } from "../integrations/ghostty/client.js";
+import { configuredCommand } from "../integrations/command-config.js";
 
 export interface AgentNameCommand {
   register(input: RegisterSessionInput): Promise<RegisterSessionResult>;
@@ -21,7 +22,7 @@ export interface AgentNameCompositionOptions {
 export function createAgentNameCommand(options: AgentNameCompositionOptions = {}): AgentNameCommand {
   const dependencies: RegisterSessionDependencies = {
     store: options.store ?? new JsonSessionStore(),
-    terminal: options.terminal ?? new GhosttyClient(),
+    terminal: options.terminal ?? new GhosttyClient({ command: configuredCommand("AGENT_BOARD_OSASCRIPT_COMMAND", "/usr/bin/osascript") }),
     repositories: options.repositories ?? new GitRepositoryContext(),
     clock: { now: () => new Date() },
     ids: { sessionId: () => randomUUID() },

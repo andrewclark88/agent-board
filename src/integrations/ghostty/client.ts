@@ -14,22 +14,25 @@ import {
 } from "./protocol.js";
 import { ACTIVE_CONTEXT_SCRIPT, CLEAR_TAB_TITLE_SCRIPT, FOCUSED_TERMINAL_SCRIPT, HIERARCHY_SCRIPT, SET_TAB_TITLE_SCRIPT, SNAPSHOT_SCRIPT, WORKING_DIRECTORY_SCRIPT } from "./scripts.js";
 
-const COMMAND = "/usr/bin/osascript";
+const DEFAULT_COMMAND = "/usr/bin/osascript";
 const DEFAULT_TIMEOUT_MS = 2_000;
 const DEFAULT_MAX_OUTPUT_BYTES = 64 * 1024;
 
 export interface GhosttyClientOptions {
+  command?: string;
   runner?: ProcessRunner;
   timeoutMs?: number;
   maxOutputBytes?: number;
 }
 
 export class GhosttyClient {
+  private readonly command: string;
   private readonly runner: ProcessRunner;
   private readonly timeoutMs: number;
   private readonly maxOutputBytes: number;
 
   constructor(options: GhosttyClientOptions = {}) {
+    this.command = options.command ?? DEFAULT_COMMAND;
     this.runner = options.runner ?? new NodeProcessRunner();
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.maxOutputBytes = options.maxOutputBytes ?? DEFAULT_MAX_OUTPUT_BYTES;
@@ -71,7 +74,7 @@ export class GhosttyClient {
 
   private async execute(script: string, ...args: readonly string[]): Promise<string> {
     const request: ProcessRequest = {
-      command: COMMAND,
+      command: this.command,
       args: ["-e", script, "--", ...args],
       timeoutMs: this.timeoutMs,
       maxOutputBytes: this.maxOutputBytes,

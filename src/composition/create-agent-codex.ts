@@ -7,6 +7,7 @@ import { GitRepositoryContext } from "../integrations/git/repository-context.js"
 import { GhosttyClient } from "../integrations/ghostty/client.js";
 import { JsonSessionStore } from "../infrastructure/json-session-store.js";
 import type { RegistrationStore, RegistrationTerminalPort, RepositoryContextPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import { configuredCommand } from "../integrations/command-config.js";
 
 export interface AgentCodexCommand {
   launch(args: readonly string[], signal: AbortSignal): Promise<ManagedLaunchResult>;
@@ -24,9 +25,9 @@ export interface AgentCodexCompositionOptions {
 
 export function createAgentCodexCommand(options: AgentCodexCompositionOptions = {}): AgentCodexCommand {
   const store = options.store ?? new JsonSessionStore();
-  const terminal = options.terminal ?? new GhosttyClient();
+  const terminal = options.terminal ?? new GhosttyClient({ command: configuredCommand("AGENT_BOARD_OSASCRIPT_COMMAND", "/usr/bin/osascript") });
   const repositories = options.repositories ?? new GitRepositoryContext();
-  const processes = options.processes ?? new CodexProcessHost();
+  const processes = options.processes ?? new CodexProcessHost({ command: configuredCommand("AGENT_BOARD_CODEX_COMMAND", "codex") });
   const registerDependencies: RegisterSessionDependencies = {
     store,
     terminal,

@@ -8,6 +8,7 @@ import { StateDirectoryProbe } from "../infrastructure/state-diagnostics.js";
 import { CodexProcessHost } from "../integrations/codex/process.js";
 import { GhosttyClient } from "../integrations/ghostty/client.js";
 import { diagnoseGhostty } from "../integrations/ghostty/diagnostics.js";
+import { configuredCommand } from "../integrations/command-config.js";
 
 export interface AgentBoardCommand {
   readonly ack: (explicitSessionId?: string) => Promise<AcknowledgeSessionResult>;
@@ -26,7 +27,9 @@ export function createAgentBoardCommand(
   options: AgentBoardCompositionOptions = {},
 ): AgentBoardCommand {
   const store = options.store ?? new JsonSessionStore();
-  const terminal = options.terminal ?? new GhosttyClient();
+  const ghosttyCommand = configuredCommand("AGENT_BOARD_GHOSTTY_COMMAND", "ghostty");
+  const osascriptCommand = configuredCommand("AGENT_BOARD_OSASCRIPT_COMMAND", "/usr/bin/osascript");
+  const terminal = options.terminal ?? new GhosttyClient({ command: osascriptCommand });
   const clock = { now: () => new Date() };
   const workingFreshForMs = options.workingFreshForMs ?? 60_000;
   const acknowledgeDependencies: AcknowledgeSessionDependencies = {
@@ -44,8 +47,8 @@ export function createAgentBoardCommand(
     clock,
     nodeVersion: process.versions.node,
     state: new StateDirectoryProbe(),
-    codex: new CodexProcessHost(),
-    ghostty: () => diagnoseGhostty(),
+    codex: new CodexProcessHost({ command: configuredCommand("AGENT_BOARD_CODEX_COMMAND", "codex") }),
+    ghostty: () => diagnoseGhostty({ command: ghosttyCommand, clientCommand: osascriptCommand }),
   } satisfies DoctorDependencies;
   return {
     ack: (explicitSessionId) => acknowledgeSession(acknowledgeDependencies, explicitSessionId),

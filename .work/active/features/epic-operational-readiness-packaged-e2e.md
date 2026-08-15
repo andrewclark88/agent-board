@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-packaged-e2e
 kind: feature
-stage: implementing
+stage: review
 tags: [e2e-test, integration]
 parent: epic-operational-readiness
 depends_on: [epic-operational-readiness-doctor-command]
@@ -254,3 +254,18 @@ change an expected value to whatever the current product emits.
 Standard weight: child stories close directly on verification; the completed
 feature receives one independent review pass, receiver fixes/adjudication, then
 done without re-review.
+
+## Implementation notes
+- Execution capability: GPT-5.6 inline feature owner; five child checkpoints implemented sequentially because all journeys share one package/process harness.
+- Review weight: standard, with independent feature review still required.
+- Files changed: `src/integrations/command-config.ts`; command composition and Ghostty command seams; `tests/e2e/support/package-harness.ts`; three out-of-process executable fixtures; four packaged e2e suites; two opt-in integration probes; package scripts; five child story records.
+- Tests added: packed install/source-free prefix, all four bins, title/board parity, managed lifecycle, acknowledgement/unregister, doctor/failure/degradation, deterministic chaos, installed Codex schema compatibility, and disposable Ghostty identity/title safety.
+- Simplification: no Docker daemon, tmux, shell evaluation, source imports in product assertions, random chaos, PID guesses, or broad cleanup; fixture processes use argv and private scenario files.
+- Discrepancies from design: Docker Compose was replaced by executable-process mocks because the external boundaries are local macOS processes; Codex completion after input explicitly includes the input-resolved edge; Ghostty clear-title verification checks marker removal because shell-derived title restoration is expected.
+- Adjacent issues parked: none.
+
+## Integrated verification
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- Focused packaged e2e and integration command run passes: 7 passed, 2 explicit opt-in skips.
+- Child checkpoints `epic-operational-readiness-packaged-e2e-infra`, `...-golden`, `...-failure`, `...-chaos`, and `...-live` are all `stage: done` with acceptance evidence.

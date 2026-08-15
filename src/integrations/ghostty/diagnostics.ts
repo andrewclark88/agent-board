@@ -18,7 +18,7 @@ export interface GhosttyDiagnosticReport {
   diagnostics: readonly IntegrationDiagnostic[];
 }
 
-const COMMAND = "ghostty";
+const DEFAULT_COMMAND = "ghostty";
 const PROCESS_TIMEOUT_MS = 2_000;
 const MAX_OUTPUT_BYTES = 256 * 1024;
 
@@ -51,17 +51,29 @@ function configBool(value: string | undefined): boolean | undefined {
   return undefined;
 }
 
-async function run(runner: ProcessRunner, args: readonly string[]) {
-  return runner.run({ command: COMMAND, args, timeoutMs: PROCESS_TIMEOUT_MS, maxOutputBytes: MAX_OUTPUT_BYTES });
+export interface GhosttyDiagnosticsOptions {
+  readonly command?: string;
+  readonly runner?: ProcessRunner;
+  readonly clientCommand?: string;
 }
 
-export async function diagnoseGhostty(runner: ProcessRunner = new NodeProcessRunner()): Promise<GhosttyDiagnosticReport> {
+async function run(runner: ProcessRunner, command: string, args: readonly string[]) {
+  return runner.run({ command, args, timeoutMs: PROCESS_TIMEOUT_MS, maxOutputBytes: MAX_OUTPUT_BYTES });
+}
+
+export async function diagnoseGhostty(
+  runnerOrOptions: ProcessRunner | GhosttyDiagnosticsOptions = new NodeProcessRunner(),
+): Promise<GhosttyDiagnosticReport> {
+  const options = "run" in runnerOrOptions ? { runner: runnerOrOptions } : runnerOrOptions;
+  const runner = options.runner ?? new NodeProcessRunner();
+  const command = options.command ?? DEFAULT_COMMAND;
+  const clientCommand = options.clientCommand ?? "/usr/bin/osascript";
   const diagnostics: IntegrationDiagnostic[] = [];
   let version: string | undefined;
   let automationReady = false;
 
   try {
-    const versionResult = await run(runner, ["--version"]);
+    const versionResult = await run(runner, command, ["--version"]);
     if (versionResult.exitCode !== 0) {
       diagnostics.push(diagnostic("GHOSTTY_NOT_INSTALLED", "error", "Ghostty could not report its installed version", "Install Ghostty 1.3 or later and ensure the ghostty executable is on PATH."));
     } else {
@@ -79,11 +91,11 @@ export async function diagnoseGhostty(runner: ProcessRunner = new NodeProcessRun
   const defaults = new Map<string, string>();
   const user = new Map<string, string>();
   try {
-    const result = await run(runner, ["+show-config", "--default"]);
+    const result = await run(runner, command, ["+show-config", "--default"]);
     if (result.exitCode === 0) for (const [key, value] of parseConfig(result.stdout)) defaults.set(key, value);
   } catch { /* config diagnostics remain useful when the executable is absent */ }
   try {
-    const result = await run(runner, ["+show-config"]);
+    const result = await run(runner, command, ["+show-config"]);
     if (result.exitCode === 0) for (const [key, value] of parseConfig(result.stdout)) user.set(key, value);
   } catch { /* reported by the version probe */ }
   const config = new Map(defaults);
@@ -103,7 +115,7 @@ export async function diagnoseGhostty(runner: ProcessRunner = new NodeProcessRun
   }
 
   try {
-    await new GhosttyClient({ runner }).current();
+    await new GhosttyClient({ runner, command: clientCommand }).current();
     automationReady = true;
   } catch (error) {
     if (error instanceof GhosttyAdapterError && error.ghosttyCode === "GHOSTTY_PERMISSION_DENIED") {
@@ -115,7 +127,6 @@ export async function diagnoseGhostty(runner: ProcessRunner = new NodeProcessRun
     }
   }
 
-  if (diagnostics.some((item) => item.severity === "error")) automationReady = false;
   return { version, automationReady, diagnostics };
 }
 
