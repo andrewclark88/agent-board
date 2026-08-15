@@ -1,4 +1,4 @@
-import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -101,10 +101,11 @@ export async function waitForScenario(harness: PackageHarness, predicate: (scena
 export async function createPackageHarness(initial?: Partial<Scenario>): Promise<PackageHarness> {
   const root = await mkdtemp(join(tmpdir(), "agent-board-e2e-"));
   if (!root.startsWith(`${tmpdir()}/agent-board-e2e-`)) throw new Error("Harness temp root failed containment check");
-  const prefix = join(root, "prefix");
-  const state = join(root, "state");
-  const scenarioPath = join(root, "scenario.json");
-  const scenario: Scenario = {
+  try {
+    const prefix = join(root, "prefix");
+    const state = join(root, "state");
+    const scenarioPath = join(root, "scenario.json");
+    const scenario: Scenario = {
     ghostty: {
       ...initial?.ghostty,
       focusedTerminalId: initial?.ghostty?.focusedTerminalId ?? "term-one",
@@ -115,16 +116,16 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
     },
     codex: { status: "idle", ...(initial?.codex ?? {}) },
   };
-  await writeFile(scenarioPath, `${JSON.stringify(scenario)}\n`, "utf8");
-  const pack = await execFileAsync("npm", ["pack", "--ignore-scripts", "--json"], { cwd: projectRoot, maxBuffer: 2 ** 20 });
-  const packed = JSON.parse(pack.stdout) as Array<{ filename: string }>;
-  const tarball = join(projectRoot, packed[0]?.filename ?? "");
-  try {
-    await execFileAsync("npm", ["install", "--offline", "--ignore-scripts", "--no-save", "--prefix", prefix, tarball], { cwd: projectRoot, maxBuffer: 4 * 2 ** 20 });
-  } finally {
-    await rm(tarball, { force: true });
-  }
-  const env: NodeJS.ProcessEnv = {
+    await writeFile(scenarioPath, `${JSON.stringify(scenario)}\n`, "utf8");
+    const pack = await execFileAsync("npm", ["pack", "--ignore-scripts", "--json"], { cwd: projectRoot, maxBuffer: 2 ** 20 });
+    const packed = JSON.parse(pack.stdout) as Array<{ filename: string }>;
+    const tarball = join(projectRoot, packed[0]?.filename ?? "");
+    try {
+      await execFileAsync("npm", ["install", "--offline", "--ignore-scripts", "--no-save", "--prefix", prefix, tarball], { cwd: projectRoot, maxBuffer: 4 * 2 ** 20 });
+    } finally {
+      await rm(tarball, { force: true });
+    }
+    const env: NodeJS.ProcessEnv = {
     ...process.env,
     AGENT_BOARD_STATE_DIR: state,
     AGENT_BOARD_E2E_SCENARIO: scenarioPath,
@@ -132,8 +133,8 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
     AGENT_BOARD_GHOSTTY_COMMAND: join(fixtures, "fake-ghostty.mjs"),
     AGENT_BOARD_OSASCRIPT_COMMAND: join(fixtures, "fake-osascript.mjs"),
   };
-  const owned = new Set<RunningProcess>();
-  const harness: PackageHarness = {
+    const owned = new Set<RunningProcess>();
+    const harness: PackageHarness = {
     root,
     scenarioPath,
     prefix,
@@ -142,7 +143,9 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
     readScenario: async () => JSON.parse(await readFile(scenarioPath, "utf8")) as Scenario,
     writeScenario: async (mutator) => {
       const current = JSON.parse(await readFile(scenarioPath, "utf8")) as Scenario;
-      await writeFile(scenarioPath, `${JSON.stringify(mutator(current))}\n`, "utf8");
+      const temporary = `${scenarioPath}.${process.pid}.${Date.now()}.tmp`;
+      await writeFile(temporary, `${JSON.stringify(mutator(current))}\n`, "utf8");
+      await rename(temporary, scenarioPath);
     },
     run: async (name, args = [], options = {}) => {
       const result = await execFileAsync(harness.bin(name), [...args], {
@@ -172,9 +175,13 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
       if (!root.startsWith(`${tmpdir()}/agent-board-e2e-`)) throw new Error("Refusing cleanup outside harness temp root");
       await rm(root, { recursive: true, force: true });
     },
-  };
-  await chmod(join(fixtures, "fake-codex.mjs"), 0o755);
-  await chmod(join(fixtures, "fake-ghostty.mjs"), 0o755);
-  await chmod(join(fixtures, "fake-osascript.mjs"), 0o755);
-  return harness;
+    };
+    await chmod(join(fixtures, "fake-codex.mjs"), 0o755);
+    await chmod(join(fixtures, "fake-ghostty.mjs"), 0o755);
+    await chmod(join(fixtures, "fake-osascript.mjs"), 0o755);
+    return harness;
+  } catch (error) {
+    await rm(root, { recursive: true, force: true });
+    throw error;
+  }
 }

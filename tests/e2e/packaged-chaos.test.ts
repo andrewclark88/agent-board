@@ -3,28 +3,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 
 import { createPackageHarness, type PackageHarness } from "./support/package-harness.js";
-
-interface Row { sessionId: string; label: string; glyph: string; status: string; }
-
-async function rows(harness: PackageHarness): Promise<Row[]> {
-  const result = await harness.run("agents", ["--json"]);
-  assert.equal(result.code, 0, result.stderr);
-  return (JSON.parse(result.stdout) as { sessions: Row[] }).sessions;
-}
-
-async function waitForRow(harness: PackageHarness, predicate: (row: Row) => boolean, timeoutMs = 2_000): Promise<Row> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const row = (await rows(harness)).find(predicate);
-      if (row) return row;
-    } catch {
-      // A concurrent launcher transition may briefly hold the state lock.
-    }
-    await new Promise<void>((resolve) => setTimeout(resolve, 20));
-  }
-  throw new Error(`Timed out waiting for row: ${JSON.stringify(await rows(harness))}`);
-}
+import { readBoardRows, waitForBoardRow } from "./support/board.js";
 
 async function assertCanonicalState(harness: PackageHarness): Promise<void> {
   const sessionDir = `${harness.env.AGENT_BOARD_STATE_DIR}/v1/sessions`;
@@ -39,16 +18,15 @@ test("killing the owned app-server projects bounded error evidence without corru
   const harness = await createPackageHarness({ codex: { status: "working" } });
   const launcher = harness.start("agent-codex");
   try {
-    await waitForRow(harness, (row) => row.glyph === "●");
+    await waitForBoardRow(harness, (row) => row.glyph === "●");
     await harness.writeScenario((value) => ({ ...value, codex: { ...value.codex, killServer: true } }));
-    const failed = await waitForRow(harness, (row) => row.glyph === "×", 3_000);
+    const failed = await waitForBoardRow(harness, (row) => row.glyph === "×", 3_000);
     assert.equal(failed.status, "error");
     const exit = await launcher.exit;
     assert.equal(exit.code, 1);
     await assertCanonicalState(harness);
   } finally {
     if (launcher.child.exitCode === null) launcher.child.kill("SIGTERM");
-    await launcher.exit;
     await harness.close();
   }
 });
@@ -59,9 +37,9 @@ test("snapshot loss and restoration yields a diagnostic then repairs the canonic
     const named = await harness.run("agent-name", ["recovery"]);
     assert.equal(named.code, 0, named.stderr);
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: false } }));
-    await waitForRow(harness, (row) => row.glyph === "?");
+    await waitForBoardRow(harness, (row) => row.glyph === "?");
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: true } }));
-    await waitForRow(harness, (row) => row.glyph === "○");
+    await waitForBoardRow(harness, (row) => row.glyph === "○");
     const scenario = await harness.readScenario();
     assert.equal(scenario.ghostty.terminals["term-one"]?.title, "○ recovery");
     await assertCanonicalState(harness);
@@ -74,16 +52,15 @@ test("launcher termination interrupts an active TUI and never records completion
   const harness = await createPackageHarness({ codex: { status: "working" } });
   const launcher = harness.start("agent-codex");
   try {
-    await waitForRow(harness, (row) => row.glyph === "●");
+    await waitForBoardRow(harness, (row) => row.glyph === "●");
     launcher.child.kill("SIGTERM");
     const exit = await launcher.exit;
     assert.equal(exit.code, 143);
-    const current = await rows(harness);
+    const current = await readBoardRows(harness);
     assert.equal(current[0]?.glyph === "✓", false);
     await assertCanonicalState(harness);
   } finally {
     if (launcher.child.exitCode === null) launcher.child.kill("SIGTERM");
-    await launcher.exit;
     await harness.close();
   }
 });

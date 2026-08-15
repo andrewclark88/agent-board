@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-packaged-e2e
 kind: feature
-stage: review
+stage: done
 tags: [e2e-test, integration]
 parent: epic-operational-readiness
 depends_on: [epic-operational-readiness-doctor-command]
@@ -257,15 +257,45 @@ done without re-review.
 
 ## Implementation notes
 - Execution capability: GPT-5.6 inline feature owner; five child checkpoints implemented sequentially because all journeys share one package/process harness.
-- Review weight: standard, with independent feature review still required.
+- Review weight: standard; one independent cross-model pass completed.
 - Files changed: `src/integrations/command-config.ts`; command composition and Ghostty command seams; `tests/e2e/support/package-harness.ts`; three out-of-process executable fixtures; four packaged e2e suites; two opt-in integration probes; package scripts; five child story records.
 - Tests added: packed install/source-free prefix, all four bins, title/board parity, managed lifecycle, acknowledgement/unregister, doctor/failure/degradation, deterministic chaos, installed Codex schema compatibility, and disposable Ghostty identity/title safety.
 - Simplification: no Docker daemon, tmux, shell evaluation, source imports in product assertions, random chaos, PID guesses, or broad cleanup; fixture processes use argv and private scenario files.
 - Discrepancies from design: Docker Compose was replaced by executable-process mocks because the external boundaries are local macOS processes; Codex completion after input explicitly includes the input-resolved edge; Ghostty clear-title verification checks marker removal because shell-derived title restoration is expected.
-- Adjacent issues parked: none.
+- Adjacent issue discovered and drained: `story-fix-lock-contention-silent-exit`.
 
 ## Integrated verification
 - `npm run typecheck` passes.
 - `npm run build` passes.
-- Focused packaged e2e and integration command run passes: 7 passed, 2 explicit opt-in skips.
+- Focused packaged e2e plus lock regression passes: 8 passed.
+- Uncontended full suite passes: 159 passed, 0 failed, 2 explicit opt-in skips.
 - Child checkpoints `epic-operational-readiness-packaged-e2e-infra`, `...-golden`, `...-failure`, `...-chaos`, and `...-live` are all `stage: done` with acceptance evidence.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with fixes.
+
+**Blockers resolved**:
+
+- The packaged suite exposed a real production lock bug. The focused standalone
+  repair now keeps retry timers referenced, enforces a finite acquisition bound,
+  and proves a contending process reports `LOCK_TIMEOUT` instead of exiting zero
+  without output.
+- Removed the chaos helper's blanket catch and consolidated packaged board reads
+  into one strict helper that rejects empty successful output.
+
+**Important fixes**:
+
+- Scenario writers now publish through temp-file rename, preventing fixture
+  readers from observing torn JSON.
+- `npm test` rebuilds first, so `npm pack` cannot validate stale `dist` output.
+- Harness creation removes its private temp root when pack or install setup
+  fails; ordinary teardown retains bounded TERM-to-KILL ownership.
+- The packaged doctor assertion now covers runtime, state, Codex, and Ghostty.
+- Test finalizers delegate process shutdown to the bounded harness rather than
+  awaiting a child indefinitely before cleanup.
+
+**Nits adjudicated**: direct-child signaling is sufficient because the product
+launcher owns and cleans its descendants; retained compact harness error-code
+normalization because it is test-only and all asserted failures include bounded
+stderr. Standard review weight: one pass, receiver fixes, no re-review.

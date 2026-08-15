@@ -21,7 +21,7 @@ test("a contending process stays alive and reports the bounded lock timeout", as
   ].join("\n");
 
   try {
-    const result = await execFileAsync(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", script], {
+    const result: { code?: number; stdout?: string; stderr?: string } = await execFileAsync(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", script], {
       cwd: process.cwd(),
       timeout: 2_000,
     }).catch((error: unknown) => error as { code?: number; stdout?: string; stderr?: string });

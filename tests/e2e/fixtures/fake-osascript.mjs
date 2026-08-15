@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, renameSync, writeFileSync } from "node:fs";
 
 const scenarioPath = process.env.AGENT_BOARD_E2E_SCENARIO;
 if (!scenarioPath) {
@@ -12,7 +12,9 @@ function load() {
 }
 
 function save(value) {
-  writeFileSync(scenarioPath, `${JSON.stringify(value)}\n`, "utf8");
+  const temporary = `${scenarioPath}.${process.pid}.tmp`;
+  writeFileSync(temporary, `${JSON.stringify(value)}\n`, "utf8");
+  renameSync(temporary, scenarioPath);
 }
 
 function fail(message, code = 1) {

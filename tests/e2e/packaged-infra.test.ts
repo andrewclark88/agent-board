@@ -20,6 +20,8 @@ test("packed install exposes source-free public bins over isolated executable bo
 
     const doctor = await harness.run("agent-board", ["doctor"]);
     assert.equal(doctor.code, 0, doctor.stderr);
+    assert.match(doctor.stdout, /Runtime/u);
+    assert.match(doctor.stdout, /State/u);
     assert.match(doctor.stdout, /Codex/u);
     assert.match(doctor.stdout, /Ghostty/u);
   } finally {

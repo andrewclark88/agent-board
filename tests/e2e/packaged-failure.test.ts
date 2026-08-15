@@ -1,25 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createPackageHarness, type PackageHarness } from "./support/package-harness.js";
-
-interface Row { sessionId: string; label: string; glyph: string; status: string; diagnostics: string[]; }
-
-async function rows(harness: PackageHarness): Promise<Row[]> {
-  const result = await harness.run("agents", ["--json"]);
-  assert.equal(result.code, 0, result.stderr);
-  return (JSON.parse(result.stdout) as { sessions: Row[] }).sessions;
-}
-
-async function waitForRow(harness: PackageHarness, predicate: (row: Row) => boolean): Promise<Row> {
-  const deadline = Date.now() + 2_000;
-  while (Date.now() < deadline) {
-    const row = (await rows(harness)).find(predicate);
-    if (row) return row;
-    await new Promise<void>((resolve) => setTimeout(resolve, 20));
-  }
-  throw new Error(`Timed out waiting for row: ${JSON.stringify(await rows(harness))}`);
-}
+import { createPackageHarness } from "./support/package-harness.js";
+import { readBoardRows, waitForBoardRow } from "./support/board.js";
 
 test("packed failure journeys preserve actionable errors and retryable records", async () => {
   const harness = await createPackageHarness();
@@ -56,18 +39,17 @@ test("packed failure journeys preserve actionable errors and retryable records",
     result = await harness.run("agent-name", ["reporting"]);
     assert.equal(result.code, 0, result.stderr);
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: false } }));
-    const diagnostic = await waitForRow(harness, (row) => row.label === "reporting" && row.glyph === "?");
+    const diagnostic = await waitForBoardRow(harness, (row) => row.label === "reporting" && row.glyph === "?");
     assert.equal(diagnostic.status, "diagnostic");
     assert.match(diagnostic.diagnostics.join(" "), /terminal is unknown/u);
 
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: true, focusedTerminalId: "term-one" } }));
     launcher = harness.start("agent-codex");
-    await waitForRow(harness, (row) => row.label === "reporting" && row.status === "error");
+    await waitForBoardRow(harness, (row) => row.label === "reporting" && row.status === "error");
     launcher.child.kill("SIGTERM");
     await launcher.exit;
   } finally {
     if (launcher && launcher.child.exitCode === null) launcher.child.kill("SIGTERM");
-    if (launcher) await launcher.exit;
     await harness.close();
   }
 });
@@ -84,11 +66,11 @@ test("failed title clear retains a record for a healthy retry", async () => {
     result = await harness.run("agent-board", ["unregister", sessionId]);
     assert.equal(result.code, 1);
     assert.match(result.stderr, /rejected the title action/u);
-    assert.equal((await rows(harness)).length, 1);
+    assert.equal((await readBoardRows(harness)).length, 1);
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, titleActionFails: false } }));
     result = await harness.run("agent-board", ["unregister", sessionId]);
     assert.equal(result.code, 0, result.stderr);
-    assert.equal((await rows(harness)).length, 0);
+    assert.equal((await readBoardRows(harness)).length, 0);
   } finally {
     await harness.close();
   }
