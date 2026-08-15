@@ -119,3 +119,25 @@ test("listSessions takes one shared snapshot and the empty store takes none", as
   assert.deepEqual(emptyRows, []);
   assert.equal(emptyTerminal.snapshotCalls, 0);
 });
+
+test("listSessions omits and removes terminals missing from a valid snapshot", async () => {
+  const visibleIdentity = { ...identity, terminalId: "visible-term" };
+  const missingIdentity = { ...identity, terminalId: "missing-term" };
+  const store = new MemoryStore([
+    record("visible", "visible", at, visibleIdentity),
+    record("missing", "missing", at, missingIdentity),
+  ]);
+
+  const rows = await listSessions({
+    store,
+    terminal: new FakeTerminal({
+      visible: [visibleIdentity],
+      enumerableTerminalIds: [visibleIdentity.terminalId],
+    }),
+    clock: { now: () => new Date(later) },
+    workingFreshForMs: 60_000,
+  });
+
+  assert.deepEqual(rows.map((row) => row.sessionId), ["visible"]);
+  assert.equal(await store.get("missing"), null);
+});

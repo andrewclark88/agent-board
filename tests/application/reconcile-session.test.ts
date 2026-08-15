@@ -22,7 +22,10 @@ function record(sessionId: string, terminal: Partial<SessionRecord["terminal"]> 
 
 class MemoryStore implements SessionStore {
   readonly records = new Map<string, SessionRecord>();
-  constructor(values: readonly SessionRecord[]) { for (const value of values) this.records.set(value.sessionId, structuredClone(value)); }
+  constructor(
+    values: readonly SessionRecord[],
+    private readonly removeFailures = new Set<string>(),
+  ) { for (const value of values) this.records.set(value.sessionId, structuredClone(value)); }
   async get(id: string) { return structuredClone(this.records.get(id) ?? null); }
   async list() { return [...this.records.values()].sort((a, b) => a.sessionId.localeCompare(b.sessionId)).map((value) => structuredClone(value)); }
   async create(value: SessionRecord) { this.records.set(value.sessionId, structuredClone(value)); return structuredClone(value); }
@@ -34,7 +37,10 @@ class MemoryStore implements SessionStore {
     this.records.set(id, saved);
     return structuredClone(saved);
   }
-  async remove(id: string) { this.records.delete(id); }
+  async remove(id: string) {
+    if (this.removeFailures.has(id)) throw new Error(`remove failed: ${id}`);
+    this.records.delete(id);
+  }
 }
 
 class FakeTerminal implements ReconciliationTerminalPort {
@@ -93,6 +99,58 @@ test("hidden and missing records are diagnostic and receive no title write", asy
   const missing = await reconcileSession(dependencies(store, missingTerminal), "missing");
   assert.equal(missing.record.terminal.presence, "missing");
   assert.equal(missing.titleRendered, false);
+});
+
+test("all-session reconciliation retains visible and hidden sessions while pruning missing sessions", async () => {
+  const visibleIdentity = { ...identity, terminalId: "visible-term" };
+  const hiddenIdentity = { ...identity, terminalId: "hidden-term" };
+  const missingIdentity = { ...identity, terminalId: "missing-term" };
+  const store = new MemoryStore([
+    record("visible", visibleIdentity),
+    record("hidden", hiddenIdentity),
+    record("missing", missingIdentity),
+  ]);
+  const terminal = new FakeTerminal({
+    visible: [visibleIdentity],
+    enumerableTerminalIds: [visibleIdentity.terminalId, hiddenIdentity.terminalId],
+  });
+
+  const results = await reconcileSessions(dependencies(store, terminal));
+
+  assert.deepEqual(results.map((result) => result.record.sessionId), ["hidden", "visible"]);
+  assert.equal(results[0]?.record.terminal.presence, "hidden");
+  assert.equal(results[1]?.record.terminal.presence, "visible");
+  assert.equal(await store.get("missing"), null);
+  assert.notEqual(await store.get("hidden"), null);
+});
+
+test("failed missing-session removal keeps its diagnostic and does not block other records", async () => {
+  const missingIdentity = { ...identity, terminalId: "missing-term" };
+  const visibleIdentity = { ...identity, terminalId: "visible-term" };
+  const store = new MemoryStore([
+    record("missing", missingIdentity),
+    record("visible", visibleIdentity),
+  ], new Set(["missing"]));
+
+  const results = await reconcileSessions(dependencies(store, new FakeTerminal(snapshot(visibleIdentity))));
+
+  assert.deepEqual(results.map((result) => result.record.sessionId), ["missing", "visible"]);
+  assert.equal(results[0]?.record.terminal.presence, "missing");
+  assert.notEqual(await store.get("missing"), null);
+  assert.equal(results[1]?.titleRendered, true);
+});
+
+test("all-session snapshot failure retains every session as unknown", async () => {
+  const store = new MemoryStore([record("a"), record("b")]);
+  const terminal: ReconciliationTerminalPort = {
+    async snapshot() { throw new AgentBoardError("ADAPTER_FAILURE", "disconnected"); },
+    async setTitle() {}, async clearTitle() {},
+  };
+
+  const results = await reconcileSessions(dependencies(store, terminal));
+
+  assert.deepEqual(results.map((result) => result.record.terminal.presence), ["unknown", "unknown"]);
+  assert.equal((await store.list()).length, 2);
 });
 
 test("snapshot failure records unknown for a single session and rethrows", async () => {

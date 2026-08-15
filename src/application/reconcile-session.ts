@@ -247,10 +247,16 @@ export async function reconcileSessions(
   const results: ReconcileResult[] = [];
   for (const record of records) {
     try {
-      results.push(await reconcileLoaded(dependencies, record, snapshot));
+      const result = await reconcileLoaded(dependencies, record, snapshot);
+      if (result.record.terminal.presence === "missing") {
+        await dependencies.store.remove(record.sessionId);
+        continue;
+      }
+      results.push(result);
     } catch (error) {
-      // A target race is a visible diagnostic for this record; other records
-      // still receive the same atomic snapshot and should not be abandoned.
+      // A target race or failed cleanup is a visible diagnostic for this
+      // record; other records still receive the same atomic snapshot and
+      // should not be abandoned.
       const current = await dependencies.store.get(record.sessionId);
       if (current !== null) results.push({ record: current, titleRendered: false });
       else if (!(error instanceof AgentBoardError && error.code === "NOT_FOUND")) throw error;

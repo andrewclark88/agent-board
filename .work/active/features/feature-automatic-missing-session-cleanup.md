@@ -1,7 +1,7 @@
 ---
 id: feature-automatic-missing-session-cleanup
 kind: feature
-stage: implementing
+stage: review
 tags: [state, cli, integration]
 parent: null
 depends_on: [epic-ghostty-project-surface-title-reconciliation, epic-swarm-attention-board-board-command]
@@ -187,3 +187,34 @@ registration remains.
 
 No child stories are needed; the behavior, tests, and documentation form one
 small, tightly coupled implementation stride.
+
+## Implementation notes
+
+- Execution capability: inline frontier implementation; the feature is a
+  bounded reconciliation change whose safety depends on keeping code and tests
+  under one owner.
+- Review weight: standard, from `.work/CONVENTIONS.md`.
+- Files changed: `src/application/reconcile-session.ts`,
+  `tests/application/reconcile-session.test.ts`,
+  `tests/application/list-sessions.test.ts`,
+  `tests/e2e/packaged-golden.test.ts`, `README.md`, `docs/SPEC.md`, and
+  `docs/ARCHITECTURE.md`.
+- Tests added/changed: batch reconciliation now proves visible/hidden retention,
+  authoritative missing removal, removal-failure recovery, and snapshot-failure
+  retention; the public board test proves same-response omission; the packaged
+  golden journey closes a terminal and proves repeated `agents` reads stay
+  clean without unregister.
+- Simplification: reused the existing shared snapshot, presence classifier,
+  store removal port, and per-record recovery path; added no lifecycle type,
+  timer, daemon, command, or configuration.
+- Discrepancies from design: none.
+- Adjacent issues parked: none. A future continuously refreshing board is
+  already within the deferred product horizon and is not required for this
+  cleanup contract.
+
+## Verification evidence
+
+- `npm run typecheck`
+- `npm test` — full suite green, including packaged end-to-end journeys
+- Focused application reconciliation/list tests — 11 passed
+- Focused packaged golden journey — passed against the packed install

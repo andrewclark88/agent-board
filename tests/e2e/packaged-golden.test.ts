@@ -81,11 +81,15 @@ test("packed golden journeys preserve board/title parity and independent session
     assert.match(result.stdout, /Acknowledged/u);
     await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "○");
 
-    result = await harness.run("agent-board", ["unregister", completed.sessionId]);
-    assert.equal(result.code, 0, result.stderr);
+    await harness.writeScenario((value) => {
+      const { "term-one": _closed, ...terminals } = value.ghostty.terminals;
+      return { ...value, ghostty: { ...value.ghostty, focusedTerminalId: "term-two", terminals } };
+    });
     currentRows = await readBoardRows(harness);
     assert.deepEqual(currentRows.map((row) => row.label), ["acquisition"]);
-    scenario = await waitForScenario(harness, (candidate) => candidate.ghostty.terminals["term-one"]?.title === "");
+    currentRows = await readBoardRows(harness);
+    assert.deepEqual(currentRows.map((row) => row.label), ["acquisition"]);
+    scenario = await harness.readScenario();
     assert.equal(scenario.ghostty.terminals["term-two"]?.title, "○ acquisition");
   } finally {
     if (launcher) launcher.child.kill("SIGTERM");
