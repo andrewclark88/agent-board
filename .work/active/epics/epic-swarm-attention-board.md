@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board
 kind: epic
-stage: review
+stage: done
 tags: [cli, state]
 parent: null
 depends_on: [epic-ghostty-project-surface, epic-managed-codex-observation]
@@ -132,3 +132,32 @@ feature then consumes those conventions while adding carefully targeted writes.
 - Both child features completed one standard independent review pass and green
   integrated verification. The assembled attention-board capability is ready
   for aggregate epic review.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve
+
+**Blockers**: none.
+
+**Important follow-ups parked**:
+
+- `idea-board-snapshot-failure-cause` — retain the command-wide Ghostty snapshot
+  cause alongside truthful per-row unknown presence.
+- `idea-ack-committed-reconciliation-message` — distinguish committed
+  acknowledgement from subsequent reconciliation failure in operator output.
+
+Both are message-contract refinements. The implemented degradation behavior,
+state transitions, and safety boundaries are correct and meet this epic's V1
+scope, so they do not block closure.
+
+**Nits adjudicated**: retained eager per-read title repair until measured
+latency warrants a dirty check; retained idempotent acknowledgement output,
+validated-UUID target grammar, and the acknowledged terminal-cell-width limit.
+Other defensive annotations are harmless and do not justify churn.
+
+**Notes**: Standard weight, one independent cross-model aggregate pass. The
+review verified shared projection parity, error/liveness degradation,
+frontmost/exact target safety, acknowledgement/unregister interaction, installed
+bin behavior, and the full epic acceptance boundary. The receiver accepted both
+non-blocking message gaps into backlog and closed without re-review on the
+existing uncontended 138/138 verification.
