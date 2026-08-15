@@ -259,7 +259,8 @@ export async function reconcileSessions(
       // should not be abandoned.
       const current = await dependencies.store.get(record.sessionId);
       if (current !== null) results.push({ record: current, titleRendered: false });
-      else if (!(error instanceof AgentBoardError && error.code === "NOT_FOUND")) throw error;
+      // If the record is gone, cleanup (or a concurrent removal) reached the
+      // intended durable state even when a later lock-release step failed.
     }
   }
   return results;

@@ -25,6 +25,7 @@ class MemoryStore implements SessionStore {
   constructor(
     values: readonly SessionRecord[],
     private readonly removeFailures = new Set<string>(),
+    private readonly postRemoveFailures = new Set<string>(),
   ) { for (const value of values) this.records.set(value.sessionId, structuredClone(value)); }
   async get(id: string) { return structuredClone(this.records.get(id) ?? null); }
   async list() { return [...this.records.values()].sort((a, b) => a.sessionId.localeCompare(b.sessionId)).map((value) => structuredClone(value)); }
@@ -40,6 +41,7 @@ class MemoryStore implements SessionStore {
   async remove(id: string) {
     if (this.removeFailures.has(id)) throw new Error(`remove failed: ${id}`);
     this.records.delete(id);
+    if (this.postRemoveFailures.has(id)) throw new Error(`post-remove failed: ${id}`);
   }
 }
 
@@ -138,6 +140,21 @@ test("failed missing-session removal keeps its diagnostic and does not block oth
   assert.equal(results[0]?.record.terminal.presence, "missing");
   assert.notEqual(await store.get("missing"), null);
   assert.equal(results[1]?.titleRendered, true);
+});
+
+test("a post-delete removal failure omits the retired session and continues reconciliation", async () => {
+  const removedIdentity = { ...identity, terminalId: "removed-term" };
+  const visibleIdentity = { ...identity, terminalId: "visible-term" };
+  const store = new MemoryStore([
+    record("removed", removedIdentity),
+    record("visible", visibleIdentity),
+  ], new Set(), new Set(["removed"]));
+
+  const results = await reconcileSessions(dependencies(store, new FakeTerminal(snapshot(visibleIdentity))));
+
+  assert.deepEqual(results.map((result) => result.record.sessionId), ["visible"]);
+  assert.equal(await store.get("removed"), null);
+  assert.equal(results[0]?.titleRendered, true);
 });
 
 test("all-session snapshot failure retains every session as unknown", async () => {
