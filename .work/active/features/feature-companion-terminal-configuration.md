@@ -1,7 +1,7 @@
 ---
 id: feature-companion-terminal-configuration
 kind: feature
-stage: review
+stage: done
 tags: [prose]
 parent: null
 depends_on: [epic-operational-readiness]
@@ -15,7 +15,7 @@ updated: 2026-08-15
 
 ## Brief
 
-Add copyable, version-controlled examples for Andrew's Ghostty tab workflow and
+Add copyable merge fragments for Andrew's Ghostty tab workflow and
 Codex status line. Explain how the two surfaces divide responsibility: Agent
 Board owns the registered tab title for swarm attention, while the Codex status
 line shows project, branch, model/reasoning, and context usage inside the tab.
@@ -72,3 +72,19 @@ configuration parser.
   the earlier workflow but excluded from the recommended supervised-tab fragment
   because it conflicts with Agent Board title ownership.
 - Adjacent issues parked: none.
+
+## Review (2026-08-15)
+
+**Verdict**: Approve with fixes.
+
+**Blockers**: none.
+
+**Important fixes**: standardized “copyable merge fragment” language so readers
+do not mistake either example for a complete replacement file. Regenerated the
+enforced knowledge index so the new configuration guide is discoverable.
+
+**Nits adjudicated**: retained indexed planning frontmatter because the guide
+locks a product-facing ownership decision; kept rollback and manual-merge
+instructions explicit; verified all links and Ghostty syntax.
+
+Standard review weight: one independent pass, receiver fixes, no re-review.

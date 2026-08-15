@@ -6,9 +6,9 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 2
-generated_at: 2026-08-15T08:37:21Z
+generated_at: 2026-08-15T13:59:30Z
 generated_from: frontmatter
-total_docs: 16
+total_docs: 17
 
 documents:
   # ── planning ──────────────────────────────────────────────────────────────
@@ -20,6 +20,14 @@ documents:
     updated: 2026-08-15
     status: locked
     consumer_hint: Read this before implementing or changing Agent Board modules, process topology, state contracts, or external adapters.
+
+  - path: docs/configuration.md
+    title: Companion terminal configuration
+    type: design
+    kind: planning
+    updated: 2026-08-15
+    status: locked
+    consumer_hint: Read this when configuring Ghostty tabs and the Codex status line for the recommended Agent Board workflow.
 
   - path: docs/VISION.md
     title: Agent Board vision

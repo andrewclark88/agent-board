@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-15T08:37:21Z'
+generated_at: '2026-08-15T13:59:30Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -79,6 +79,19 @@ documents:
     - The software control plane must prove value before GUI, remote, or hardware surfaces are commissioned.
     - Vendor neutrality is preserved through adapter boundaries, not simultaneous V1 integrations.
     - Semantic actions require native capabilities and are outside the first proof.
+  docs/configuration.md:
+    summary: 'Agent Board owns the compact Ghostty tab title, while Codex owns the detailed in-tab status
+      line. Minimal merge-only examples preserve Andrew''s tab and prompt-navigation workflow without
+      copying or mutating full personal configuration files.
+
+      '
+    decisions:
+    - Agent Board owns the complete title of each registered Ghostty tab.
+    - The Codex status line shows project, branch, model/reasoning, and context usage inside the active
+      tab.
+    - Copyable examples are merged manually and never overwrite a complete personal configuration.
+    - The Ghostty manual-title prompt is not used for supervised tabs because it conflicts with machine
+      title ownership.
   docs/project-brief.md:
     summary: Historical checkpoint for the earlier daemon, tmux, multi-agent, simulated-device, and premium-hardware
       concept. Current product truth lives in VISION, SPEC, ARCHITECTURE, PRINCIPLES, and the verified

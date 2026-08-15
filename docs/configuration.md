@@ -32,7 +32,7 @@ detailed status line inside the terminal.
 
 ## Configure Ghostty
 
-The copyable fragment is
+The copyable merge fragment is
 [`examples/ghostty/agent-board.conf`](../examples/ghostty/agent-board.conf).
 
 Merge that fragment into your active Ghostty configuration. Andrew's current
@@ -113,7 +113,7 @@ Preserve any different bell choices you prefer, but keep `no-title` and omit
 
 ## Configure the Codex status line
 
-The reference fragment is
+The copyable merge fragment is
 [`examples/codex/status-line.toml`](../examples/codex/status-line.toml).
 
 The safest setup path uses Codex itself:
