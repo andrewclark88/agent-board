@@ -5,8 +5,8 @@
 #   1 = grace (missing v2 fields produce warnings, not errors)
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
-schema_version: 1
-generated_at: 2026-08-14T22:32:21Z
+schema_version: 2
+generated_at: 2026-08-15T03:03:42Z
 generated_from: frontmatter
 total_docs: 16
 
@@ -42,7 +42,7 @@ documents:
     type: research-plan
     kind: planning
     updated: 2026-08-14
-    status: draft
+    status: locked
     consumer_hint: Read this for the completed pre-architecture research decisions and the entry conditions for deliberately deferred follow-up research.
 
   - path: docs/SPEC.md

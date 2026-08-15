@@ -1,8 +1,8 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-14T22:32:21Z'
+generated_at: '2026-08-15T03:03:42Z'
 generated_from: frontmatter
-schema_version: 1
+schema_version: 2
 documents:
   docs/ARCHITECTURE.md:
     summary: 'Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no
@@ -27,8 +27,8 @@ documents:
       focused, with an explicit acknowledgement command as fallback.
     - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than
       being reclassified as native state.
-    - V1 exposes observation and naming only; focus navigation, notifications, semantic controls, GUI,
-      remote, and hardware remain outside the runtime boundary.
+    - V1 exposes observation, naming, and board administration, with no semantic agent actions; focus
+      navigation, notifications, GUI, remote, and hardware remain outside the runtime boundary.
   docs/PRINCIPLES.md:
     summary: 'Agent Board optimizes for calm, trustworthy attention routing with minimal workflow friction.
       These principles govern how evidence, labels, adapters, future surfaces, and semantic capabilities
@@ -90,7 +90,8 @@ documents:
       '
   docs/research-plan.md:
     summary: 'Scout and both focused pre-architecture engagements are complete. Managed remote TUI is
-      accepted as the V1 default, so no research blocker remains before delivery decomposition.
+      accepted as the V1 default, and the terminal V1 delivery arc is now implemented and verified. Follow-up
+      research remains deliberately deferred until its entry conditions are met.
 
       '
     decisions:
