@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board-board-command
 kind: feature
-stage: drafting
+stage: implementing
 tags: [cli, state]
 parent: epic-swarm-attention-board
 depends_on: []
@@ -61,3 +61,245 @@ launch agents, add a daemon, or navigate to a tab.
   diagnostics, and JSON output.
 
 <!-- The /feature-design pass fills interfaces, implementation units, and tests. -->
+
+## Design decisions
+
+- **Partial failure boundary**: schema/store validation remains fail-fast for the
+  whole command. Ghostty snapshot/action failures use the reconciliation result
+  already persisted for each record and become row diagnostics.
+- **Duplicate labels**: keep ordinary rows identical to the product sample. Only
+  colliding labels receive a bracketed, shortest-unique session-ID prefix (at
+  least eight characters) for visual disambiguation; JSON always carries the
+  full ID.
+- **Confidence detail**: human rows annotate ordinary mode and every confidence
+  below authoritative. Titles continue to use only the canonical compact glyph
+  plus label.
+- **Empty state**: a valid empty store renders the board heading plus `No
+  registered agents.` and does not require a Ghostty snapshot.
+
+## Architectural choice
+
+Use an application query that converts canonical reconciliation results into an
+immutable `BoardRow` read model, followed by pure human/JSON renderers and a thin
+CLI/composition root. This keeps Ghostty and filesystem behavior behind existing
+ports while making ordering, diagnostics, and output contracts testable without
+processes or a terminal.
+
+Two alternatives were rejected. Rendering directly inside the CLI would couple
+state truth, AppleScript failure behavior, and string layout. Persisting a
+materialized board snapshot would create a second source of truth and require a
+daemon or invalidation policy the first proof has not earned.
+
+The trickiest unit is row construction: it must preserve fail-fast canonical
+validation, retain per-record repair evidence, add board-only confidence/mode
+detail, disambiguate duplicate labels, and sort independently of changing state.
+
+## Implementation Units
+
+### Unit 1: Board row query and projection
+
+**File**: `src/application/list-sessions.ts`
+
+```ts
+export interface BoardRow {
+  readonly sessionId: string;
+  readonly label: string;
+  readonly displayLabel: string;
+  readonly glyph: ProjectionGlyph;
+  readonly status: ProjectionStatus;
+  readonly diagnostics: readonly string[];
+  readonly confidence: ConfidenceLevel;
+  readonly agentMode: AgentMode;
+  readonly observedAt: string;
+  readonly titleRendered: boolean;
+}
+
+export interface ListSessionsDependencies extends ReconcileDependencies {}
+
+export function buildBoardRows(
+  results: readonly ReconcileResult[],
+  options: ProjectionOptions,
+): readonly BoardRow[];
+
+export function listSessions(
+  dependencies: ListSessionsDependencies,
+): Promise<readonly BoardRow[]>;
+```
+
+**Implementation Notes**:
+
+- Call `reconcileSessions` once. Add its missing empty-store fast path so the
+  canonical list read returns immediately without an AppleScript snapshot; do
+  not introduce a second preflight store read and registration race.
+- Project every reconciled latest record with `projectSession`; never duplicate
+  glyph/status precedence.
+- Add `title is not synchronized` only when presence is visible and
+  `titleRendered` is false. Hidden/missing/unknown already carry their truthful
+  terminal diagnostic.
+- Add ordinary-mode and non-authoritative-confidence annotations without
+  duplicating a projection diagnostic. Keep adapter detail bounded by the
+  already-validated record.
+- Group exact labels, compute a shortest unique session-ID prefix of at least
+  eight characters for collisions, then sort by raw label, `createdAt`, and full
+  session ID. State/glyph changes never affect position.
+- Freeze rows, diagnostic arrays, and the returned array.
+
+**Acceptance Criteria**:
+
+- [ ] Every row's glyph/status derives from the same `projectSession` policy used
+  by tab titles.
+- [ ] Visible title-repair failure, terminal absence, ordinary mode, and
+  non-authoritative evidence remain distinguishable.
+- [ ] Duplicate labels are visually distinct; unique-label rows remain uncluttered.
+- [ ] Ordering is stable across state transitions, and an empty store performs no
+  terminal call.
+
+### Unit 2: Stable terminal and JSON rendering
+
+**File**: `src/cli/output.ts`
+
+```ts
+export interface BoardEnvelope {
+  readonly schemaVersion: 1;
+  readonly sessions: readonly BoardRow[];
+}
+
+export function renderBoard(rows: readonly BoardRow[]): string;
+export function renderBoardJson(rows: readonly BoardRow[]): string;
+export function formatCliError(error: unknown): string;
+```
+
+**Implementation Notes**:
+
+- Human output begins `AGENT BOARD`, pads the longest `displayLabel` in the
+  current result, renders user-facing status labels (`needs input`, not internal
+  enum spelling), and appends diagnostics in a terse bracketed suffix.
+- Empty output is `AGENT BOARD\n\nNo registered agents.\n`.
+- JSON is one newline-terminated object with `schemaVersion: 1` and the immutable
+  rows. Use `JSON.stringify`; never hand-escape user labels or diagnostics.
+- Keep output free of repo paths, prompt content, environment values, and tokens.
+
+**Acceptance Criteria**:
+
+- [ ] The five primary examples render exactly and diagnostics remain readable
+  without changing the glyph/label prefix.
+- [ ] Labels containing spaces, quotes, or Unicode are safe in both formats.
+- [ ] JSON preserves full session IDs, evidence fields, and title-sync state in a
+  versioned envelope.
+
+### Unit 3: `agents` command boundary
+
+**File**: `src/cli/agents.ts`
+
+```ts
+export interface AgentsCommandDependencies {
+  readonly list: () => Promise<readonly BoardRow[]>;
+  readonly stdout: Pick<NodeJS.WriteStream, "write">;
+  readonly stderr: Pick<NodeJS.WriteStream, "write">;
+}
+
+export function runAgents(
+  argv: readonly string[],
+  dependencies: AgentsCommandDependencies,
+): Promise<number>;
+
+export function main(argv?: readonly string[]): Promise<number>;
+```
+
+**Implementation Notes**:
+
+- Accept only no arguments or one `--json`; invalid grammar prints
+  `Usage: agents [--json]` and returns 2 before querying.
+- Query exactly once, route normal output to stdout, and print stable typed
+  diagnostics without stacks to stderr with exit 1.
+
+**Acceptance Criteria**:
+
+- [ ] Human and JSON modes call the same list operation and differ only in
+  rendering.
+- [ ] Invalid arguments and query failures have deterministic exit/output
+  behavior without a real store or Ghostty process.
+
+### Unit 4: Production composition and package entry point
+
+**Files**: `src/composition/create-agents.ts`, `package.json`
+
+```ts
+export interface AgentsCommand {
+  readonly list: () => Promise<readonly BoardRow[]>;
+}
+
+export interface AgentsCompositionOptions {
+  readonly store?: SessionStore;
+  readonly terminal?: ReconciliationTerminalPort;
+  readonly workingFreshForMs?: number;
+}
+
+export function createAgentsCommand(
+  options?: AgentsCompositionOptions,
+): AgentsCommand;
+```
+
+**Implementation Notes**:
+
+- Reuse one `JsonSessionStore`, `GhosttyClient`, real clock, and the same default
+  working freshness used by launcher/title composition.
+- Add `"agents": "dist/cli/agents.js"` to npm `bin`; add no framework or daemon.
+
+**Acceptance Criteria**:
+
+- [ ] The built package exposes an executable `dist/cli/agents.js` and injected
+  composition tests remain hermetic.
+
+## Implementation Order
+
+1. Board row query/projection — establishes the shared read model and hardest
+   correctness boundary.
+2. Pure human/JSON rendering — fixes the terminal contract against that model.
+3. CLI grammar — adds exit and stream behavior around the pure surfaces.
+4. Composition/bin — wires only already-tested units.
+
+No child stories are spawned: the four units are tightly coupled around one
+small read model and fit one implementation stride.
+
+## Testing
+
+### Unit tests: `tests/application/list-sessions.test.ts`
+
+- Use canonical records and `ReconcileResult` fixtures to test projection parity,
+  title-sync diagnostics, ordinary/corroborated/inferred annotations, duplicate
+  prefix extension, frozen results, and stable label/creation/ID ordering.
+- Exercise `listSessions` with fake store/terminal ports to prove one snapshot for
+  many records and per-record degradation. Extend reconciliation tests to prove
+  no snapshot for empty state.
+
+### Unit tests: `tests/cli/output.test.ts`
+
+- Snapshot exact five-state human output, empty output, aligned diagnostics,
+  duplicate-label display, and Unicode/JSON escaping.
+
+### Unit tests: `tests/cli/agents.test.ts`
+
+- Cover no-arg/`--json`, invalid grammar before list, one query per invocation,
+  typed and unknown failures, stream separation, and exit codes.
+
+### Integration verification
+
+- Run typecheck, build, and the full serialized suite; assert npm's `agents` bin
+  target exists after build. No live Ghostty or Codex process is required.
+
+## Risks
+
+- **Partial failure becomes silence**: `titleRendered: false` or adapter detail
+  could be discarded while rows still look healthy. **Fallback**: construct rows
+  only from `ReconcileResult` and contract-test every degradation class.
+- **Display ambiguity**: duplicate labels or prefixes could collide. **Fallback**:
+  extend prefixes until unique within the exact-label group, falling back to the
+  full ID.
+- **Unicode alignment**: `String.padEnd` counts code units, not terminal cells.
+  V1 optimizes for ordinary project labels and remains truthful if columns are
+  imperfect; add a width dependency only after observed need.
+- **Read latency**: title repair is synchronous and bounded per Ghostty action.
+  V1 favors immediate shared-store truth and no daemon; if measured multi-tab
+  latency becomes disruptive, retain rendering from reconciled results and move
+  repair scheduling behind the same query contract later.
