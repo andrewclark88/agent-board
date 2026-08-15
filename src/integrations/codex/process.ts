@@ -32,6 +32,7 @@ export interface CodexProcessHostOptions {
   readonly command?: string;
   readonly runner?: ProcessRunner;
   readonly spawn?: typeof nodeSpawn;
+  readonly kill?: typeof process.kill;
   readonly readinessTimeoutMs?: number;
   readonly shutdownGraceMs?: number;
   readonly maxStartupOutputBytes?: number;
@@ -96,12 +97,14 @@ function processExit(child: ChildProcess, diagnosticTail: () => string): Promise
 function forbiddenForwardedArgs(args: readonly string[]): string | undefined {
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
+    if (argument === "--") return argument;
     if (argument === "--remote" || argument.startsWith("--remote=")) return argument;
     if (argument === "--remote-auth" || argument.startsWith("--remote-auth=") || argument.startsWith("--remote-auth-")) return argument;
     if (argument === "--remote-url" || argument.startsWith("--remote-url=")) return argument;
     if ((argument === "-c" || argument === "--config") && args[index + 1]?.startsWith("tui.terminal_title=")) {
       return `${argument} ${args[index + 1]}`;
     }
+    if (argument.startsWith("--config=tui.terminal_title=") || argument.startsWith("-ctui.terminal_title=")) return argument;
     if (argument.startsWith("tui.terminal_title=")) return argument;
   }
   return undefined;
@@ -111,6 +114,7 @@ export class CodexProcessHost {
   private readonly command: string;
   private readonly runner: ProcessRunner;
   private readonly spawnProcess: typeof nodeSpawn;
+  private readonly killProcess: typeof process.kill;
   private readonly readinessTimeoutMs: number;
   private readonly shutdownGraceMs: number;
   private readonly maxStartupOutputBytes: number;
@@ -121,6 +125,7 @@ export class CodexProcessHost {
     this.command = options.command ?? "codex";
     this.runner = options.runner ?? new NodeProcessRunner();
     this.spawnProcess = options.spawn ?? nodeSpawn;
+    this.killProcess = options.kill ?? process.kill;
     this.readinessTimeoutMs = positive("readinessTimeoutMs", options.readinessTimeoutMs ?? DEFAULT_READINESS_TIMEOUT_MS);
     this.shutdownGraceMs = positive("shutdownGraceMs", options.shutdownGraceMs ?? DEFAULT_SHUTDOWN_GRACE_MS);
     this.maxStartupOutputBytes = positive("maxStartupOutputBytes", options.maxStartupOutputBytes ?? DEFAULT_STARTUP_OUTPUT_BYTES);
@@ -152,6 +157,7 @@ export class CodexProcessHost {
     if (typeof appServerPid !== "number" || !Number.isSafeInteger(appServerPid) || appServerPid <= 1) throw failure("Codex app-server did not expose a safe process id");
 
     let tail = "";
+    const managed = this.makeManagedChild(child, true, () => tail);
     let startupText = "";
     let startupBytes = 0;
     let endpoint: AppServerEndpoint | undefined;
@@ -193,7 +199,6 @@ export class CodexProcessHost {
       if (!hasLineBoundary && !hasCompleteLoopbackToken) return;
       try {
         endpoint = parseAdvertisedEndpoint(output);
-        const managed = this.makeManagedChild(child, true, () => tail);
         finishReady({ child: managed, endpoint });
       } catch (error) {
         startupError = error;
@@ -211,7 +216,7 @@ export class CodexProcessHost {
     try {
       return await ready;
     } catch (error) {
-      await this.killRaw(child, true);
+      try { await this.stop(managed); } catch { /* preserve the startup failure */ }
       throw error;
     } finally {
       signal.removeEventListener("abort", abort);
@@ -247,7 +252,7 @@ export class CodexProcessHost {
 
   private async stopOnce(child: ManagedChild): Promise<ProcessExit> {
     const send = (signal: NodeJS.Signals): void => {
-      try { process.kill(child.processGroup ? -child.pid : child.pid, signal); }
+      try { this.killProcess(child.processGroup ? -child.pid : child.pid, signal); }
       catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
       }
@@ -256,6 +261,8 @@ export class CodexProcessHost {
       child.exited,
       new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), milliseconds)),
     ]);
+    const alreadyExited = await wait(0);
+    if (alreadyExited !== undefined) return alreadyExited;
     try {
       send("SIGTERM");
     } catch (error) {
@@ -267,13 +274,5 @@ export class CodexProcessHost {
     const killed = await wait(this.shutdownGraceMs);
     if (killed !== undefined) return killed;
     throw failure(`Codex child ${child.pid} did not exit after bounded termination`);
-  }
-
-  private async killRaw(child: ChildProcess, processGroup: boolean): Promise<void> {
-    const pid = child.pid;
-    if (typeof pid !== "number" || !Number.isSafeInteger(pid) || pid <= 1) return;
-    try { process.kill(processGroup ? -pid : pid, "SIGTERM"); } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ESRCH") return;
-    }
   }
 }

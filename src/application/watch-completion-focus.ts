@@ -57,7 +57,7 @@ export async function watchCompletionFocus(
         if (focused !== null && sameTerminal(current.terminal, focused)) {
           const observedAt = dependencies.clock.now().toISOString();
           const acknowledged = await acknowledgeCompletion(dependencies.store, sessionId, "ghostty-focus", observedAt);
-          if (acknowledged.revision !== current.revision) await dependencies.onRecord?.(acknowledged);
+          if (acknowledged.agent.attention === "none") await dependencies.onRecord?.(acknowledged);
         }
       } catch {
         // Focus evidence is advisory. A permission/automation/target failure

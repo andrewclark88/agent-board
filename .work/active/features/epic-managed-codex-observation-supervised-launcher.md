@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation-supervised-launcher
 kind: feature
-stage: review
+stage: done
 tags: [integration, cli]
 parent: epic-managed-codex-observation
 depends_on: [epic-managed-codex-observation-app-server-client, epic-managed-codex-observation-lifecycle-adapter]
@@ -157,12 +157,12 @@ export class CodexProcessHost {
 
 **Acceptance criteria**:
 
-- [ ] App-server readiness handles split chunks and either output stream,
+- [x] App-server readiness handles split chunks and either output stream,
   rejects unsafe/conflicting endpoints, bounds bytes/time, and fails on early
   exit.
-- [ ] The TUI inherits terminal I/O and receives exact non-shell argv; forbidden
+- [x] The TUI inherits terminal I/O and receives exact non-shell argv; forbidden
   topology/title arguments fail before spawn.
-- [ ] TERM→KILL escalation targets only the owned child/group and always has a
+- [x] TERM→KILL escalation targets only the owned child/group and always has a
   bounded result.
 
 ### Unit 2: Reliable Ghostty focus evidence and completion watcher
@@ -207,11 +207,11 @@ export function watchCompletionFocus(
 
 **Acceptance criteria**:
 
-- [ ] A selected Ghostty tab is not sufficient when Ghostty is not frontmost.
-- [ ] Exact frontmost focus clears only completion unread; another tab/window or
+- [x] A selected Ghostty tab is not sufficient when Ghostty is not frontmost.
+- [x] Exact frontmost focus clears only completion unread; another tab/window or
   input-required state remains unchanged.
-- [ ] No Ghostty call occurs while there is no completion attention.
-- [ ] Abort releases a pending sleep without an error transition.
+- [x] No Ghostty call occurs while there is no completion attention.
+- [x] Abort releases a pending sleep without an error transition.
 
 ### Unit 3: Managed launch orchestration
 
@@ -264,12 +264,12 @@ export function launchManagedCodex(
 
 **Acceptance criteria**:
 
-- [ ] Invocation order proves observer subscription begins before TUI spawn.
-- [ ] Clean exit leaves the visible registered tab idle; abnormal outcomes are
+- [x] Invocation order proves observer subscription begins before TUI spawn.
+- [x] Clean exit leaves the visible registered tab idle; abnormal outcomes are
   visible error; deliberate HUP/TERM is interrupted/idle.
-- [ ] App-server, observer, focus watcher, and TUI are cleaned exactly once for
+- [x] App-server, observer, focus watcher, and TUI are cleaned exactly once for
   every startup and runtime failure point.
-- [ ] Each lifecycle/ack/outcome commit uses canonical reconciliation for title
+- [x] Each lifecycle/ack/outcome commit uses canonical reconciliation for title
   parity and preserves concurrent rename/terminal fields.
 
 ### Unit 4: `agent-codex` CLI and production composition
@@ -308,11 +308,11 @@ export function createAgentCodexCommand(): Pick<AgentCodexCommandDependencies, "
 
 **Acceptance criteria**:
 
-- [ ] The built package exposes `agent-codex`; handler tests need no real signal,
+- [x] The built package exposes `agent-codex`; handler tests need no real signal,
   Codex, Ghostty, or terminal.
-- [ ] SIGINT does not abort the launcher; HUP/TERM does; listeners are restored
+- [x] SIGINT does not abort the launcher; HUP/TERM does; listeners are restored
   after exit.
-- [ ] CLI exit code mirrors clean/failed/terminated outcome without dumping
+- [x] CLI exit code mirrors clean/failed/terminated outcome without dumping
   stack traces or secrets.
 
 ## Implementation order
@@ -386,3 +386,24 @@ child stories are needed.
   `npm run typecheck`, `npm run build`, `npm test` (102 passing tests), and a
   built `dist/cli/agent-codex.js` check. No real Codex, Ghostty, terminal
   takeover, or network integration was used.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with fixes
+
+**Blockers**: none
+**Important**: none
+**Nits**: Simplified the focus-ack callback guard and removed an unnecessary
+observer-start yield/comment.
+**Rejected**: none
+
+**Notes**: Standard weight, one cross-model independent pass. The receiver
+confirmed and fixed the review's material findings: launch orchestration now has
+direct clean/server-failure/signal/termination/persistence-failure coverage;
+startup failure uses bounded TERM→KILL cleanup; cleanup exits cannot overwrite
+the primary failure owner; title/topology arguments including glued config and
+`--` are rejected; final state-write failures are raised visibly; and the CLI
+signal bridge is directly tested with listener cleanup. Additional receiver
+hardening avoids signaling already-exited PIDs and attaches observer failure
+handling before TUI startup. Final verification: `npm run typecheck`, `npm run
+build`, built-bin existence, and `npm test` (115 passing).

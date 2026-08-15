@@ -7,6 +7,11 @@ export interface AgentCodexCommandDependencies {
   stderr: Pick<NodeJS.WriteStream, "write">;
 }
 
+export interface ProcessSignalPort {
+  on(signal: NodeJS.Signals, listener: (signal: NodeJS.Signals) => void): unknown;
+  off(signal: NodeJS.Signals, listener: (signal: NodeJS.Signals) => void): unknown;
+}
+
 function errorMessage(error: unknown): string {
   if (error instanceof AgentBoardError) return `${error.code}: ${error.message}`;
   return error instanceof Error ? error.message : "Unexpected failure";
@@ -26,25 +31,33 @@ export async function runAgentCodex(
   }
 }
 
-export async function main(argv: readonly string[] = process.argv.slice(2)): Promise<number> {
-  const command = createAgentCodexCommand();
+export async function runAgentCodexWithSignals(
+  argv: readonly string[],
+  dependencies: AgentCodexCommandDependencies,
+  signals: ProcessSignalPort,
+): Promise<number> {
   const controller = new AbortController();
   const onInterrupt = () => undefined;
   const onTerminate = (signal: NodeJS.Signals) => controller.abort(new Error(signal));
-  process.on("SIGINT", onInterrupt);
-  process.on("SIGHUP", onTerminate);
-  process.on("SIGTERM", onTerminate);
+  signals.on("SIGINT", onInterrupt);
+  signals.on("SIGHUP", onTerminate);
+  signals.on("SIGTERM", onTerminate);
   try {
-    return await runAgentCodex(argv, {
-      ...command,
-      stdout: process.stdout,
-      stderr: process.stderr,
-    }, controller.signal);
+    return await runAgentCodex(argv, dependencies, controller.signal);
   } finally {
-    process.off("SIGINT", onInterrupt);
-    process.off("SIGHUP", onTerminate);
-    process.off("SIGTERM", onTerminate);
+    signals.off("SIGINT", onInterrupt);
+    signals.off("SIGHUP", onTerminate);
+    signals.off("SIGTERM", onTerminate);
   }
+}
+
+export async function main(argv: readonly string[] = process.argv.slice(2)): Promise<number> {
+  const command = createAgentCodexCommand();
+  return runAgentCodexWithSignals(argv, {
+    ...command,
+    stdout: process.stdout,
+    stderr: process.stderr,
+  }, process);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

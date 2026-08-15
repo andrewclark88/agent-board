@@ -7,6 +7,7 @@ import type { ReconciliationTerminalPort, SessionStore, Clock } from "../domain/
 import type { AppServerClient } from "../integrations/codex/client.js";
 import type { CodexProcessHost, ManagedChild, ProcessExit, StartedAppServer } from "../integrations/codex/process.js";
 import type { ThreadBindingClient } from "../integrations/codex/thread-binding.js";
+import { AgentBoardError } from "../domain/errors.js";
 
 export interface ManagedLaunchDependencies {
   readonly register: () => Promise<RegisterSessionResult>;
@@ -80,7 +81,7 @@ async function markOutcome(
     // Process exit is the authoritative evidence for a TUI-owned failure.
     await observeAgent(dependencies.store, {
       sessionId,
-      transition: { type: "process-exit", exitCode: tuiExit.exitCode, observedAt, evidenceKind: "codex.process-exit", confidence: "authoritative", detail: failureDetail(cause ?? `Codex remote TUI exited with ${tuiExit.signal ?? tuiExit.exitCode ?? "unknown"}`) },
+      transition: { type: "process-exit", exitCode: tuiExit.signal === null ? tuiExit.exitCode : null, observedAt, evidenceKind: "codex.process-exit", confidence: "authoritative", detail: failureDetail(cause ?? `Codex remote TUI exited with ${tuiExit.signal ?? tuiExit.exitCode ?? "unknown"}`) },
     });
   } else {
     await observeAgent(dependencies.store, {
@@ -115,8 +116,9 @@ export async function launchManagedCodex(
   let observerPromise: Promise<void> | undefined;
   let focusPromise: Promise<void> | undefined;
   let outcome: Outcome | undefined;
-  let tuiExit: ProcessExit | undefined;
+  let primaryTuiExit: ProcessExit | undefined;
   let failureCause: unknown;
+  let removeSignalAbort: (() => void) | undefined;
 
   try {
     await dependencies.processes.version(signal);
@@ -137,10 +139,10 @@ export async function launchManagedCodex(
       bindTimeoutMs: dependencies.bindTimeoutMs,
       onRecord: async () => { await reconcile(); },
     }, { sessionId, expectedWorkingDirectory: registered.record.identity.repoPath }, observerController.signal);
-    // bindCodexThread subscribes synchronously before its first awaited list
-    // request. Yield once so the observer's subscription is established before
-    // the TUI can create the root thread.
-    await Promise.resolve();
+    const observerRace = observerPromise.then(
+      () => ({ kind: "observer" as const }),
+      (error) => ({ kind: "failure" as const, error }),
+    );
     tui = await dependencies.processes.startRemoteTui(appServer.endpoint, forwardedArgs);
     focusController = new AbortController();
     focusPromise = watchCompletionFocus({
@@ -150,20 +152,28 @@ export async function launchManagedCodex(
       pollIntervalMs: dependencies.focusPollIntervalMs,
       onRecord: async () => { await reconcile(); },
     }, sessionId, focusController.signal);
+    const focusRace = focusPromise.then(
+      () => ({ kind: "focus" as const }),
+      (error) => ({ kind: "failure" as const, error }),
+    );
 
     const abortPromise = new Promise<"terminated">((resolve) => {
       if (signal.aborted) resolve("terminated");
-      else signal.addEventListener("abort", () => resolve("terminated"), { once: true });
+      else {
+        const onAbort = () => resolve("terminated");
+        signal.addEventListener("abort", onAbort, { once: true });
+        removeSignalAbort = () => signal.removeEventListener("abort", onAbort);
+      }
     });
     const winner = await Promise.race([
       tui.exited.then((exit) => ({ kind: "tui" as const, exit })),
       appServer.child.exited.then((exit) => ({ kind: "server" as const, exit })),
-      observerPromise.then(() => ({ kind: "observer" as const }), (error) => ({ kind: "failure" as const, error })),
-      focusPromise.then(() => ({ kind: "focus" as const }), (error) => ({ kind: "failure" as const, error })),
+      observerRace,
+      focusRace,
       abortPromise.then((value) => ({ kind: value })),
     ]);
     if (winner.kind === "tui") {
-      tuiExit = winner.exit;
+      primaryTuiExit = winner.exit;
       outcome = winner.exit.exitCode === 0 && winner.exit.signal === null ? "clean" : "failed";
       if (outcome === "failed") failureCause = new Error(`Codex remote TUI exited with ${winner.exit.signal ?? winner.exit.exitCode ?? "unknown"}`);
     } else if (winner.kind === "terminated") {
@@ -176,11 +186,12 @@ export async function launchManagedCodex(
     outcome = signal.aborted ? "terminated" : "failed";
     failureCause = error;
   } finally {
+    removeSignalAbort?.();
     observerController?.abort();
     focusController?.abort();
     await safeClose(client);
-    if (tui !== undefined && outcome !== "clean" && tuiExit === undefined) {
-      try { tuiExit = await dependencies.processes.stop(tui); } catch (error) { failureCause = failureCause ?? error; }
+    if (tui !== undefined && outcome !== "clean" && primaryTuiExit === undefined) {
+      try { await dependencies.processes.stop(tui); } catch (error) { failureCause = failureCause ?? error; }
     }
     if (appServer !== undefined) {
       try { await dependencies.processes.stop(appServer.child); } catch (error) { failureCause = failureCause ?? error; }
@@ -190,10 +201,14 @@ export async function launchManagedCodex(
 
   const finalOutcome = outcome ?? "failed";
   try {
-    await markOutcome(dependencies, sessionId, finalOutcome, tuiExit, failureCause);
-  } catch (error) {
-    if (finalOutcome === "clean") throw error;
-    failureCause = failureCause ?? error;
+    await markOutcome(dependencies, sessionId, finalOutcome, primaryTuiExit, failureCause);
+  } catch (reportingError) {
+    const lifecycle = failureCause === undefined ? "" : ` after ${failureDetail(failureCause)}`;
+    throw new AgentBoardError(
+      "ADAPTER_FAILURE",
+      `Managed Codex ended ${finalOutcome}${lifecycle}, but Agent Board could not persist the final outcome: ${failureDetail(reportingError)}`,
+      { cause: { lifecycle: failureCause, reporting: reportingError } },
+    );
   }
   return { sessionId, outcome: finalOutcome, exitCode: finalOutcome === "clean" ? 0 : finalOutcome === "terminated" ? 143 : 1 };
 }
