@@ -216,8 +216,8 @@ inference without pretending that an interruption was ordinary idle state.
   rendering work without internet access.
 - Responsive: observed transitions should appear on the relevant surfaces at
   human-immediate, sub-second scale when the selected adapter supplies an event;
-  implementation-time integration tests will establish and enforce the exact
-  budget.
+  the packed golden journey enforces a one-second lifecycle/title/board
+  convergence budget for the default managed path.
 - Crash-tolerant: interrupted writes never leave a partially readable canonical
   record.
 - Inspectable: a user can determine why a state was chosen, how fresh it is, and

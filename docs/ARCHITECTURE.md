@@ -124,46 +124,58 @@ src/
     ports.ts                store, terminal, agent-event, clock, process ports
 
   application/
-    register-session.ts     idempotent register/rename use case
-    observe-agent.ts        apply validated Codex observations
-    reconcile-session.ts    terminal/launcher presence and expiry
-    acknowledge.ts          explicit and focus-derived acknowledgement
-    render-title.ts         locked read-current-state then targeted render
+    acknowledge-session.ts  explicit/focus-derived acknowledgement target resolution
+    acknowledge.ts          completion acknowledgement transition
+    doctor.ts               runtime, state, Codex, and Ghostty diagnostics
+    launch-managed-codex.ts supervised lifecycle orchestration
     list-sessions.ts        board query and diagnostic annotations
-    launch-managed.ts       supervised lifecycle orchestration
+    observe-agent.ts        apply validated Codex observations
+    observe-managed-codex.ts managed Codex lifecycle observation
+    reconcile-session.ts    terminal/launcher presence and expiry
+    register-session.ts     idempotent register/rename use case
+    render-title.ts         locked read-current-state then targeted render
+    resolve-session-target.ts explicit/focused session resolution
+    unregister-agent-session.ts title clear and session removal
+    unregister-session.ts   unregister transition
+    watch-completion-focus.ts focus-derived completion acknowledgement
 
-  adapters/
-    codex/
-      protocol.ts           versioned app-server wire schemas
-      observer.ts           JSON-RPC/WebSocket client and subscriptions
-      process.ts            app-server and remote-TUI child processes
-      ordinary.ts           degraded capability boundary, initially minimal
-    ghostty/
-      applescript.ts        structured AppleScript queries/actions
-      hierarchy.ts          visible window/tab/terminal reconciliation
-      config.ts             installed version/dictionary/config diagnostics
-    store/
-      filesystem.ts         atomic JSON records and scoped locks
-    system/
-      clock.ts              real clock
-      process.ts            PID/signal/process helpers
+  integrations/
+    codex/                  app-server protocol, WebSocket client, lifecycle,
+                            thread binding, compatibility, and process hosting
+    ghostty/                AppleScript client/protocol, title actions, and diagnostics
+    git/                    repository context lookup
+    command-config.ts       absolute executable override validation
+    process-runner.ts       bounded external-process execution
+  infrastructure/
+    json-session-store.ts   atomic JSON records and scoped locks
+    file-lock.ts            crash-aware lock implementation
+    session-files.ts        record file layout and parsing
+    state-diagnostics.ts    state-directory probe
+    state-paths.ts          state-root resolution
 
   cli/
     agent-board.ts          doctor, ack, unregister command router
     agent-name.ts           naming entry point
     agents.ts               board entry point
     agent-codex.ts          managed-launch entry point
-    output.ts               stable human and diagnostic rendering
+    doctor-output.ts        stable doctor rendering
+    output.ts               stable board/CLI error rendering
+    is-main.ts              installed-bin entry-point guard
 
   composition/
-    create-app.ts           production adapter wiring
+    create-agent-board.ts   doctor, ack, and unregister wiring
+    create-agent-codex.ts   managed Codex wiring
+    create-agent-name.ts   naming wiring
+    create-agents.ts        board wiring
 
-test/
+tests/
   domain/                   pure transition/projection tests
   application/              use-case tests with fake ports
-  adapters/                 parser, store, process, and AppleScript tests
-  e2e/                      fake Codex/Ghostty vertical-slice tests
-  integration/              opt-in installed Codex/Ghostty probes
+  cli/                      command parsing, rendering, and packaging guards
+  infrastructure/           store, lock, file, and state-directory tests
+  integrations/              Codex, Ghostty, Git, and process-boundary tests
+  e2e/                      packed fake Codex/Ghostty/Automation vertical slices
+  integration/               opt-in installed Codex/Ghostty probes
 ```
 
 The domain imports no filesystem, process, WebSocket, AppleScript, or wall-clock
@@ -406,18 +418,24 @@ showing the literal command it replaces.
 These remain preserved as backlog ideas with entry conditions rather than
 phases in the V1 architecture.
 
-## Open questions for feature design
+## Bounded compatibility and tuning checks
 
-- Which minimum Codex versions pass the narrow compatibility fixture? The first
-  implementation records the installed version and pins the tested range.
-- Does a second observer reliably receive detailed turn outcomes after binding
-  or resuming the root thread? If not, completion fallback remains explicitly
-  corroborated and the adapter records outcome gaps.
-- What focus polling interval feels immediate without needless work? Start
-  conservatively and measure in the live integration test.
+- Managed observation currently accepts Codex `0.147.x`; `agent-board doctor`
+  reports unsupported or unrecognized versions before launch. Compatibility is
+  intentionally a narrow tested family, not an implicit promise for every
+  future Codex release. A future upgrade must refresh the generated-schema
+  integration probe and lifecycle fixtures together.
+- The packaged golden journey proves lifecycle/title/board convergence under
+  one second with the default observer and focus polling settings. The interval
+  remains a tunable operational parameter, but changing it is a performance
+  decision rather than an unresolved module-boundary question.
+- Detailed outcome coverage remains bounded by the installed app-server schema:
+  missing or changed required shapes fail visibly, while unknown additive fields
+  remain tolerated. Any future protocol change is handled through the Codex
+  compatibility boundary and its installed-schema probe.
 
-None changes the module boundaries. Each is a bounded implementation or
-integration-test decision inside the managed adapter feature.
+None changes the module boundaries. These are bounded compatibility and
+integration-maintenance decisions, not a reason to reopen the V1 topology.
 
 ## Related documents
 
