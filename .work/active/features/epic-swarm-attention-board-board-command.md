@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board-board-command
 kind: feature
-stage: implementing
+stage: review
 tags: [cli, state]
 parent: epic-swarm-attention-board
 depends_on: []
@@ -146,12 +146,12 @@ export function listSessions(
 
 **Acceptance Criteria**:
 
-- [ ] Every row's glyph/status derives from the same `projectSession` policy used
+- [x] Every row's glyph/status derives from the same `projectSession` policy used
   by tab titles.
-- [ ] Visible title-repair failure, terminal absence, ordinary mode, and
+- [x] Visible title-repair failure, terminal absence, ordinary mode, and
   non-authoritative evidence remain distinguishable.
-- [ ] Duplicate labels are visually distinct; unique-label rows remain uncluttered.
-- [ ] Ordering is stable across state transitions, and an empty store performs no
+- [x] Duplicate labels are visually distinct; unique-label rows remain uncluttered.
+- [x] Ordering is stable across state transitions, and an empty store performs no
   terminal call.
 
 ### Unit 2: Stable terminal and JSON rendering
@@ -181,10 +181,10 @@ export function formatCliError(error: unknown): string;
 
 **Acceptance Criteria**:
 
-- [ ] The five primary examples render exactly and diagnostics remain readable
+- [x] The five primary examples render exactly and diagnostics remain readable
   without changing the glyph/label prefix.
-- [ ] Labels containing spaces, quotes, or Unicode are safe in both formats.
-- [ ] JSON preserves full session IDs, evidence fields, and title-sync state in a
+- [x] Labels containing spaces, quotes, or Unicode are safe in both formats.
+- [x] JSON preserves full session IDs, evidence fields, and title-sync state in a
   versioned envelope.
 
 ### Unit 3: `agents` command boundary
@@ -215,9 +215,9 @@ export function main(argv?: readonly string[]): Promise<number>;
 
 **Acceptance Criteria**:
 
-- [ ] Human and JSON modes call the same list operation and differ only in
+- [x] Human and JSON modes call the same list operation and differ only in
   rendering.
-- [ ] Invalid arguments and query failures have deterministic exit/output
+- [x] Invalid arguments and query failures have deterministic exit/output
   behavior without a real store or Ghostty process.
 
 ### Unit 4: Production composition and package entry point
@@ -248,7 +248,7 @@ export function createAgentsCommand(
 
 **Acceptance Criteria**:
 
-- [ ] The built package exposes an executable `dist/cli/agents.js` and injected
+- [x] The built package exposes an executable `dist/cli/agents.js` and injected
   composition tests remain hermetic.
 
 ## Implementation Order
@@ -303,3 +303,14 @@ small read model and fit one implementation stride.
   V1 favors immediate shared-store truth and no daemon; if measured multi-tab
   latency becomes disruptive, retain rendering from reconciled results and move
   repair scheduling behind the same query contract later.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Luna high, selected for the cross-module query, rendering, CLI, and composition boundary.
+- Review weight: standard, from `.work/CONVENTIONS.md`; implementation stops at `stage: review` for the parent orchestrator.
+- Files changed: `src/application/list-sessions.ts`, `src/application/reconcile-session.ts`, `src/cli/output.ts`, `src/cli/agents.ts`, `src/composition/create-agents.ts`, `package.json`, `tests/application/list-sessions.test.ts`, `tests/cli/output.test.ts`, and `tests/cli/agents.test.ts`.
+- Tests added/removed: Added hermetic projection/reconciliation, renderer, and CLI contract tests covering shared projection precedence, title synchronization diagnostics, confidence/mode annotations, duplicate-label prefixes, frozen rows, empty-store no-snapshot behavior, escaping, grammar, stream separation, typed failures, and exit codes; none removed.
+- Simplification: Added the empty-store fast path to `reconcileSessions`, avoiding a Ghostty snapshot when there are no canonical records and keeping one reconciliation snapshot for non-empty boards.
+- Discrepancies from design: None.
+- Adjacent issues parked: none.
+- Verification: `npm run typecheck` passed; `npm run build` passed and produced `dist/cli/agents.js`; full serialized `npm test` passed.

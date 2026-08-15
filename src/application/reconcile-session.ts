@@ -205,6 +205,11 @@ export async function reconcileSessions(
   dependencies: ReconcileDependencies,
 ): Promise<readonly ReconcileResult[]> {
   const records = await dependencies.store.list();
+  // An empty, valid store has nothing to reconcile. In particular, avoid
+  // consulting Ghostty so `agents` remains useful before the first
+  // registration and does not pay for an unnecessary adapter call.
+  if (records.length === 0) return [];
+
   let snapshot: TerminalSnapshot;
   try {
     snapshot = validateSnapshot(await dependencies.terminal.snapshot());
