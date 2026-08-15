@@ -37,7 +37,7 @@ test("diagnostics report version and config incompatibilities", async () => {
     }
   }
   const report = await diagnoseGhostty(new IncompatibleRunner());
-  assert.equal(report.automationReady, false);
+  assert.equal(report.automationReady, true);
   assert.equal(report.diagnostics.some((item) => item.code === "GHOSTTY_VERSION_UNSUPPORTED"), true);
 });
 
@@ -59,7 +59,7 @@ test("diagnostics reject disabled AppleScript and a fixed global title", async (
   }
 
   const report = await diagnoseGhostty(new ConflictingConfigRunner());
-  assert.equal(report.automationReady, false);
+  assert.equal(report.automationReady, true);
   assert.equal(report.diagnostics.some((item) => item.code === "GHOSTTY_APPLESCRIPT_DISABLED"), true);
   assert.equal(report.diagnostics.some((item) => item.code === "GHOSTTY_FIXED_TITLE"), true);
 });

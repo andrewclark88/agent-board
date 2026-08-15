@@ -1,6 +1,7 @@
 import { AgentBoardError } from "../../domain/errors.js";
 
 const VERSION = /\b(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?\b/gu;
+export const SUPPORTED_CODEX_FAMILY = "0.147.x";
 
 export function parseCodexVersion(output: string): string {
   const versions = [...output.matchAll(VERSION)].map((match) => `${match[1]}.${match[2]}.${match[3]}`);
@@ -19,6 +20,7 @@ export function parseCodexVersion(output: string): string {
 export interface CodexCompatibility {
   compatible: boolean;
   version?: string;
+  reasonCode?: "unrecognized" | "unsupported";
   reason?: string;
 }
 
@@ -29,6 +31,7 @@ export function checkCodexCompatibility(output: string): CodexCompatibility {
   } catch (error) {
     return {
       compatible: false,
+      reasonCode: "unrecognized",
       reason: error instanceof Error ? error.message : "Unable to parse Codex version",
     };
   }
@@ -38,7 +41,8 @@ export function checkCodexCompatibility(output: string): CodexCompatibility {
     return {
       compatible: false,
       version,
-      reason: `Codex ${version} is unsupported; managed observation requires 0.147.x`,
+      reasonCode: "unsupported",
+      reason: `Codex ${version} is unsupported; managed observation requires ${SUPPORTED_CODEX_FAMILY}`,
     };
   }
   return { compatible: true, version };

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { lstat, mkdir, open, rm } from "node:fs/promises";
+import { mkdir, open, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import { AgentBoardError } from "../domain/errors.js";
@@ -14,8 +14,7 @@ function probeFailure(message: string, cause?: unknown): AgentBoardError {
 
 async function ensureDirectory(path: string): Promise<void> {
   try {
-    const entry = await lstat(path);
-    if (entry.isSymbolicLink()) throw probeFailure("Agent Board state path must not be a symbolic link");
+    const entry = await stat(path);
     if (!entry.isDirectory()) throw probeFailure("Agent Board state path is not a directory");
     return;
   } catch (error) {
@@ -24,8 +23,8 @@ async function ensureDirectory(path: string): Promise<void> {
 
   try {
     await mkdir(path, { recursive: true, mode: 0o700 });
-    const entry = await lstat(path);
-    if (entry.isSymbolicLink() || !entry.isDirectory()) throw probeFailure("Agent Board state path is not a directory");
+    const entry = await stat(path);
+    if (!entry.isDirectory()) throw probeFailure("Agent Board state path is not a directory");
   } catch (error) {
     if (error instanceof AgentBoardError) throw error;
     throw probeFailure("Agent Board state directory could not be created", error);

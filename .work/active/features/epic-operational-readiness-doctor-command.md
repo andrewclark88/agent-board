@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-doctor-command
 kind: feature
-stage: review
+stage: done
 tags: [cli, integration]
 parent: epic-operational-readiness
 depends_on: []
@@ -90,9 +90,10 @@ for the application layer. The production probe resolves the existing state
 paths, creates only Agent Board's root/sessions/locks directories, writes a
 unique mode-0600 probe file with exclusive creation, closes it, and removes it
 in `finally`. It returns the resolved root on success. Symlinks or filesystem
-errors fail visibly; it never reads or modifies session records and never
-touches repositories. Tests use a temporary root and verify cleanup and bounded
-failure behavior.
+paths follow the same intentional-directory policy as the real store; invalid or
+unwritable filesystem targets fail visibly. It never reads or modifies session
+records and never touches repositories. Tests use a temporary root and verify
+cleanup and bounded failure behavior.
 
 ### Rendering and command registry
 
@@ -188,17 +189,48 @@ green verification, then done without re-review.
 
 ## Implementation notes
 
-- Execution capability: GPT-5, high reasoning; cohesive application/infrastructure/CLI feature with bounded external seams.
+- Execution capability: GPT-5.6 Luna, high reasoning; cohesive application/infrastructure/CLI feature with bounded external seams.
 - Review weight: standard (project convention).
 - Files changed: `src/application/doctor.ts`, `src/infrastructure/state-diagnostics.ts`, `src/cli/doctor-output.ts`, `src/cli/agent-board.ts`, `src/composition/create-agent-board.ts`, and focused application, infrastructure, and CLI tests.
-- Tests added/removed: Added aggregate ordering/immutability and failure-isolation tests; scoped filesystem probe cleanup/symlink tests; human/JSON renderer fixtures; doctor router grammar/readiness tests. None removed.
+- Tests added/removed: Added aggregate ordering/immutability and failure-isolation tests; scoped filesystem probe cleanup, intentional-symlink, and invalid-root tests; human/JSON/Unicode renderer fixtures; typed runtime/Codex branches; and doctor router grammar/readiness/prototype-key tests. None removed.
 - Simplification: Reused the existing Ghostty diagnostic report, Codex process host version port, state path resolver, and shared CLI error formatting; no new process or CLI framework was introduced.
 - Discrepancies from design: The command usage line presents the three commands in one stable block and documents the two valid optional operand forms (`session-id|--json`); production composition injects a `doctorDependencies` object so all diagnostic ports remain hermetic in tests.
 - Adjacent issues parked: none.
 
 ## Verification
 
-- Focused tests: 13 passed across doctor application, state probe, renderer, and router contracts.
+- Focused doctor and supporting-boundary verification: 35 passed.
 - `npm run typecheck`: passed.
 - `npm run build`: passed; `dist/cli/agent-board.js` emitted.
 - Uncontended full suite: 147 passed, 0 failed.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with fixes
+
+**Blockers**: none.
+
+**Important fixes**:
+
+- Ghostty Automation readiness now derives from the AppleScript probe itself;
+  an independent version or configuration error no longer fabricates an
+  Automation failure.
+- Command dispatch rejects inherited object keys instead of treating prototype
+  properties as registered commands.
+- Codex compatibility now returns typed `unsupported` and `unrecognized`
+  reasons, so diagnostic classification never depends on matching error prose.
+- The state probe follows the same intentional directory-symlink policy as the
+  production store while still rejecting invalid non-directory roots.
+- Added the missing regression coverage for typed Codex branches, Ghostty
+  failure independence, prototype-key rejection, Unicode rendering, and state
+  root behavior.
+
+**Nits adjudicated**: retained sequential checks because four bounded probes do
+not justify concurrency in V1; centralized component ordering for renderer and
+application consistency; kept state paths out of human output to avoid leaking
+operator-specific filesystem details.
+
+**Verification**: standard-weight one-pass review; receiver applied the five
+material findings. Focused doctor verification passes at 35/35, and typecheck
+and build pass. The combined full suite exposed one intermittent packaged-e2e
+failure now owned by that feature's review; doctor tests remain green.

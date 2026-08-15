@@ -54,8 +54,8 @@ test("router truthfully reports deferred title repair", async () => {
   assert.equal(io.output.stdout, "Acknowledged session-1. Title sync deferred.\n");
 });
 
-test("router rejects unknown, abbreviated, flagged, empty, and extra operands before execution", async () => {
-  for (const argv of [[], ["a"], ["acknowledge"], ["ack", ""], ["ack", "--json"], ["ack", "one", "two"]]) {
+test("router rejects unknown, prototype, abbreviated, flagged, empty, and extra operands before execution", async () => {
+  for (const argv of [[], ["a"], ["toString"], ["constructor"], ["acknowledge"], ["ack", ""], ["ack", "--json"], ["ack", "one", "two"]]) {
     const io = streams();
     let calls = 0;
     const result = await runAgentBoard(argv, deps(io, { ack: async () => { calls += 1; return acknowledged; } }));

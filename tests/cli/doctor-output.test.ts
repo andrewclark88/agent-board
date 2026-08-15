@@ -29,3 +29,18 @@ test("doctor JSON is the newline-terminated canonical report", () => {
   assert.equal(renderDoctorJson(report), `${JSON.stringify(report)}\n`);
 });
 
+test("doctor human and JSON output preserve terminal-safe Unicode", () => {
+  const unicode: DoctorReport = {
+    schemaVersion: 1,
+    checkedAt: report.checkedAt,
+    ready: true,
+    checks: [{
+      component: "state",
+      code: "STATE_DIRECTORY_WRITABLE",
+      severity: "info",
+      message: "ローカル状態 is writable 🚀",
+    }],
+  };
+  assert.match(renderDoctor(unicode), /ローカル状態 is writable 🚀/u);
+  assert.equal(JSON.parse(renderDoctorJson(unicode)).checks[0].message, "ローカル状態 is writable 🚀");
+});

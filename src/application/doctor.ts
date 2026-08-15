@@ -3,6 +3,7 @@ import type {
   GhosttyDiagnosticReport,
   IntegrationDiagnostic,
 } from "../integrations/ghostty/diagnostics.js";
+import { SUPPORTED_CODEX_FAMILY, type CodexCompatibility } from "../integrations/codex/compatibility.js";
 
 export type DoctorComponent = "runtime" | "state" | "codex" | "ghostty";
 export type DoctorSeverity = "info" | "warning" | "error";
@@ -26,21 +27,20 @@ export interface StateProbePort {
   probe(): Promise<string>;
 }
 
-export interface CodexVersionPort {
-  version(): Promise<string>;
+export interface CodexCompatibilityPort {
+  compatibility(): Promise<CodexCompatibility>;
 }
 
 export interface DoctorDependencies {
   readonly clock: Clock;
   readonly nodeVersion: string;
   readonly state: StateProbePort;
-  readonly codex: CodexVersionPort;
+  readonly codex: CodexCompatibilityPort;
   readonly ghostty: () => Promise<GhosttyDiagnosticReport>;
 }
 
 const COMPONENT_ORDER: readonly DoctorComponent[] = ["runtime", "state", "codex", "ghostty"];
 const SEVERITIES = new Set<DoctorSeverity>(["info", "warning", "error"]);
-const COMPONENTS = new Set<DoctorComponent>(COMPONENT_ORDER);
 const SAFE_TEXT_LIMIT = 512;
 
 function assertText(value: unknown, field: string): asserts value is string {
@@ -107,26 +107,23 @@ async function stateChecks(dependencies: DoctorDependencies): Promise<DoctorChec
 }
 
 async function codexChecks(dependencies: DoctorDependencies): Promise<DoctorCheck[]> {
-  let version: unknown;
+  let result: CodexCompatibility;
   try {
-    version = await dependencies.codex.version();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "";
-    if (/unsupported/iu.test(message)) {
-      return [failureCheck("codex", "CODEX_VERSION_UNSUPPORTED", "Installed Codex is incompatible with managed observation", "Install the tested Codex 0.147.x release.")];
-    }
-    if (/semantic version|parse/iu.test(message)) {
-      return [failureCheck("codex", "CODEX_VERSION_UNKNOWN", "Codex did not report a recognizable version", "Run codex --version and install the tested Codex 0.147.x release.")];
-    }
-    return [failureCheck("codex", "CODEX_UNAVAILABLE", "Codex could not be started for a compatibility check", "Install Codex 0.147.x and ensure the codex executable is on PATH.")];
+    result = await dependencies.codex.compatibility();
+  } catch {
+    return [failureCheck("codex", "CODEX_UNAVAILABLE", "Codex could not be started for a compatibility check", `Install Codex ${SUPPORTED_CODEX_FAMILY} and ensure the codex executable is on PATH.`)];
   }
-  assertText(version, "Codex version");
-  return [check("codex", "CODEX_COMPATIBLE", "info", `Codex ${version} is compatible with managed observation`)];
-}
-
-function mapGhosttyDiagnostic(item: IntegrationDiagnostic): DoctorCheck {
-  assertCheckShape(item, "Ghostty diagnostic");
-  return check("ghostty", item.code, item.severity, item.message, item.remediation);
+  if (result.compatible) {
+    assertText(result.version, "Codex version");
+    return [check("codex", "CODEX_COMPATIBLE", "info", `Codex ${result.version} is compatible with managed observation`)];
+  }
+  if (result.reasonCode === "unsupported") {
+    return [failureCheck("codex", "CODEX_VERSION_UNSUPPORTED", "Installed Codex is incompatible with managed observation", `Install the tested Codex ${SUPPORTED_CODEX_FAMILY} release.`)];
+  }
+  if (result.reasonCode === "unrecognized") {
+    return [failureCheck("codex", "CODEX_VERSION_UNKNOWN", "Codex did not report a recognizable version", `Run codex --version and install the tested Codex ${SUPPORTED_CODEX_FAMILY} release.`)];
+  }
+  throw new TypeError("Codex compatibility report has an invalid shape");
 }
 
 async function ghosttyChecks(dependencies: DoctorDependencies): Promise<DoctorCheck[]> {
@@ -146,7 +143,7 @@ async function ghosttyChecks(dependencies: DoctorDependencies): Promise<DoctorCh
   if (report.version !== undefined) assertText(report.version, "Ghostty version");
   const mapped = report.diagnostics.map((item, index) => {
     assertCheckShape(item, `Ghostty diagnostic ${index}`);
-    return mapGhosttyDiagnostic(item);
+    return check("ghostty", item.code, item.severity, item.message, item.remediation);
   });
   const hasVersionError = mapped.some((item) => item.code === "GHOSTTY_VERSION_UNSUPPORTED" || item.code === "GHOSTTY_VERSION_UNKNOWN" || item.code === "GHOSTTY_NOT_INSTALLED");
   if (report.version !== undefined && !hasVersionError) {
@@ -154,7 +151,7 @@ async function ghosttyChecks(dependencies: DoctorDependencies): Promise<DoctorCh
   }
   if (report.automationReady) {
     mapped.push(check("ghostty", "GHOSTTY_AUTOMATION_READY", "info", "Ghostty Automation is available"));
-  } else if (!mapped.some((item) => item.code.startsWith("GHOSTTY_AUTOMATION_"))) {
+  } else if (mapped.length === 0) {
     mapped.push(failureCheck("ghostty", "GHOSTTY_AUTOMATION_UNAVAILABLE", "Ghostty Automation is unavailable", "Open Ghostty, enable AppleScript, and grant Agent Board Automation permission."));
   }
   if (mapped.length === 0) {
@@ -181,7 +178,7 @@ export async function diagnoseSystem(dependencies: DoctorDependencies): Promise<
   ];
   checks.sort((left, right) => {
     const componentDelta = COMPONENT_ORDER.indexOf(left.component) - COMPONENT_ORDER.indexOf(right.component);
-    return componentDelta || left.code.localeCompare(right.code);
+    return componentDelta || (left.code < right.code ? -1 : left.code > right.code ? 1 : 0);
   });
   const frozenChecks = Object.freeze(checks.slice());
   const report: DoctorReport = {
@@ -193,4 +190,4 @@ export async function diagnoseSystem(dependencies: DoctorDependencies): Promise<
   return Object.freeze(report);
 }
 
-export { COMPONENT_ORDER, COMPONENTS };
+export { COMPONENT_ORDER };

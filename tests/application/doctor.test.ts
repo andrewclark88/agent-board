@@ -15,7 +15,7 @@ function dependencies(overrides: Partial<DoctorDependencies> = {}): DoctorDepend
     clock: { now: () => new Date("2026-08-15T00:00:00.000Z") },
     nodeVersion: "22.12.0",
     state: { probe: async () => "/private/state" },
-    codex: { version: async () => "0.147.2" },
+    codex: { compatibility: async () => ({ compatible: true, version: "0.147.2" }) },
     ghostty: async () => cleanGhostty,
     ...overrides,
   };
@@ -25,7 +25,7 @@ test("diagnoseSystem runs every component, orders evidence, and freezes the repo
   const calls: string[] = [];
   const report = await diagnoseSystem(dependencies({
     state: { probe: async () => { calls.push("state"); throw new Error("permission denied"); } },
-    codex: { version: async () => { calls.push("codex"); throw new Error("codex missing"); } },
+    codex: { compatibility: async () => { calls.push("codex"); throw new Error("codex missing"); } },
     ghostty: async () => { calls.push("ghostty"); return cleanGhostty; },
   }));
 
@@ -76,3 +76,36 @@ test("diagnoseSystem rejects invalid clock and boundary report shapes", async ()
   );
 });
 
+test("diagnoseSystem maps runtime and typed Codex compatibility branches", async () => {
+  const oldRuntime = await diagnoseSystem(dependencies({ nodeVersion: "20.19.0" }));
+  assert.equal(oldRuntime.checks[0]?.code, "RUNTIME_VERSION_UNSUPPORTED");
+  const unknownRuntime = await diagnoseSystem(dependencies({ nodeVersion: "development" }));
+  assert.equal(unknownRuntime.checks[0]?.code, "RUNTIME_VERSION_UNKNOWN");
+
+  const unsupported = await diagnoseSystem(dependencies({
+    codex: { compatibility: async () => ({ compatible: false, version: "0.148.0", reasonCode: "unsupported" }) },
+  }));
+  assert.equal(unsupported.checks.find((item) => item.component === "codex")?.code, "CODEX_VERSION_UNSUPPORTED");
+
+  const unrecognized = await diagnoseSystem(dependencies({
+    codex: { compatibility: async () => ({ compatible: false, reasonCode: "unrecognized" }) },
+  }));
+  assert.equal(unrecognized.checks.find((item) => item.component === "codex")?.code, "CODEX_VERSION_UNKNOWN");
+});
+
+test("Ghostty config errors do not fabricate an Automation failure", async () => {
+  const report = await diagnoseSystem(dependencies({
+    ghostty: async () => ({
+      version: "1.3.1",
+      automationReady: true,
+      diagnostics: [{
+        code: "GHOSTTY_FIXED_TITLE",
+        severity: "error",
+        message: "Ghostty has a fixed global title",
+        remediation: "Remove the fixed title.",
+      }],
+    }),
+  }));
+  assert.equal(report.ready, false);
+  assert.equal(report.checks.some((item) => item.code === "GHOSTTY_AUTOMATION_UNAVAILABLE"), false);
+});

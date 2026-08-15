@@ -68,7 +68,9 @@ export async function runAgentBoard(
   dependencies: AgentBoardCliDependencies,
 ): Promise<number> {
   const command = argv[0];
-  const definition = command === undefined ? undefined : COMMANDS[command];
+  const definition = command !== undefined && Object.hasOwn(COMMANDS, command)
+    ? COMMANDS[command]
+    : undefined;
   if (definition === undefined) {
     dependencies.stderr.write(USAGE);
     return 2;

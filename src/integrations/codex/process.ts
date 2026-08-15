@@ -3,7 +3,7 @@ import { spawn as nodeSpawn, type ChildProcess } from "node:child_process";
 import { AgentBoardError } from "../../domain/errors.js";
 import type { ProcessRunner } from "../process-runner.js";
 import { NodeProcessRunner } from "../process-runner.js";
-import { checkCodexCompatibility, parseCodexVersion } from "./compatibility.js";
+import { checkCodexCompatibility, type CodexCompatibility } from "./compatibility.js";
 import { parseAdvertisedEndpoint, type AppServerEndpoint } from "./endpoint.js";
 
 const DEFAULT_READINESS_TIMEOUT_MS = 10_000;
@@ -132,13 +132,18 @@ export class CodexProcessHost {
     this.maxDiagnosticTailBytes = positive("maxDiagnosticTailBytes", options.maxDiagnosticTailBytes ?? DEFAULT_DIAGNOSTIC_TAIL_BYTES);
   }
 
-  async version(signal?: AbortSignal): Promise<string> {
+  async compatibility(signal?: AbortSignal): Promise<CodexCompatibility> {
     const request = this.runner.run({ command: this.command, args: ["--version"], timeoutMs: this.readinessTimeoutMs, maxOutputBytes: this.maxDiagnosticTailBytes });
     const result = await (signal === undefined ? request : withAbort(request, signal));
     if (result.exitCode !== 0) throw failure(`Codex version probe exited with code ${result.exitCode}`, result.stderr.slice(-this.maxDiagnosticTailBytes));
-    const compatibility = checkCodexCompatibility(`${result.stdout}\n${result.stderr}`);
+    return checkCodexCompatibility(`${result.stdout}\n${result.stderr}`);
+  }
+
+  async version(signal?: AbortSignal): Promise<string> {
+    const compatibility = await this.compatibility(signal);
     if (!compatibility.compatible) throw failure(compatibility.reason ?? "Installed Codex is incompatible with managed observation");
-    return compatibility.version ?? parseCodexVersion(result.stdout);
+    if (compatibility.version === undefined) throw failure("Codex compatibility check did not return a version");
+    return compatibility.version;
   }
 
   async startAppServer(signal: AbortSignal): Promise<StartedAppServer> {

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { lstat, mkdtemp, mkdir, readFile, readdir, symlink, writeFile, rm, stat } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, symlink, writeFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -16,7 +16,7 @@ async function withTempRoot(run: (root: string) => Promise<void>): Promise<void>
   }
 }
 
-test("state probe creates scoped directories, uses mode 0600, and removes its file", async () => {
+test("state probe creates scoped directories, preserves sessions, and removes its file", async () => {
   await withTempRoot(async (root) => {
     const paths = resolveStatePaths({ HOME: root } as NodeJS.ProcessEnv);
     const probe = new StateDirectoryProbe({ paths, id: () => "test" });
@@ -35,13 +35,24 @@ test("state probe creates scoped directories, uses mode 0600, and removes its fi
   });
 });
 
-test("state probe rejects symlinked state directories without broad cleanup", async () => {
+test("state probe follows the same intentional directory symlinks as the store", async () => {
   await withTempRoot(async (root) => {
     const target = join(root, "target");
     const paths = resolveStatePaths({ HOME: root } as NodeJS.ProcessEnv);
+    await mkdir(target, { recursive: true });
     await mkdir(join(root, ".local", "state", "agent-board"), { recursive: true });
     await symlink(target, paths.root, "dir");
-    await assert.rejects(new StateDirectoryProbe({ paths }).probe(), /symbolic link/u);
-    assert.equal((await lstat(paths.root)).isSymbolicLink(), true);
+    assert.equal(await new StateDirectoryProbe({ paths, id: () => "linked" }).probe(), paths.root);
+    assert.deepEqual(await readdir(target), ["locks", "sessions"]);
+  });
+});
+
+test("state probe rejects an invalid non-directory root without broad cleanup", async () => {
+  await withTempRoot(async (root) => {
+    const paths = resolveStatePaths({ HOME: root } as NodeJS.ProcessEnv);
+    await mkdir(join(root, ".local", "state", "agent-board"), { recursive: true });
+    await writeFile(paths.root, "not a directory\n");
+    await assert.rejects(new StateDirectoryProbe({ paths }).probe(), /not a directory/u);
+    assert.equal(await readFile(paths.root, "utf8"), "not a directory\n");
   });
 });

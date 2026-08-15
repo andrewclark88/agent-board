@@ -1,6 +1,5 @@
-import type { DoctorCheck, DoctorComponent, DoctorReport } from "../application/doctor.js";
+import { COMPONENT_ORDER, type DoctorCheck, type DoctorComponent, type DoctorReport } from "../application/doctor.js";
 
-const COMPONENT_ORDER: readonly DoctorComponent[] = ["runtime", "state", "codex", "ghostty"];
 const COMPONENT_LABELS: Readonly<Record<DoctorComponent, string>> = {
   runtime: "Runtime",
   state: "State",
@@ -36,4 +35,3 @@ export function renderDoctor(report: DoctorReport): string {
 export function renderDoctorJson(report: DoctorReport): string {
   return `${JSON.stringify(report)}\n`;
 }
-
