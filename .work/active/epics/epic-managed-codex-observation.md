@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation
 kind: epic
-stage: implementing
+stage: review
 tags: [integration, cli]
 parent: null
 depends_on: [epic-trustworthy-session-core]
@@ -80,3 +80,16 @@ observer, and supervised managed-launch workflow with visible degradation.
 3. `epic-managed-codex-observation-supervised-launcher` — `agent-codex` process
    topology, remote TUI handoff, signal/exit handling, and visible degradation.
    Depends on both.
+
+## Child features reviewed and complete (2026-08-14)
+
+- The app-server client provides bounded loopback connection, correlated JSON-RPC,
+  validated narrow schemas, backpressure limits, and strict 0.147.x compatibility.
+- The lifecycle adapter subscribes before discovery, refuses ambiguous root-thread
+  binding, maps native state through the normalized transition boundary, and
+  preserves abort cleanup for production-shaped streams.
+- The supervised launcher composes registration, observer-before-TUI startup,
+  direct terminal I/O, focus acknowledgement, canonical reconciliation, first-
+  outcome state ownership, and bounded process cleanup behind `agent-codex`.
+- Every child feature completed one standard independent review pass and green
+  integrated verification. The aggregate Codex capability is ready for epic review.
