@@ -1,17 +1,17 @@
 # Doc Review Report
 
 **Project:** agent-board
-**Date:** 2026-08-14
-**Review basis:** fresh independent audit after `c754922` and `0567e32`
-**Documents reviewed:** 6 current foundation/planning docs, 1 superseded historical concept doc, `AGENTS.md`, `README.md`, `MIGRATION_REPORT.md`, the indexed research corpus, all current source/test surfaces, and the `.work/` substrate
+**Date:** 2026-08-15
+**Review basis:** focused complete audit after `21efe95` and `30279a9`
+**Documents reviewed:** 7 current foundation/planning docs (including `docs/configuration.md`), 1 superseded historical concept doc, `AGENTS.md`, `README.md`, `MIGRATION_REPORT.md`, the indexed research corpus, all current source/test surfaces relevant to configuration, and the `.work/` substrate
 **Module docs:** none discovered; the architecture's source-module map was checked directly against the repository
 **Passes run:** 1 complete system-level pass plus source, test, work-substrate, link, frontmatter, provenance, and blocking-brief audits
 
 ## Exit gate
 
-**PASS — 0 Critical, 0 High, 0 Medium, 0 Low.**
+**PASS — 0 Critical, 0 High, 0 Medium, 1 Low.**
 
-The fresh audit found no current documentation blockers or material drift. All
+The fresh audit found no documentation blockers or material cross-document drift. All
 five findings from the prior report are resolved:
 
 | Prior finding | Resolution verified |
@@ -20,7 +20,7 @@ five findings from the prior report are resolved:
 | M2 — unrecognized research-plan status | `docs/research-plan.md:6` and the generated index now use recognized `status: locked`. |
 | M3 — README overstated Codex argument forwarding | `README.md:107-109` now documents supported forwarding and reserved remote/title arguments. |
 | M4 — obsolete bootstrap next step | `MIGRATION_REPORT.md:1-4,59-63` now marks the report historical and records the completed outcome. |
-| L1 — architecture wording | `docs/ARCHITECTURE.md:20` now explicitly says V1 includes board administration but no semantic agent actions. |
+| Prior L1 — architecture wording | `docs/ARCHITECTURE.md:20` now explicitly says V1 includes board administration but no semantic agent actions. |
 
 The prior Critical/High findings remain resolved: health is `live | stale |
 error` with clean process exit represented as evidence, and README/AGENTS route
@@ -38,9 +38,19 @@ None.
 
 None.
 
-## Low (0)
+## Low (1)
 
-None.
+### L1. Architecture body date trails its frontmatter date
+
+**Files:** `docs/ARCHITECTURE.md:8,25`
+
+**What:** The frontmatter is updated to `2026-08-15` after the stale-lock
+semantics clarification, but the duplicate prose marker still says `Last
+updated: 2026-08-14`. Frontmatter is authoritative for indexing, so this is
+non-blocking metadata drift, but readers can see conflicting dates.
+
+**Fix:** Remove the duplicate prose date or update it to `2026-08-15`; prefer
+frontmatter as the single maintained date.
 
 ## Info (2)
 
@@ -58,10 +68,10 @@ None.
 - The committed knowledge indexes are `schema_version: 2` for the terse and
   detail layers, with the navigator at schema version 3.
 - A fresh run of the prescribed generator against a read-only project copy
-  reported **0 errors and 0 warnings**, 16 indexed documents, and 29 substrate
+  reported **0 errors and 0 warnings**, 17 indexed documents, and 31 substrate
   items. The generated content matches the committed indexes apart from
   `generated_at` timestamps.
-- All 16 indexed docs have the expected index metadata. The historical
+- All 17 indexed docs have the expected index metadata. The historical
   `MIGRATION_REPORT.md` is intentionally a root operational report, not an
   indexable planning document.
 
@@ -90,17 +100,35 @@ None.
 - All reviewed relative Markdown links resolve. Canonical absolute process
   references in `AGENTS.md` and all blocking research artifacts exist.
 
+### Companion configuration consistency
+
+- `docs/configuration.md` is indexed as a locked `type: design` document with
+  complete frontmatter. Its README link and both example-fragment links resolve.
+- The Ghostty fragment enables AppleScript, includes `no-title`, omits a fixed
+  `title`, and avoids the manual `prompt_tab_title` binding. These values match
+  the production diagnostics and the title-ownership contracts in SPEC and
+  ARCHITECTURE.
+- The Codex fragment matches the documented tested 0.147.x `/statusline`
+  output, merges into an existing `[tui]` table, and preserves the detailed
+  project/branch/model/context surface distinct from Agent Board's attention
+  glyph.
+- The tab, prompt-navigation, working-directory inheritance, and macOS title-bar
+  settings reflect the supplied Ghostty workflow. The guide explicitly treats
+  examples as merge fragments and gives rollback steps rather than overwriting
+  personal configuration.
+
 ### Delivery and code verification
 
-- `.work/bin/work-view --scope all` reports 5 done epics, 14 done features,
-  6 done stories, and 4 intentionally preserved backlog ideas. The navigator's
+- `.work/bin/work-view --scope all` reports 5 done epics, 15 done features,
+  6 done stories, and 5 intentionally preserved backlog ideas. The navigator's
   active-tier counts correctly include completed active-tier records by design.
 - The completed arcs' expected source and test surfaces are present: session
   core, Ghostty project surface, managed Codex observation, swarm board, and
   operational readiness.
-- `npm test` completed with 159 passing tests, 0 failures, and 2 explicitly
-  skipped opt-in live probes (installed Codex schema and disposable Ghostty).
-  The pretest build completed successfully.
+- The prior completed delivery verification recorded 159 passing tests, 0
+  failures, and 2 explicitly skipped opt-in live probes (installed Codex schema
+  and disposable Ghostty). The full npm suite was intentionally not rerun in
+  this prose/configuration-only review.
 - Done work items retain their original design checklists in several bodies,
   but their stage, implementation notes, review records, and verification
   sections provide the authoritative completion evidence; no missing shipped
@@ -148,6 +176,7 @@ being older than the latest higher-tier brief.
 ## Fresh audit conclusion
 
 The current documentation corpus is aligned with source, tests, research, and
-completed work. The prescribed exit gate passes with zero Critical, High,
-Medium, or Low findings. No planning or implementation docs were edited during
-this review; only this report artifact was updated.
+completed work, with one non-blocking duplicate-date nit. The prescribed exit
+gate passes with zero Critical, High, or Medium findings. No planning or
+implementation docs were edited during this review; only this report artifact
+was updated.
