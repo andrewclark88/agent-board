@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-operator-guide
 kind: feature
-stage: drafting
+stage: implementing
 tags: [prose]
 parent: epic-operational-readiness
 depends_on: [epic-operational-readiness-doctor-command, epic-operational-readiness-packaged-e2e]
@@ -37,3 +37,11 @@ live-test safety beyond what the completed implementation proves.
 - Completed feature items and CLI fixtures — authoritative command behavior.
 
 <!-- The /prose-author pass writes the guide against completed behavior. -->
+
+## Outline
+
+Target `README.md` as the single operator landing page. Cover prerequisites,
+Ghostty configuration, checkout installation, readiness checks, the first
+managed session, daily commands, status semantics, diagnostics, limitations,
+tests, uninstall, and project navigation. Use verified literal commands and
+keep optional customization separate from the required path.
