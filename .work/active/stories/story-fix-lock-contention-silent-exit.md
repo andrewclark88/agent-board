@@ -1,7 +1,7 @@
 ---
 id: story-fix-lock-contention-silent-exit
 kind: story
-stage: review
+stage: done
 tags: [bug, state]
 parent: null
 depends_on: []
@@ -47,3 +47,14 @@ nonzero with `LOCK_TIMEOUT` rather than silently succeeding with no output.
   timeout. The focused lock/store suite passes 8/8.
 - Adjacent issues parked: none; packaged-harness findings remain owned by the
   active e2e feature review.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve.
+
+Bounded inline review confirmed the finite retry count cannot expire before the
+configured maximum retry time, referenced timers keep the CLI alive, the
+canonical timeout mapping remains intact, and cleanup releases both the held
+lock and temporary root. The subprocess regression distinguishes the original
+silent success from the required typed failure. No independent review was used
+for this standalone story.
