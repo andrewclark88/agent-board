@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness
 kind: epic
-stage: implementing
+stage: review
 tags: [cli, integration, prose]
 parent: null
 depends_on: [epic-ghostty-project-surface, epic-managed-codex-observation, epic-swarm-attention-board]
@@ -104,3 +104,18 @@ packed install, doctor provides actionable human and JSON results, the hermetic
 multi-session scenarios cover the five attention outcomes and safe controls,
 opt-in live probes are clearly isolated, and a new operator can install, use,
 diagnose, and uninstall the tool from the written guide.
+
+## Implementation notes
+
+- Delivered all three child features: actionable doctor, packaged vertical-slice
+  proof, and the operator guide.
+- The npm artifact exposes `agent-name`, `agent-codex`, `agents`, and
+  `agent-board` with source-free installed execution.
+- Hermetic tests cover multi-session lifecycle, five attention outcomes,
+  controls, diagnostics, failure, recovery, and owned-process cleanup.
+- Opt-in tests isolate installed Codex schema checks and a disposable Ghostty
+  window. Default tests do not touch live Agent Board sessions.
+- The e2e review exposed and drained
+  `story-fix-lock-contention-silent-exit` before epic closure.
+- Verification: typecheck passes. The full suite passes at 159 tests with two
+  explicit live-probe skips.
