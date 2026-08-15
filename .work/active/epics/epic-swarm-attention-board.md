@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board
 kind: epic
-stage: implementing
+stage: review
 tags: [cli, state]
 parent: null
 depends_on: [epic-ghostty-project-surface, epic-managed-codex-observation]
@@ -117,3 +117,18 @@ feature then consumes those conventions while adding carefully targeted writes.
   Board design must surface that transient repair failure as an operator-facing
   diagnostic rather than treating a stored `presence: visible` record as proof
   that its title is synchronized.
+
+## Child features reviewed and complete (2026-08-14)
+
+- The board command performs one shared reconciliation snapshot, uses the
+  canonical projection policy, preserves stable label-first ordering, and
+  exposes liveness, confidence, mode, and title-sync diagnostics in compact
+  human and versioned JSON output.
+- Operator controls resolve only exact full IDs or an authoritatively frontmost
+  registered Ghostty terminal. Completion acknowledgement and unregister retain
+  their distinct durable-state/title-cleanup failure semantics.
+- The package exposes `agents` and `agent-board` through symlink-safe executable
+  entry points. User-visible labels and evidence details are terminal-safe.
+- Both child features completed one standard independent review pass and green
+  integrated verification. The assembled attention-board capability is ready
+  for aggregate epic review.
