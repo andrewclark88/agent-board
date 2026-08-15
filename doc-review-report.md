@@ -2,155 +2,109 @@
 
 **Project:** agent-board
 **Date:** 2026-08-14
-**Review basis:** fresh independent audit after `e852d47` and `a5aeac9`
+**Review basis:** fresh independent audit after `c754922` and `0567e32`
 **Documents reviewed:** 6 current foundation/planning docs, 1 superseded historical concept doc, `AGENTS.md`, `README.md`, `MIGRATION_REPORT.md`, the indexed research corpus, all current source/test surfaces, and the `.work/` substrate
 **Module docs:** none discovered; the architecture's source-module map was checked directly against the repository
-**Passes run:** 1 system-level pass plus source, test, work-substrate, link, frontmatter, provenance, and blocking-brief audits
+**Passes run:** 1 complete system-level pass plus source, test, work-substrate, link, frontmatter, provenance, and blocking-brief audits
 
 ## Exit gate
 
-**PASS — 0 Critical, 0 High.**
+**PASS — 0 Critical, 0 High, 0 Medium, 0 Low.**
 
-The prior Critical/High findings are resolved:
+The fresh audit found no current documentation blockers or material drift. All
+five findings from the prior report are resolved:
 
-- `AGENTS.md` now describes the completed foundation and delivery arc rather
-  than routing back to the concept checkpoint.
-- The canonical health contract is `live | stale | error`; clean process exit
-  remains evidence and is covered by the domain tests.
-- `README.md` documents the installed four-command workflow and operational
-  phase rather than directing the operator to rerun completed research or
-  bootstrap decomposition.
+| Prior finding | Resolution verified |
+|---|---|
+| M1 — stale knowledge indexes | `docs/knowledge-index.yaml`, `docs/knowledge-index-detail.yaml`, and `docs/knowledge-index-nav.yaml` now reflect current source frontmatter and the complete substrate; a fresh generator comparison differs only in timestamps. |
+| M2 — unrecognized research-plan status | `docs/research-plan.md:6` and the generated index now use recognized `status: locked`. |
+| M3 — README overstated Codex argument forwarding | `README.md:107-109` now documents supported forwarding and reserved remote/title arguments. |
+| M4 — obsolete bootstrap next step | `MIGRATION_REPORT.md:1-4,59-63` now marks the report historical and records the completed outcome. |
+| L1 — architecture wording | `docs/ARCHITECTURE.md:20` now explicitly says V1 includes board administration but no semantic agent actions. |
 
-No Critical/High auto-fix loop was required. Per the review request, this pass
-does not edit planning or implementation docs; the report is the only artifact
-written.
+The prior Critical/High findings remain resolved: health is `live | stale |
+error` with clean process exit represented as evidence, and README/AGENTS route
+operators to the shipped V1 workflow.
 
-## Findings
-
-### Critical (0)
-
-None.
-
-### High (0)
+## Critical (0)
 
 None.
 
-### Medium (4)
+## High (0)
 
-#### M1. Knowledge indexes are stale relative to current docs and substrate
+None.
 
-**Files:** `docs/knowledge-index.yaml:40-46`, `docs/knowledge-index-detail.yaml:91-95`, `docs/knowledge-index-nav.yaml:15-24`, `docs/research-plan.md:6-10`, `.work/`
+## Medium (0)
 
-**What:** The source research plan is `status: complete` and says the terminal
-V1 arc is implemented and verified, but the generated terse index still says
-`status: draft`, the detail index retains the pre-delivery summary, and the
-navigator reports the old substrate shape (`active: epic=5, feature=3, story=0;
-backlog=1`). A fresh generator run against a read-only copy produced
-`active: epic=0, feature=0, story=0; backlog=4` and the current research-plan
-summary/status. The stale navigator can misroute a future session.
+None.
 
-**Fix:** Regenerate the three knowledge-index layers from the current
-frontmatter and substrate after resolving M2.
+## Low (0)
 
-#### M2. `research-plan` frontmatter uses an unrecognized status
+None.
 
-**Files:** `docs/research-plan.md:4-8`
+## Info (2)
 
-**What:** The source declares `status: complete`. The knowledge-index linter
-reports this as a warning because its known foundation-document statuses are
-`draft`, `in-progress`, `legacy`, `locked`, and `superseded`; the generated index
-therefore does not reliably preserve the source status. This is the metadata
-cause of part of M1.
-
-**Fix:** Choose the project’s intended recognized terminal status (for example,
-`locked`) or extend the index status vocabulary deliberately, then regenerate
-the index. The review did not make that taste/metadata choice autonomously.
-
-#### M3. README overstates forwarding of Codex arguments
-
-**Files:** `README.md:106-107`, `src/integrations/codex/process.ts:97-108,231-237`, `tests/integrations/codex/process.test.ts:36-47`
-
-**What:** README says `agent-codex` “forwards extra Codex arguments unchanged.”
-The implementation intentionally rejects topology-owned arguments such as
-`--remote`, remote-auth/url variants, `--`, and attempts to override
-`tui.terminal_title`, then appends its own `--remote` endpoint and title config.
-This is the correct safety behavior, but the user-facing claim is too broad.
-
-**Fix:** Say that supported extra Codex arguments are forwarded unchanged while
-Agent Board reserves the remote-transport and terminal-title options, with a
-short error/remediation note.
-
-#### M4. Bootstrap report retains an obsolete next step
-
-**Files:** `MIGRATION_REPORT.md:1-9,56-59`, `AGENTS.md:22-34`, `.work/` query via `.work/bin/work-view --scope all`
-
-**What:** The bootstrap report correctly records its historical source shape,
-but its unqualified “Next step” still instructs the operator to run
-`research-pipeline:epicize` and design the queue. The repository now has a
-completed delivery substrate: all 5 epics, 14 features, and 6 stories are
-`stage: done`, and the current guidance says the terminal V1 arc is complete.
-An operator reading the root report could restart an obsolete phase.
-
-**Fix:** Mark the report explicitly historical or replace the next-step section
-with a completed-bootstrap note that points to current `.work/` state.
-
-### Low (1)
-
-#### L1. Architecture summary wording can be clearer about board administration
-
-**Files:** `docs/ARCHITECTURE.md:20`, `docs/ARCHITECTURE.md:100-113`, `docs/SPEC.md:113-128`
-
-**What:** The architecture decision says V1 “exposes observation and naming
-only,” while the shipped V1 also exposes `ack` and `unregister`. The surrounding
-architecture and specification make the intended distinction—no semantic agent
-controls—clear, so this is not a capability contradiction, but the summary can
-be read too literally.
-
-**Fix:** Clarify the phrase as “observation, naming, and board administration;
-no semantic agent actions.”
-
-### Info (2)
-
-- `docs/project-brief.md` is correctly treated as historical and superseded by
-  its frontmatter; its broader daemon/tmux/hardware ideas remain preserved in
-  the backlog and current specification.
-- `VISION.md`, `SPEC.md`, and `PRINCIPLES.md` remain `status: draft` while the
-  architecture is locked and V1 is shipped. This is acceptable if these are
-  living product-truth documents rather than release records; no contradiction
-  was found.
+- `docs/project-brief.md` is correctly historical and superseded by its
+  frontmatter; the old daemon/tmux/hardware ideas remain preserved in the
+  backlog and current specification.
+- `VISION.md`, `SPEC.md`, and `PRINCIPLES.md` remain living product-truth docs
+  with `status: draft`, while the architecture and research plan are locked.
+  This is intentional document-role metadata, not a contradiction.
 
 ## System-level consistency checks
 
-### Clean areas
+### Knowledge index and frontmatter
+
+- The committed knowledge indexes are `schema_version: 2` for the terse and
+  detail layers, with the navigator at schema version 3.
+- A fresh run of the prescribed generator against a read-only project copy
+  reported **0 errors and 0 warnings**, 16 indexed documents, and 29 substrate
+  items. The generated content matches the committed indexes apart from
+  `generated_at` timestamps.
+- All 16 indexed docs have the expected index metadata. The historical
+  `MIGRATION_REPORT.md` is intentionally a root operational report, not an
+  indexable planning document.
+
+### Product and architecture consistency
 
 - The five-state projection and orthogonal health/activity/attention/evidence
   model agree across `docs/VISION.md`, `docs/SPEC.md`,
-  `docs/ARCHITECTURE.md`, source registries/projection, and tests. There is no
-  `health: exited` schema value; clean process exit is evidence.
-- The architecture's module map matches the current `src/` tree, including the
-  `command-config.ts` executable seam, four composition modules, doctor output,
-  and packaged/opt-in test directories.
+  `docs/ARCHITECTURE.md`, source registries/projection, and tests. No canonical
+  `health: exited` value exists; clean process exit remains evidence.
+- The architecture module map matches the current `src/` tree, including the
+  command-config seam, four composition modules, doctor output, and packaged
+  and opt-in integration test directories.
 - The four public npm bins are consistent across `package.json`, README,
   architecture, composition, CLI entry points, and packaged e2e coverage:
   `agent-codex`, `agent-name`, `agents`, and `agent-board`.
 - The loopback WebSocket choice is explicitly documented as superseding the
-  research brief's provisional Unix-socket recommendation, with the concurrent
-  observer/remote-TUI verification rationale and a bounded future simplification
-  condition (`docs/ARCHITECTURE.md:57-65`).
+  research brief's provisional Unix-socket recommendation, including the
+  concurrent observer/remote-TUI verification rationale and future
+  simplification condition (`docs/ARCHITECTURE.md:57-65`).
 - The completed research plan accurately records Scout plus both focused
   engagements, the managed Codex default, Ghostty validation, and deferred
   follow-up entry conditions (`docs/research-plan.md:23-110`).
 - README setup, doctor, launcher, board, acknowledgement/unregister, recovery,
   testing, and uninstall instructions match the implemented command surfaces.
-  The only command-usage drift found is the reserved-argument overstatement in
-  M3.
-- Relative Markdown links in the reviewed docs resolve. The canonical absolute
-  process references in `AGENTS.md` also exist on disk.
-- The source-level completion claims are backed by the substrate: `.work/bin/work-view
-  --scope all` reports 5 done epics, 14 done features, 6 done stories, and 4
-  intentionally preserved backlog ideas.
-- `npm test` completed with 159 passing tests, 0 failures, and 2 intentionally
-  skipped opt-in live probes (Codex schema and disposable Ghostty).
+  Reserved Codex argument behavior is now stated accurately.
+- All reviewed relative Markdown links resolve. Canonical absolute process
+  references in `AGENTS.md` and all blocking research artifacts exist.
+
+### Delivery and code verification
+
+- `.work/bin/work-view --scope all` reports 5 done epics, 14 done features,
+  6 done stories, and 4 intentionally preserved backlog ideas. The navigator's
+  active-tier counts correctly include completed active-tier records by design.
+- The completed arcs' expected source and test surfaces are present: session
+  core, Ghostty project surface, managed Codex observation, swarm board, and
+  operational readiness.
+- `npm test` completed with 159 passing tests, 0 failures, and 2 explicitly
+  skipped opt-in live probes (installed Codex schema and disposable Ghostty).
+  The pretest build completed successfully.
+- Done work items retain their original design checklists in several bodies,
+  but their stage, implementation notes, review records, and verification
+  sections provide the authoritative completion evidence; no missing shipped
+  output was found.
 
 ## Blocking briefs status
 
@@ -193,8 +147,7 @@ being older than the latest higher-tier brief.
 
 ## Fresh audit conclusion
 
-The shipped V1 documentation is substantively aligned with source, tests,
-research, and completed work. The exit gate passes mechanically because there
-are no Critical or High findings. Before the next autonomous work cycle, resolve
-the generated-index drift/status warning (M1/M2), then consider the README
-reserved-argument clarification and bootstrap-report archival (M3/M4).
+The current documentation corpus is aligned with source, tests, research, and
+completed work. The prescribed exit gate passes with zero Critical, High,
+Medium, or Low findings. No planning or implementation docs were edited during
+this review; only this report artifact was updated.
