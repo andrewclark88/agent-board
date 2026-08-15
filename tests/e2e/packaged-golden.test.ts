@@ -46,14 +46,30 @@ test("packed golden journeys preserve board/title parity and independent session
     await harness.writeScenario((value) => ({ ...value, codex: { ...value.codex, status: "working" } }));
     await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "●");
     const completionStartedAt = performance.now();
-    await harness.writeScenario((value) => ({ ...value, codex: { ...value.codex, status: "idle" } }));
-    const completed = await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "✓", 900);
+    await harness.writeScenario((value) => ({
+      ...value,
+      ghostty: { ...value.ghostty, frontmost: false },
+      codex: { ...value.codex, status: "idle" },
+    }));
+    let completed = await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "✓", 900);
     assert.equal(completed.status, "finished");
     scenario = await waitForScenario(harness, (candidate) => candidate.ghostty.terminals["term-one"]?.title === "✓ data-platform", 900);
     assert.equal(scenario.ghostty.terminals["term-one"]?.title, "✓ data-platform");
     assert.ok(performance.now() - completionStartedAt < 1_000, "completion convergence exceeded 1000ms");
 
-    result = await harness.run("agent-board", ["ack"]);
+    await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, frontmost: true } }));
+    await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "○");
+
+    await harness.writeScenario((value) => ({
+      ...value,
+      ghostty: { ...value.ghostty, frontmost: false },
+      codex: { ...value.codex, status: "working" },
+    }));
+    await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "●");
+    await harness.writeScenario((value) => ({ ...value, codex: { ...value.codex, status: "idle" } }));
+    completed = await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "✓");
+
+    result = await harness.run("agent-board", ["ack", completed.sessionId]);
     assert.equal(result.code, 0, result.stderr);
     assert.match(result.stdout, /Acknowledged/u);
     await waitForBoardRow(harness, (candidate) => candidate.label === "data-platform" && candidate.glyph === "○");

@@ -59,6 +59,13 @@ manual title override for those tabs.
    npm link
    ```
 
+   To test a standalone local artifact, pack and install it instead:
+
+   ```bash
+   npm pack --ignore-scripts
+   npm install --global ./agent-board-0.1.0.tgz
+   ```
+
 4. Open a Ghostty tab.
 
 5. Check the supported environment.

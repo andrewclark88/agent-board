@@ -57,7 +57,8 @@ test("launcher termination interrupts an active TUI and never records completion
     const exit = await launcher.exit;
     assert.equal(exit.code, 143);
     const current = await readBoardRows(harness);
-    assert.equal(current[0]?.glyph === "✓", false);
+    assert.equal(current.length, 1);
+    assert.notEqual(current[0]?.glyph, "✓");
     await assertCanonicalState(harness);
   } finally {
     if (launcher.child.exitCode === null) launcher.child.kill("SIGTERM");

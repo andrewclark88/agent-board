@@ -64,7 +64,6 @@ function processResult(child: ChildProcess): RunningProcess {
   let stderr = "";
   child.stdout?.on("data", (chunk: Buffer) => { stdout += chunk.toString("utf8"); });
   child.stderr?.on("data", (chunk: Buffer) => { stderr += chunk.toString("utf8"); });
-  const output = <T>(value: T): Promise<T> => Promise.resolve(value);
   const exit = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolveExit) => {
     child.once("close", (code, signal) => resolveExit({ code, signal }));
   });

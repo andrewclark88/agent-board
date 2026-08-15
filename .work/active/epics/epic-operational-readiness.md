@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness
 kind: epic
-stage: review
+stage: done
 tags: [cli, integration, prose]
 parent: null
 depends_on: [epic-ghostty-project-surface, epic-managed-codex-observation, epic-swarm-attention-board]
@@ -119,3 +119,24 @@ diagnose, and uninstall the tool from the written guide.
   `story-fix-lock-contention-silent-exit` before epic closure.
 - Verification: typecheck passes. The full suite passes at 159 tests with two
   explicit live-probe skips.
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with one integration addition.
+
+**Blockers**: none.
+
+**Important addition**: the packed golden journey now proves automatic
+focus-driven acknowledgement while the managed launcher runs. It then creates a
+second completion and proves the exact-ID fallback through the installed
+`agent-board` command.
+
+**Nits adjudicated**: strengthened the termination journey so an empty board
+cannot pass; removed a dead harness helper; documented the exact packed-tarball
+install path. Kept strict installed-Codex stderr checking because the opt-in
+probe is a compatibility alarm. Kept the real adapter's current diagnostic
+shape rather than adding unreachable defensive behavior.
+
+Standard review weight: one independent aggregate cross-model pass, receiver
+changes, focused verification, and closure without re-review. The focused
+golden and chaos journeys pass 4/4.
