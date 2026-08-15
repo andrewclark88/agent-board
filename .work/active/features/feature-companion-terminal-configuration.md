@@ -1,7 +1,7 @@
 ---
 id: feature-companion-terminal-configuration
 kind: feature
-stage: drafting
+stage: implementing
 tags: [prose]
 parent: null
 depends_on: [epic-operational-readiness]
@@ -44,3 +44,12 @@ Consolidate the scattered README setup hints and hand-off notes into one
 copyable configuration directory plus a short README route. Retain
 `agent-board doctor` as the verifier instead of adding an installer or a second
 configuration parser.
+
+## Outline
+
+- `examples/ghostty/agent-board.conf`: minimal copyable Agent Board and tab
+  workflow fragment, with the manual-title conflict removed.
+- `examples/codex/status-line.toml`: the exact installed `/statusline` result.
+- `docs/configuration.md`: ownership model, merge instructions, workflow,
+  maintenance, verification, and rollback.
+- `README.md`: link the detailed guide and examples from the main setup path.
