@@ -56,8 +56,19 @@ the 0 Critical / 0 High exit gate.
 
 ## Exit verification
 
-A fresh independent full audit passed with **0 Critical and 0 High**. Its two
-Medium wording findings were corrected in `docs/SPEC.md`, and its Low evidence
-suggestion was addressed by recording the bounded ephemeral-port probe in the
-Codex runtime capture and attestation. The architecture is clear to proceed into
-delivery.
+A fresh independent full audit passed mechanically with **0 Critical and 0
+High**. It found three non-blocking Medium drift items:
+
+1. `AGENTS.md` and `README.md` still describe substrate bootstrap/decomposition
+   as the current next step even though delivery is active.
+2. The architecture describes all four intended binaries in present tense while
+   `agents` and `agent-board` remain in the active delivery queue.
+3. The architecture module map still uses several intended/pre-implementation
+   paths instead of distinguishing them from the modules now on disk.
+
+These findings do not fail the doc-review exit gate. The first and third belong
+to the final documentation roll-forward; the second resolves naturally when the
+swarm-board epic delivers the remaining binaries. All blocking briefs exist,
+completed substrate scopes match their code and tests, internal links resolve,
+and the normalized state contract is consistent across SPEC, architecture, and
+implementation.
