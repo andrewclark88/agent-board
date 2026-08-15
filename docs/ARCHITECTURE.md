@@ -5,7 +5,7 @@ type: architecture
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-14
+updated: 2026-08-15
 summary: |
   Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote TUI, and observer; normalized state is atomically persisted and projected through one policy into Ghostty titles and the `agents` board.
 decisions:
@@ -251,9 +251,11 @@ Every mutation:
 7. releases the lock.
 
 Read paths need no lock because canonical files are replaced atomically. Lock
-metadata supports reclaiming only demonstrably stale locks whose owner process
-is gone. Invalid JSON, unknown schema versions, and broken invariants fail with
-actionable diagnostics; they are never interpreted heuristically.
+metadata uses `proper-lockfile` heartbeat `mtime` updates; a lock is eligible
+for takeover when its heartbeat exceeds the configured stale threshold, without
+an owner-process liveness check. Invalid JSON, unknown schema versions, and
+broken invariants fail with actionable diagnostics; they are never interpreted
+heuristically.
 
 ### Identity and idempotency
 
