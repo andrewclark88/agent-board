@@ -1,7 +1,7 @@
 ---
 id: epic-swarm-attention-board-operator-controls
 kind: feature
-stage: review
+stage: done
 tags: [cli, state]
 parent: epic-swarm-attention-board
 depends_on: [epic-swarm-attention-board-board-command]
@@ -229,6 +229,38 @@ adjudication/fixes, green verification, and closure without re-review.
   clear-before-remove operation without duplicating it.
 - Discrepancies from design: none.
 - Adjacent issues parked: none.
-- Verification: focused operator-control and CLI tests pass (13 tests); typecheck
+- Verification: focused operator-control and CLI tests pass (12 tests); typecheck
   and build pass; `dist/cli/agent-board.js` is emitted; uncontended full suite
   passes (135 tests).
+
+## Review (2026-08-14)
+
+**Verdict**: Approve with fixes
+
+**Blockers**: none.
+
+**Important fixes**:
+
+- No-argument controls now require authoritative frontmost Ghostty focus rather
+  than merely selecting Ghostty's internally active tab while another app is in
+  front. Explicit full IDs remain available from any invocation context.
+- The router now owns executable command definitions instead of a decorative
+  identity map plus a hard-coded dispatch conditional, preserving a real seam
+  for `doctor`.
+- Reconciliation exposes a typed title-write failure. Acknowledgement degrades
+  only that failure; store/snapshot/conflict errors remain visible. A regression
+  test proves failed diagnostic persistence cannot be mislabeled as deferred
+  title sync.
+- Added direct coverage for focused resolution through unregister and its
+  clear-before-remove result.
+
+**Nits adjudicated**: shared the focused-terminal port in the domain boundary;
+kept local timestamp/identity helpers because further extraction would exceed
+their small use-site cost; retained existing error-code, help, and idempotent
+success conventions for sibling-CLI consistency. Corrected the implementation
+note's original focused-test count.
+
+**Notes**: Standard weight, one cross-model feature review continued once to
+collect its report after the reviewer's test wait returned early. Receiver
+adjudication applied the four material findings and verified typecheck, build,
+and the uncontended full suite at 138/138 passing. No re-review required.

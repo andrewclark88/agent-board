@@ -1,10 +1,6 @@
 import { acknowledgeCompletion } from "./acknowledge.js";
-import type { Clock, SessionStore } from "../domain/ports.js";
+import type { Clock, FocusedTerminalPort, SessionStore } from "../domain/ports.js";
 import type { SessionRecord, TerminalIdentity } from "../domain/session.js";
-
-export interface FocusedTerminalPort {
-  focused(): Promise<TerminalIdentity | null>;
-}
 
 export interface CompletionFocusWatcherDependencies {
   readonly store: SessionStore;

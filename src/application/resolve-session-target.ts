@@ -1,10 +1,6 @@
 import { AgentBoardError } from "../domain/errors.js";
-import type { FocusedTerminalContext, SessionStore } from "../domain/ports.js";
+import type { FocusedTerminalPort, SessionStore } from "../domain/ports.js";
 import type { SessionRecord, TerminalIdentity } from "../domain/session.js";
-
-export interface FocusedTerminalPort {
-  current(): Promise<FocusedTerminalContext>;
-}
 
 function sameIdentity(left: TerminalIdentity, right: TerminalIdentity): boolean {
   return left.adapter === right.adapter &&
@@ -44,7 +40,13 @@ export async function resolveSessionTarget(
     return record;
   }
 
-  const focused = await terminal.current();
+  const focused = await terminal.focused();
+  if (focused === null) {
+    throw new AgentBoardError(
+      "NOT_FOUND",
+      "Ghostty is not frontmost; pass an exact session id or focus the target tab",
+    );
+  }
   const records = await store.list();
   const matches = records.filter((record) => sameIdentity(recordIdentity(record), focused));
   if (matches.length === 0) {

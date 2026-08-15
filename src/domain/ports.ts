@@ -40,6 +40,11 @@ export interface RegistrationTerminalPort {
   setTitle(identity: TerminalIdentity, title: string): Promise<void>;
 }
 
+/** Returns a terminal only when Ghostty itself is the frontmost application. */
+export interface FocusedTerminalPort {
+  focused(): Promise<TerminalIdentity | null>;
+}
+
 /** One atomic view of the current Ghostty hierarchy and live terminals. */
 export interface TerminalSnapshot {
   readonly visible: readonly TerminalIdentity[];

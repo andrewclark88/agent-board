@@ -12,9 +12,23 @@ export interface AgentBoardCliDependencies {
 }
 
 type CommandName = "ack" | "unregister";
-const COMMANDS: Readonly<Record<CommandName, CommandName>> = {
-  ack: "ack",
-  unregister: "unregister",
+interface CommandDefinition {
+  execute(target: string | undefined, dependencies: AgentBoardCliDependencies): Promise<string>;
+}
+const COMMANDS: Readonly<Record<CommandName, CommandDefinition>> = {
+  ack: {
+    async execute(target, dependencies) {
+      const result = await dependencies.ack(target);
+      const deferred = result.titleRendered ? "" : " Title sync deferred.";
+      return `Acknowledged ${result.record.sessionId}.${deferred}\n`;
+    },
+  },
+  unregister: {
+    async execute(target, dependencies) {
+      const result = await dependencies.unregister(target);
+      return `Unregistered ${result.sessionId}.\n`;
+    },
+  },
 };
 const USAGE = "Usage: agent-board <ack|unregister> [session-id]\n";
 
@@ -22,10 +36,10 @@ function parse(argv: readonly string[]): { command: CommandName; target?: string
   if (argv.length < 1 || argv.length > 2) return null;
   const command = argv[0];
   if (command !== "ack" && command !== "unregister") return null;
-  if (argv.length === 1) return { command: COMMANDS[command] };
+  if (argv.length === 1) return { command };
   const target = argv[1];
   if (target === undefined || target.length === 0 || target.startsWith("-")) return null;
-  return { command: COMMANDS[command], target };
+  return { command, target };
 }
 
 export async function runAgentBoard(
@@ -39,14 +53,7 @@ export async function runAgentBoard(
   }
 
   try {
-    if (parsed.command === "ack") {
-      const result = await dependencies.ack(parsed.target);
-      const deferred = result.titleRendered ? "" : " Title sync deferred.";
-      dependencies.stdout.write(`Acknowledged ${result.record.sessionId}.${deferred}\n`);
-    } else {
-      const result = await dependencies.unregister(parsed.target);
-      dependencies.stdout.write(`Unregistered ${result.sessionId}.\n`);
-    }
+    dependencies.stdout.write(await COMMANDS[parsed.command].execute(parsed.target, dependencies));
     return 0;
   } catch (error) {
     dependencies.stderr.write(`${formatCliError(error)}\n`);

@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import { acknowledgeSession } from "../../src/application/acknowledge-session.js";
 import { resolveSessionTarget } from "../../src/application/resolve-session-target.js";
+import { unregisterAgentSession } from "../../src/application/unregister-agent-session.js";
 import { AgentBoardError } from "../../src/domain/errors.js";
 import type { ReconciliationTerminalPort, SessionStore } from "../../src/domain/ports.js";
 import { SCHEMA_VERSION, type SessionRecord, type TerminalIdentity } from "../../src/domain/session.js";
@@ -51,19 +52,20 @@ class MemoryStore implements SessionStore {
 }
 
 class FakeTerminal implements ReconciliationTerminalPort {
-  currentCalls = 0;
+  focusCalls = 0;
   snapshotCalls = 0;
   readonly titles: string[] = [];
+  readonly cleared: string[] = [];
   constructor(
-    private readonly focused: TerminalIdentity = identity,
+    private readonly focusedValue: TerminalIdentity | null = identity,
     private readonly snapshotValue = { visible: [identity], enumerableTerminalIds: [identity.terminalId] },
     private readonly titleError?: unknown,
     private readonly currentError?: unknown,
   ) {}
-  async current() {
-    this.currentCalls += 1;
+  async focused() {
+    this.focusCalls += 1;
     if (this.currentError !== undefined) throw this.currentError;
-    return this.focused;
+    return this.focusedValue;
   }
   async snapshot() {
     this.snapshotCalls += 1;
@@ -73,7 +75,7 @@ class FakeTerminal implements ReconciliationTerminalPort {
     if (this.titleError !== undefined) throw this.titleError;
     this.titles.push(title);
   }
-  async clearTitle() {}
+  async clearTitle(value: TerminalIdentity) { this.cleared.push(value.terminalId); }
 }
 
 const clock = { now: () => new Date("2026-08-14T23:01:00.000Z") };
@@ -83,7 +85,14 @@ test("explicit target resolves by exact full id without consulting focus", async
   const terminal = new FakeTerminal();
   const result = await resolveSessionTarget(store, terminal, "session-1");
   assert.equal(result.sessionId, "session-1");
-  assert.equal(terminal.currentCalls, 0);
+  assert.equal(terminal.focusCalls, 0);
+});
+
+test("focused resolution requires Ghostty to be frontmost", async () => {
+  await assert.rejects(
+    resolveSessionTarget(new MemoryStore([record()]), new FakeTerminal(null)),
+    (error: unknown) => error instanceof AgentBoardError && error.code === "NOT_FOUND",
+  );
 });
 
 test("unknown explicit target and unregistered focus are visible failures", async () => {
@@ -142,6 +151,26 @@ test("title failure is deferred after durable acknowledgement", async () => {
   assert.equal((await store.get("session-1"))?.agent.attention, "none");
 });
 
+test("store failure while recording a vanished title target is not degraded", async () => {
+  class FailingDiagnosticStore extends MemoryStore {
+    mutations = 0;
+    override async mutate(id: string, mutation: (current: Readonly<SessionRecord>) => SessionRecord) {
+      this.mutations += 1;
+      if (this.mutations === 3) {
+        throw new AgentBoardError("LOCK_TIMEOUT", "diagnostic persistence failed");
+      }
+      return super.mutate(id, mutation);
+    }
+  }
+  const store = new FailingDiagnosticStore([record()]);
+  const terminal = new FakeTerminal(identity, undefined, { ghosttyCode: "GHOSTTY_TARGET_NOT_FOUND" });
+  await assert.rejects(
+    acknowledgeSession({ store, terminal, clock, workingFreshForMs: 60_000 }, "session-1"),
+    (error: unknown) => error instanceof AgentBoardError && error.code === "LOCK_TIMEOUT",
+  );
+  assert.equal((await store.get("session-1"))?.agent.attention, "none");
+});
+
 test("snapshot failure remains a visible acknowledgement failure", async () => {
   const store = new MemoryStore([record()]);
   const terminal = new FakeTerminal();
@@ -151,4 +180,13 @@ test("snapshot failure remains a visible acknowledgement failure", async () => {
     /snapshot failed/,
   );
   assert.equal((await store.get("session-1"))?.agent.attention, "none");
+});
+
+test("unregister control resolves focus and preserves clear-before-remove", async () => {
+  const store = new MemoryStore([record()]);
+  const terminal = new FakeTerminal();
+  const removed = await unregisterAgentSession({ store, terminal, clock });
+  assert.equal(removed.sessionId, "session-1");
+  assert.deepEqual(terminal.cleared, [identity.terminalId]);
+  assert.equal(await store.get("session-1"), null);
 });

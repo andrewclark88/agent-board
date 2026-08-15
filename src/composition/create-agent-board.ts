@@ -1,6 +1,6 @@
 import { acknowledgeSession, type AcknowledgeSessionDependencies, type AcknowledgeSessionResult } from "../application/acknowledge-session.js";
 import { unregisterAgentSession, type UnregisterAgentSessionDependencies } from "../application/unregister-agent-session.js";
-import type { ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { FocusedTerminalPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import type { SessionRecord } from "../domain/session.js";
 import { JsonSessionStore } from "../infrastructure/json-session-store.js";
 import { GhosttyClient } from "../integrations/ghostty/client.js";
@@ -12,7 +12,7 @@ export interface AgentBoardCommand {
 
 export interface AgentBoardCompositionOptions {
   readonly store?: SessionStore;
-  readonly terminal?: ReconciliationTerminalPort & { current(): Promise<import("../domain/ports.js").FocusedTerminalContext> };
+  readonly terminal?: ReconciliationTerminalPort & FocusedTerminalPort;
   readonly workingFreshForMs?: number;
 }
 

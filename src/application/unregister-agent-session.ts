@@ -1,6 +1,6 @@
 import { unregisterSession, type UnregisterSessionDependencies } from "./unregister-session.js";
-import { resolveSessionTarget, type FocusedTerminalPort } from "./resolve-session-target.js";
-import type { ReconciliationTerminalPort } from "../domain/ports.js";
+import { resolveSessionTarget } from "./resolve-session-target.js";
+import type { FocusedTerminalPort, ReconciliationTerminalPort } from "../domain/ports.js";
 import type { SessionRecord } from "../domain/session.js";
 
 export interface UnregisterAgentSessionDependencies extends UnregisterSessionDependencies {

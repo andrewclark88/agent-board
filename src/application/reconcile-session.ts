@@ -28,6 +28,17 @@ export interface ReconcileResult {
   readonly titleRendered: boolean;
 }
 
+/** Distinguishes an attempted Ghostty title write from store/snapshot failures. */
+export class TitleRenderFailure extends Error {
+  readonly cause: unknown;
+
+  constructor(cause: unknown) {
+    super("Ghostty title rendering failed");
+    this.name = "TitleRenderFailure";
+    this.cause = cause;
+  }
+}
+
 function timestamp(clock: Clock): string {
   const now = clock.now();
   if (!(now instanceof Date) || !Number.isFinite(now.getTime())) {
@@ -172,10 +183,21 @@ async function reconcileLoaded(
   }
 
   try {
-    const rendered = await renderSessionTitle(dependencies, record.sessionId, { expectedIdentity: visible });
+    const rendered = await renderSessionTitle({
+      ...dependencies,
+      terminal: {
+        setTitle: async (identity, title) => {
+          try {
+            await dependencies.terminal.setTitle(identity, title);
+          } catch (error) {
+            throw new TitleRenderFailure(error);
+          }
+        },
+      },
+    }, record.sessionId, { expectedIdentity: visible });
     return { record: rendered, titleRendered: true };
   } catch (error) {
-    if (hasGhosttyCode(error, "GHOSTTY_TARGET_NOT_FOUND")) {
+    if (error instanceof TitleRenderFailure && hasGhosttyCode(error.cause, "GHOSTTY_TARGET_NOT_FOUND")) {
       await persistUnknown(dependencies, record.sessionId);
     }
     throw error;

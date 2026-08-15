@@ -1,8 +1,8 @@
 import { acknowledgeCompletion } from "./acknowledge.js";
-import { reconcileSession } from "./reconcile-session.js";
-import { resolveSessionTarget, type FocusedTerminalPort } from "./resolve-session-target.js";
+import { reconcileSession, TitleRenderFailure } from "./reconcile-session.js";
+import { resolveSessionTarget } from "./resolve-session-target.js";
 import { AgentBoardError } from "../domain/errors.js";
-import type { Clock, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { Clock, FocusedTerminalPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import type { SessionRecord } from "../domain/session.js";
 
 export interface AcknowledgeSessionDependencies {
@@ -45,21 +45,11 @@ export async function acknowledgeSession(
     timestamp(dependencies.clock),
   );
 
-  const phase = { value: "snapshot" as "snapshot" | "title" };
-  const terminal: ReconciliationTerminalPort = {
-    snapshot: () => dependencies.terminal.snapshot(),
-    clearTitle: (identity) => dependencies.terminal.clearTitle(identity),
-    setTitle: async (identity, title) => {
-      phase.value = "title";
-      return dependencies.terminal.setTitle(identity, title);
-    },
-  };
-
   try {
     const reconciled = await reconcileSession(
       {
         store: dependencies.store,
-        terminal,
+        terminal: dependencies.terminal,
         clock: dependencies.clock,
         workingFreshForMs: dependencies.workingFreshForMs,
       },
@@ -67,7 +57,7 @@ export async function acknowledgeSession(
     );
     return { record: reconciled.record, titleRendered: reconciled.titleRendered };
   } catch (error) {
-    if (phase.value !== "title") throw error;
+    if (!(error instanceof TitleRenderFailure)) throw error;
     const current = await dependencies.store.get(acknowledged.sessionId);
     if (current === null) {
       throw new AgentBoardError("NOT_FOUND", `Session not found: ${acknowledged.sessionId}`);
