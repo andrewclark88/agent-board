@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { runAgentBoard } from "../../src/cli/agent-board.js";
+import type { DoctorReport } from "../../src/application/doctor.js";
 import { AgentBoardError } from "../../src/domain/errors.js";
 import type { AcknowledgeSessionResult } from "../../src/application/acknowledge-session.js";
 import type { SessionRecord } from "../../src/domain/session.js";
@@ -17,11 +18,18 @@ function streams() {
 
 const record = { sessionId: "session-1" } as SessionRecord;
 const acknowledged: AcknowledgeSessionResult = { record, titleRendered: true };
+const doctorReport: DoctorReport = {
+  schemaVersion: 1,
+  checkedAt: "2026-08-15T00:00:00.000Z",
+  ready: true,
+  checks: [],
+};
 
 function deps(stream: ReturnType<typeof streams>, overrides: Partial<Parameters<typeof runAgentBoard>[1]> = {}) {
   return {
     ack: async () => acknowledged,
     unregister: async () => record,
+    doctor: async () => doctorReport,
     ...stream,
     ...overrides,
   };
@@ -53,7 +61,32 @@ test("router rejects unknown, abbreviated, flagged, empty, and extra operands be
     const result = await runAgentBoard(argv, deps(io, { ack: async () => { calls += 1; return acknowledged; } }));
     assert.equal(result, 2, JSON.stringify(argv));
     assert.equal(calls, 0, JSON.stringify(argv));
-    assert.equal(io.output.stderr, "Usage: agent-board <ack|unregister> [session-id]\n");
+    assert.equal(io.output.stderr, "Usage: agent-board <ack|unregister|doctor> [session-id|--json]\n");
+  }
+});
+
+test("router runs doctor in human and JSON modes with truthful readiness exit", async () => {
+  const human = streams();
+  assert.equal(await runAgentBoard(["doctor"], deps(human)), 0);
+  assert.match(human.output.stdout, /^AGENT BOARD DOCTOR/m);
+
+  const json = streams();
+  assert.equal(await runAgentBoard(["doctor", "--json"], deps(json)), 0);
+  assert.deepEqual(JSON.parse(json.output.stdout), doctorReport);
+
+  const notReady = streams();
+  assert.equal(await runAgentBoard(["doctor"], deps(notReady, { doctor: async () => ({ ...doctorReport, ready: false }) })), 1);
+  assert.match(notReady.output.stdout, /Not ready\./u);
+});
+
+test("router rejects invalid doctor operands before diagnosis", async () => {
+  for (const argv of [["doctor", "--nope"], ["doctor", "--json", "extra"], ["doctor", "session-1"]]) {
+    const io = streams();
+    let calls = 0;
+    const result = await runAgentBoard(argv, deps(io, { doctor: async () => { calls += 1; return doctorReport; } }));
+    assert.equal(result, 2, JSON.stringify(argv));
+    assert.equal(calls, 0, JSON.stringify(argv));
+    assert.equal(io.output.stderr, "Usage: agent-board <ack|unregister|doctor> [session-id|--json]\n");
   }
 });
 

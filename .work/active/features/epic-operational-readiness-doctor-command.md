@@ -1,7 +1,7 @@
 ---
 id: epic-operational-readiness-doctor-command
 kind: feature
-stage: implementing
+stage: review
 tags: [cli, integration]
 parent: epic-operational-readiness
 depends_on: []
@@ -185,3 +185,20 @@ public command contract and fit one implementation stride.
 
 Standard weight: one independent feature pass, receiver adjudication/fixes,
 green verification, then done without re-review.
+
+## Implementation notes
+
+- Execution capability: GPT-5, high reasoning; cohesive application/infrastructure/CLI feature with bounded external seams.
+- Review weight: standard (project convention).
+- Files changed: `src/application/doctor.ts`, `src/infrastructure/state-diagnostics.ts`, `src/cli/doctor-output.ts`, `src/cli/agent-board.ts`, `src/composition/create-agent-board.ts`, and focused application, infrastructure, and CLI tests.
+- Tests added/removed: Added aggregate ordering/immutability and failure-isolation tests; scoped filesystem probe cleanup/symlink tests; human/JSON renderer fixtures; doctor router grammar/readiness tests. None removed.
+- Simplification: Reused the existing Ghostty diagnostic report, Codex process host version port, state path resolver, and shared CLI error formatting; no new process or CLI framework was introduced.
+- Discrepancies from design: The command usage line presents the three commands in one stable block and documents the two valid optional operand forms (`session-id|--json`); production composition injects a `doctorDependencies` object so all diagnostic ports remain hermetic in tests.
+- Adjacent issues parked: none.
+
+## Verification
+
+- Focused tests: 13 passed across doctor application, state probe, renderer, and router contracts.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; `dist/cli/agent-board.js` emitted.
+- Uncontended full suite: 147 passed, 0 failed.
