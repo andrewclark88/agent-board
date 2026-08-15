@@ -6,7 +6,7 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 2
-generated_at: 2026-08-15T03:03:42Z
+generated_at: 2026-08-15T08:37:21Z
 generated_from: frontmatter
 total_docs: 16
 
@@ -17,7 +17,7 @@ documents:
     title: "Architecture: Agent Board"
     type: architecture
     kind: planning
-    updated: 2026-08-14
+    updated: 2026-08-15
     status: locked
     consumer_hint: Read this before implementing or changing Agent Board modules, process topology, state contracts, or external adapters.
 
