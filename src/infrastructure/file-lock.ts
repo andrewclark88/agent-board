@@ -31,14 +31,15 @@ function lockError(error: unknown, releasing = false): AgentBoardError {
 function lockOptions(options: LockOptions): Parameters<typeof lockfile.lock>[1] {
   const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(1, options.timeoutMs) : DEFAULT_LOCK_OPTIONS.timeoutMs;
   const staleMs = Number.isFinite(options.staleMs) ? Math.max(2_000, options.staleMs) : DEFAULT_LOCK_OPTIONS.staleMs;
+  const minTimeout = Math.min(25, timeoutMs);
   return {
     realpath: false,
     stale: staleMs,
     retries: {
-      forever: true,
-      unref: true,
+      retries: Math.max(1, Math.ceil(timeoutMs / minTimeout)),
+      unref: false,
       maxRetryTime: timeoutMs,
-      minTimeout: Math.min(25, timeoutMs),
+      minTimeout,
       maxTimeout: Math.min(100, timeoutMs),
       randomize: false,
     },
