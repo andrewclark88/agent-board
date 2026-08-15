@@ -5,13 +5,14 @@ import {
   ghosttyProcessError,
   parseActionEcho,
   parseActiveContext,
+  parseFocusedTerminal,
   parseHierarchy,
   parseGhosttySnapshot,
   parseWorkingDirectory,
   type GhosttyContext,
   type GhosttyHierarchyEntry,
 } from "./protocol.js";
-import { ACTIVE_CONTEXT_SCRIPT, CLEAR_TAB_TITLE_SCRIPT, HIERARCHY_SCRIPT, SET_TAB_TITLE_SCRIPT, SNAPSHOT_SCRIPT, WORKING_DIRECTORY_SCRIPT } from "./scripts.js";
+import { ACTIVE_CONTEXT_SCRIPT, CLEAR_TAB_TITLE_SCRIPT, FOCUSED_TERMINAL_SCRIPT, HIERARCHY_SCRIPT, SET_TAB_TITLE_SCRIPT, SNAPSHOT_SCRIPT, WORKING_DIRECTORY_SCRIPT } from "./scripts.js";
 
 const COMMAND = "/usr/bin/osascript";
 const DEFAULT_TIMEOUT_MS = 2_000;
@@ -42,6 +43,10 @@ export class GhosttyClient {
     } catch {
       return identity;
     }
+  }
+
+  async focused(): Promise<TerminalIdentity | null> {
+    return parseFocusedTerminal(await this.execute(FOCUSED_TERMINAL_SCRIPT));
   }
 
   async hierarchy(): Promise<readonly GhosttyHierarchyEntry[]> {

@@ -52,3 +52,14 @@ test("client obtains the dual-view snapshot in one shell-free request", async ()
   assert.equal(runner.requests[0]?.command, "/usr/bin/osascript");
   assert.equal(runner.requests[0]?.args.includes("--"), true);
 });
+
+test("client reports only exact frontmost focus evidence", async () => {
+  const runner = new FakeRunner([
+    { stdout: "AGENT_BOARD_NOT_FRONTMOST\n", stderr: "", exitCode: 0 },
+    { stdout: "FRONTMOST\tw	t\tterm\n", stderr: "", exitCode: 0 },
+  ]);
+  const client = new GhosttyClient({ runner });
+  assert.equal(await client.focused(), null);
+  assert.deepEqual(await client.focused(), identity);
+  assert.equal(runner.requests[0]?.args.includes("AGENT_BOARD_NOT_FRONTMOST"), false);
+});

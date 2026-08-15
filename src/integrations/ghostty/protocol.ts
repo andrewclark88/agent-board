@@ -53,6 +53,15 @@ export function parseActiveContext(stdout: string): GhosttyContext {
   return parseIdentity(body.split("\t"), body);
 }
 
+export function parseFocusedTerminal(stdout: string): TerminalIdentity | null {
+  const body = withoutOneTrailingLineBreak(stdout);
+  if (body === "AGENT_BOARD_NOT_FRONTMOST") return null;
+  if (body.length === 0 || body.includes("\n")) fail("Ghostty focus output must contain one row");
+  const fields = body.split("\t");
+  if (fields[0] !== "FRONTMOST") fail("Ghostty focus output did not provide frontmost evidence");
+  return parseIdentity(fields.slice(1), body);
+}
+
 export function parseHierarchy(stdout: string): readonly GhosttyHierarchyEntry[] {
   const body = withoutOneTrailingLineBreak(stdout);
   if (body.length === 0) return [];

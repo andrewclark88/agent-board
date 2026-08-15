@@ -11,6 +11,17 @@ export const ACTIVE_CONTEXT_SCRIPT = String.raw`on run argv
   end tell
 end run`;
 
+/** Return trustworthy focus evidence, or a sentinel when Ghostty is not frontmost. */
+export const FOCUSED_TERMINAL_SCRIPT = String.raw`on run argv
+  tell application "Ghostty"
+    if frontmost is false then return "AGENT_BOARD_NOT_FRONTMOST"
+    set w to front window
+    set t to selected tab of w
+    set term to focused terminal of t
+    return "FRONTMOST" & (ASCII character 9) & (id of w as text) & (ASCII character 9) & (id of t as text) & (ASCII character 9) & (id of term as text)
+  end tell
+end run`;
+
 export const HIERARCHY_SCRIPT = String.raw`on run argv
   tell application "Ghostty"
     set rows to ""

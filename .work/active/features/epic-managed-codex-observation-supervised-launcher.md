@@ -1,7 +1,7 @@
 ---
 id: epic-managed-codex-observation-supervised-launcher
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, cli]
 parent: epic-managed-codex-observation
 depends_on: [epic-managed-codex-observation-app-server-client, epic-managed-codex-observation-lifecycle-adapter]
@@ -366,3 +366,23 @@ child stories are needed.
 - **Multiple simultaneous failures**: first outcome owns state classification;
   cleanup failures are diagnostic context, not a second contradictory state
   transition.
+
+## Implementation Notes (2026-08-14)
+
+- Added `CodexProcessHost` with shell-free version gating, split-stream
+  advertised-endpoint readiness, bounded startup/diagnostic buffers, direct
+  inherited remote-TUI stdio, reserved-argument rejection, and bounded
+  TERM-to-KILL cleanup for the detached app-server group.
+- Added strict Ghostty frontmost-focus evidence and a completion watcher that
+  polls only while `completion_unread` is present and leaves unread state intact
+  on unsupported or failed focus queries.
+- Added managed launch orchestration with observer-before-TUI startup, shared
+  reconciliation callbacks, first-outcome classification, abort-driven cleanup,
+  launcher PID removal, and explicit process/interrupted/error evidence.
+- Added the production `agent-codex` composition/CLI and npm bin. CLI signal
+  handlers ignore SIGINT for normal Codex interrupt behavior and abort on HUP or
+  TERM, with listeners removed in `finally`.
+- Added hermetic process-host, focus, and CLI tests. Verification completed with
+  `npm run typecheck`, `npm run build`, `npm test` (102 passing tests), and a
+  built `dist/cli/agent-codex.js` check. No real Codex, Ghostty, terminal
+  takeover, or network integration was used.
