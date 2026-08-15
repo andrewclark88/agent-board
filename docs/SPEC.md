@@ -135,11 +135,16 @@ elapsed time alone. Implementation validation must prove reliable Ghostty-focus
 acknowledgement and retain explicit `agent-board ack` as the fallback.
 
 The board reconciles registered Ghostty identities during reads and state writes.
-A missing terminal surface becomes disconnected/stale, not idle or error. A
-terminal that remains application-enumerable but is absent from its expected
-current window/tab hierarchy is hidden/undoable evidence, not proof of a visible
-session. A disconnected record may remain as a bounded diagnostic tombstone
-before being pruned.
+During an `agents` read, one successfully validated application-wide Ghostty
+snapshot is the cleanup authority. A terminal absent from that snapshot is
+removed from the local registry and omitted from that same board result; it is
+never relabeled as idle or error. A terminal that remains application-enumerable
+but is absent from its expected current window/tab hierarchy is hidden/undoable
+evidence, not proof of a visible session, and remains registered. If snapshot or
+inspection fails, presence becomes `unknown` and no session is removed. If
+removal fails, the missing diagnostic remains visible and a later `agents` read
+retries cleanup. Direct single-session reconciliation remains diagnostic rather
+than deleting state.
 
 ## Domain model
 

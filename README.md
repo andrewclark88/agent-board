@@ -148,6 +148,13 @@ Board cannot prove a current state or terminal presence.
 Board diagnostics may report stale evidence, hidden tabs, missing terminals, or
 title synchronization failures. Agent Board does not relabel uncertainty as idle.
 
+When you close a managed tab with `⌘W`, there is no normal cleanup command to
+run. The next `agents` refresh takes one validated Ghostty snapshot and removes
+that session if its terminal is no longer present. A hidden undo-closed tab is
+kept registered, so Ghostty's undo-close continues to work. If Ghostty cannot
+be inspected, the session remains and the board shows a diagnostic instead of
+guessing.
+
 ## Rename, acknowledge, and unregister
 
 Focus a registered Ghostty tab, then rename it:
@@ -192,7 +199,8 @@ registered tab. From another application, pass the exact ID from `agents --json`
 agent-board ack 7b470263-224b-4f1f-a59b-e9537d23d152
 ```
 
-Unregister the frontmost tab before closing or uninstalling Agent Board:
+Use unregister only when you deliberately want to release an open or hidden tab,
+when troubleshooting, or before uninstalling Agent Board:
 
 ```bash
 agent-board unregister
@@ -270,7 +278,9 @@ Do not run the Ghostty probe when disposable window creation is unacceptable.
 
 ## Uninstall
 
-1. Unregister each remaining session from its tab or exact session ID.
+1. Run `agents` after closing any tabs you no longer need; it removes ordinary
+   closed-tab registrations. Unregister any remaining open or hidden sessions
+   from their tab or exact session ID.
 
 2. Remove the global npm link.
 
@@ -281,7 +291,7 @@ Do not run the Ghostty probe when disposable window creation is unacceptable.
 3. Remove the checkout when you no longer need it.
 
 Agent Board leaves its local state directory in place. You may remove that
-directory after all sessions are unregistered.
+directory after all sessions have been removed or unregistered.
 
 ## Project references
 

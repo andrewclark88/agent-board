@@ -104,7 +104,12 @@ service.
   the focused registered session before opening the native macOS rename prompt;
   Cancel is a successful no-op and Rename changes only the project label/title.
 - `agents` reconciles Ghostty presence, renders every registered session, and
-  repairs stale title projection where safe.
+  repairs stale title projection where safe. One successfully validated
+  application-wide snapshot is also the authority for closed-session cleanup:
+  a session classified `missing` is removed and omitted from that board result.
+  `hidden` (including Ghostty undo-close) and `unknown` sessions remain
+  registered; snapshot failure removes nothing. A failed removal leaves the
+  missing diagnostic visible so a later board read can retry.
 - `agent-board doctor` validates versions, executables, Automation permission,
   Ghostty config conflicts, Codex protocol compatibility, and state-directory
   access.
@@ -323,7 +328,10 @@ Reconciliation performs one structured hierarchy snapshot. A terminal found in
 the expected current window/tab ancestry is `visible`; an application-wide
 terminal that has lost that ancestry is `hidden`; an absent ID is `missing`.
 The distinction is necessary because undo-closed surfaces remain alive and
-enumerable with stable IDs.
+enumerable with stable IDs. Batch reconciliation for `agents` removes only the
+authoritatively `missing` records from that validated snapshot. Single-session
+reconciliation remains diagnostic, and an invalid or unavailable snapshot maps
+sessions to `unknown` without deleting anything.
 
 Setup diagnostics require:
 
