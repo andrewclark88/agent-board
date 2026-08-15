@@ -27,6 +27,11 @@ tmux, a daemon, a database server, or network access for local board operations.
 
 ## Configure Ghostty
 
+The complete recommended tab workflow and Codex status-line pairing are in the
+[companion configuration guide](docs/configuration.md). Copyable fragments live
+under [`examples/ghostty/`](examples/ghostty/) and
+[`examples/codex/`](examples/codex/).
+
 Enable AppleScript in your Ghostty configuration:
 
 ```text

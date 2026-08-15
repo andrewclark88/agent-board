@@ -1,7 +1,7 @@
 ---
 id: feature-companion-terminal-configuration
 kind: feature
-stage: implementing
+stage: review
 tags: [prose]
 parent: null
 depends_on: [epic-operational-readiness]
@@ -53,3 +53,22 @@ configuration parser.
 - `docs/configuration.md`: ownership model, merge instructions, workflow,
   maintenance, verification, and rollback.
 - `README.md`: link the detailed guide and examples from the main setup path.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 inline prose lane. The work is a bounded,
+  no-code configuration and documentation addition.
+- Files added: `examples/ghostty/agent-board.conf`,
+  `examples/codex/status-line.toml`, and `docs/configuration.md`.
+- File updated: `README.md` links the companion guide and examples.
+- Grounding: the Ghostty fragment preserves Andrew's supplied workflow and the
+  installed 1.3 defaults with title decoration disabled. The Codex fragment is
+  copied from Andrew's installed `/statusline` result.
+- Safety: examples are merge-only. No personal config was copied wholesale and
+  no dotfile was changed.
+- Verification: `ghostty +validate-config` accepts the example fragment;
+  Markdown links and whitespace checks pass.
+- Discrepancy from notes: the manual `prompt_tab_title` binding is documented as
+  the earlier workflow but excluded from the recommended supervised-tab fragment
+  because it conflicts with Agent Board title ownership.
+- Adjacent issues parked: none.
