@@ -122,10 +122,13 @@ export async function launchManagedCodex(
   try {
     await dependencies.processes.version(signal);
     appServer = await dependencies.processes.startAppServer(signal);
-    await dependencies.store.mutate(sessionId, (current) => ({
-      ...current,
-      agent: { ...current.agent, mode: "managed", launcherPid: process.pid },
-    }));
+    await dependencies.store.mutate(sessionId, (current) => {
+      const { nativeThreadId: _previousThread, ...agent } = current.agent;
+      return {
+        ...current,
+        agent: { ...agent, mode: "managed", launcherPid: process.pid },
+      };
+    });
     client = await dependencies.connectClient(appServer.endpoint);
     await client.initialize({ name: "agent-board", version: "0.1.0" });
 

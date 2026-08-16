@@ -125,6 +125,23 @@ test("managed launch subscribes before TUI spawn and records a clean TUI exit", 
   assert.equal(fixture.current().agent.launcherPid, undefined);
 });
 
+test("managed relaunch replaces the previous runtime thread binding", async () => {
+  const serverExit = deferred<ProcessExit>();
+  const tuiExit = deferred<ProcessExit>();
+  const fixture = dependencies(serverExit.promise, tuiExit.promise, { exitCode: 0, signal: null });
+  await fixture.dependencies.store.mutate("session-1", (current) => ({
+    ...current,
+    agent: { ...current.agent, nativeThreadId: "previous-thread" },
+  }));
+
+  const launched = launchManagedCodex(fixture.dependencies, [], new AbortController().signal);
+  await new Promise((resolve) => setImmediate(resolve));
+  tuiExit.resolve({ exitCode: 0, signal: null });
+
+  assert.deepEqual(await launched, { sessionId: "session-1", outcome: "clean", exitCode: 0 });
+  assert.equal(fixture.current().agent.nativeThreadId, "root");
+});
+
 test("app-server failure remains launcher evidence after cleanup stops the TUI", async () => {
   const serverExit = deferred<ProcessExit>();
   const tuiExit = deferred<ProcessExit>();
