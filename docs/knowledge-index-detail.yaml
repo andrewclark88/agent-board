@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-16T20:27:10Z'
+generated_at: '2026-08-16T20:54:56Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -24,6 +24,9 @@ documents:
       lock.
     - The domain stores orthogonal identity, activity, attention, health, adapter evidence, and terminal
       presence; visible statuses are derived centrally.
+    - Managed working projection uses an ephemeral, reconciliation-verified launcher process existence
+      check matched to the persisted launcher binding; the 60-second freshness threshold remains a fallback
+      whenever that proof is unavailable.
     - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
     - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably
       focused, with an explicit acknowledgement command as fallback.
@@ -66,6 +69,10 @@ documents:
     - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
     - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary mode remains a registered-but-unmanaged
       diagnostic state until managed observation attaches.
+    - Managed working evidence remains working only when reconciliation has positively verified that the
+      persisted launcher binding is alive; the existing freshness threshold is a conservative fallback
+      for unverified or unbound working evidence, and a missing launcher becomes stale diagnostic evidence
+      during reconciliation.
     - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
     - The first release is observation-only and exposes no semantic agent actions.
   docs/VISION.md:
