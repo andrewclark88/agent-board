@@ -1,7 +1,7 @@
 ---
 id: story-fix-ghostty-trailing-newlines
 kind: story
-stage: review
+stage: done
 tags: [bug, integration]
 parent: null
 depends_on: []
@@ -60,3 +60,21 @@ unknown-empty-marker error.
   and will be repaired as its own focused story.
 - Simplification: no new parser mode or lenient row filtering; only contiguous
   output terminators are normalized, preserving strict interior validation.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review. The change is limited to
+the external protocol terminator boundary, preserves strict interior and field
+validation, and is covered by a before-failing regression plus live adapter
+confirmation. No independent or cross-model reviewer ran, as required for a
+standalone story.
