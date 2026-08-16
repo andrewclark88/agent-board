@@ -121,7 +121,7 @@ export async function launchManagedCodex(
 
   try {
     await dependencies.processes.version(signal);
-    appServer = await dependencies.processes.startAppServer(signal);
+    appServer = await dependencies.processes.startAppServer(signal, sessionId);
     await dependencies.store.mutate(sessionId, (current) => {
       const { nativeThreadId: _previousThread, ...agent } = current.agent;
       return {

@@ -25,7 +25,7 @@ test("process host uses split stream readiness and exact remote argv", async () 
   }) as never;
   const host = new CodexProcessHost({ runner: new FakeRunner(), spawn, readinessTimeoutMs: 500 });
   assert.equal(await host.version(), "0.147.0");
-  const started = await host.startAppServer(new AbortController().signal);
+  const started = await host.startAppServer(new AbortController().signal, "session-1");
   assert.equal(started.endpoint.websocketUrl.port, "45");
   await host.startRemoteTui(started.endpoint, ["--full-auto"], "session-1");
   assert.deepEqual(requests[1]?.args, ["--full-auto", "--remote", "ws://127.0.0.1:45/", "-c", "tui.terminal_title=[]"]);
@@ -33,6 +33,12 @@ test("process host uses split stream readiness and exact remote argv", async () 
     shell: false,
     detached: false,
     stdio: "inherit",
+    env: { ...process.env, AGENT_BOARD_SESSION_ID: "session-1" },
+  });
+  assert.deepEqual(requests[0]?.options, {
+    shell: false,
+    detached: true,
+    stdio: ["ignore", "pipe", "pipe"],
     env: { ...process.env, AGENT_BOARD_SESSION_ID: "session-1" },
   });
   for (const child of children) child.emit("close", 0, null);

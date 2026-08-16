@@ -146,7 +146,7 @@ export class CodexProcessHost {
     return compatibility.version;
   }
 
-  async startAppServer(signal: AbortSignal): Promise<StartedAppServer> {
+  async startAppServer(signal: AbortSignal, sessionId?: string): Promise<StartedAppServer> {
     if (signal.aborted) throw abortError();
     let child: StreamChild;
     try {
@@ -154,6 +154,9 @@ export class CodexProcessHost {
         shell: false,
         detached: true,
         stdio: ["ignore", "pipe", "pipe"],
+        ...(sessionId === undefined
+          ? {}
+          : { env: { ...process.env, AGENT_BOARD_SESSION_ID: sessionId } }),
       }) as StreamChild;
     } catch (error) {
       throw failure("Unable to start Codex app-server", error);
