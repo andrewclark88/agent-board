@@ -96,6 +96,11 @@ One `agent-codex` process owns one supervised tab's runtime:
    process-exit evidence, and leave the project tab registered.
 10. On launcher, protocol, or app-server failure, record a visible diagnostic or
    error before bounded cleanup.
+11. After every managed exit path, restore the exact controlling-terminal mode
+   captured before launch. Non-terminal stdin skips this operation; capture
+   failure on a terminal stops before Codex launches. Restoration failure is
+   reported with an operator recovery command and never replaces the managed
+   outcome.
 
 The launcher ignores terminal `SIGINT` while the child TUI is active so Codex
 retains its normal interrupt behavior. Termination and hangup signals trigger
@@ -158,6 +163,7 @@ src/
     ghostty/                AppleScript client/protocol, title actions, and diagnostics
     macos/                  native rename prompt through macOS Automation
     git/                    repository context lookup
+    terminal-mode.ts        exact pre/post-TUI controlling-terminal restoration
     command-config.ts       absolute executable override validation
     process-runner.ts       bounded external-process execution
   infrastructure/
@@ -372,6 +378,12 @@ App-server readiness, observer initialization, and child shutdown all have
 bounded timeouts. The local endpoint binds loopback only, lives for one launcher,
 and is never advertised beyond the machine.
 
+The CLI snapshots the controlling terminal with shell-free `/bin/stty -g`
+before starting the managed runtime and reapplies that opaque snapshot after
+cleanup. It does not impose `stty sane`; preserving the caller's exact prior
+mode avoids leaving raw TUI settings behind without overwriting intentional
+terminal customization.
+
 ## Technology and dependencies
 
 | Dependency | Purpose | Constraint |
@@ -385,6 +397,7 @@ and is never advertised beyond the machine.
 | Codex CLI | managed agent backend and remote TUI | Version diagnosed at startup; app-server interface is experimental |
 | Ghostty | terminal identity and title projection | macOS AppleScript-capable release |
 | `/usr/bin/osascript` | Ghostty scripting transport | macOS system dependency |
+| `/bin/stty` | Exact terminal-mode capture and restoration around managed TUI launch | macOS system dependency; shell-free, controlling terminal only |
 
 There is no CLI framework, database, web framework, logging service, or GUI
 dependency. `node:util.parseArgs` and small command modules are sufficient.

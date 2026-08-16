@@ -240,6 +240,12 @@ actions:
 If title clearing fails, Agent Board keeps the session record. Repair Ghostty,
 then retry `agent-board unregister` with the exact session ID.
 
+`agent-codex` captures the exact terminal mode before launching Codex and
+restores it after every managed exit path, including observer or app-server
+failure. If capture fails on a terminal, Codex does not launch. If restoration
+itself fails, Agent Board prints a recovery message. Run `reset` and press
+Return to recover that shell; if necessary, follow with `stty sane`.
+
 ## Current limits
 
 - Codex is the only agent adapter.

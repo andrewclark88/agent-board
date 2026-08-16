@@ -70,6 +70,12 @@ clean TUI exit. It does not install a resident service.
   acknowledges only when Ghostty itself reports the application frontmost plus
   the exact selected window/tab/focused terminal. Unsupported/failing focus
   evidence leaves unread state intact for `agent-board ack`.
+- **The launcher restores its inherited terminal contract**: capture the exact
+  controlling-terminal state with shell-free `/bin/stty -g` before launch and
+  restore that opaque snapshot after every managed exit path. Non-terminal
+  stdin skips capture; capture failure on a terminal stops before Codex launch.
+  A restore failure is actionable stderr context and does not replace the
+  managed outcome; the launcher never applies blanket `stty sane` defaults.
 
 ## Architectural choice
 
@@ -89,7 +95,8 @@ testing needlessly difficult.
 
 The trickiest unit is the supervisor race among TUI exit, app-server exit,
 observer failure, and external termination; exactly one outcome must classify
-state while cleanup remains bounded and idempotent.
+state while cleanup remains bounded and idempotent. Terminal-mode restoration
+runs outside that outcome race, after managed cleanup completes.
 
 ## Implementation units
 

@@ -2,6 +2,7 @@
 
 import { AgentBoardError } from "../domain/errors.js";
 import { createAgentCodexCommand, type AgentCodexCommand } from "../composition/create-agent-codex.js";
+import { SttyTerminalMode, type TerminalModePort } from "../integrations/terminal-mode.js";
 import { isMain } from "./is-main.js";
 
 export interface AgentCodexCommandDependencies {
@@ -38,8 +39,16 @@ export async function runAgentCodexWithSignals(
   argv: readonly string[],
   dependencies: AgentCodexCommandDependencies,
   signals: ProcessSignalPort,
+  terminalMode: TerminalModePort = new SttyTerminalMode(),
 ): Promise<number> {
   const controller = new AbortController();
+  let terminalSnapshot: string | undefined;
+  try {
+    terminalSnapshot = terminalMode.capture();
+  } catch (error) {
+    dependencies.stderr.write(`${errorMessage(error)}\n`);
+    return 1;
+  }
   const onInterrupt = () => undefined;
   const onTerminate = (signal: NodeJS.Signals) => controller.abort(new Error(signal));
   signals.on("SIGINT", onInterrupt);
@@ -51,6 +60,13 @@ export async function runAgentCodexWithSignals(
     signals.off("SIGINT", onInterrupt);
     signals.off("SIGHUP", onTerminate);
     signals.off("SIGTERM", onTerminate);
+    if (terminalSnapshot !== undefined) {
+      try {
+        terminalMode.restore(terminalSnapshot);
+      } catch (error) {
+        dependencies.stderr.write(`${errorMessage(error)}; run reset to recover this shell\n`);
+      }
+    }
   }
 }
 
