@@ -28,7 +28,7 @@ test("process host uses split stream readiness and exact remote argv", async () 
   const started = await host.startAppServer(new AbortController().signal);
   assert.equal(started.endpoint.websocketUrl.port, "45");
   await host.startRemoteTui(started.endpoint, ["--full-auto"]);
-  assert.deepEqual(requests[1]?.args, ["--full-auto", "--remote", "ws://127.0.0.1:45/", "-c", "tui.terminal_title=null"]);
+  assert.deepEqual(requests[1]?.args, ["--full-auto", "--remote", "ws://127.0.0.1:45/", "-c", "tui.terminal_title=[]"]);
   assert.deepEqual(requests[1]?.options, { shell: false, detached: false, stdio: "inherit" });
   for (const child of children) child.emit("close", 0, null);
 });

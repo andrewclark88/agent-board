@@ -231,7 +231,7 @@ export class CodexProcessHost {
   async startRemoteTui(endpoint: AppServerEndpoint, forwardedArgs: readonly string[]): Promise<ManagedChild> {
     const forbidden = forbiddenForwardedArgs(forwardedArgs);
     if (forbidden !== undefined) throw failure(`Codex argument is reserved by Agent Board: ${forbidden}`);
-    const args = [...forwardedArgs, "--remote", endpoint.websocketUrl.toString(), "-c", "tui.terminal_title=null"];
+    const args = [...forwardedArgs, "--remote", endpoint.websocketUrl.toString(), "-c", "tui.terminal_title=[]"];
     let child: ChildProcess;
     try {
       child = this.spawnProcess(this.command, args, { shell: false, detached: false, stdio: "inherit" });
