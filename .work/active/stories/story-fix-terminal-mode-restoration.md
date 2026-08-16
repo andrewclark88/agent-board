@@ -1,7 +1,7 @@
 ---
 id: story-fix-terminal-mode-restoration
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -62,3 +62,24 @@ status.
   README recovery guidance describe the new guarantee. The required fresh
   full-corpus documentation re-audit passes its mechanical gate with 0 Critical,
   0 High, and 0 Medium findings.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review. The repair restores one
+validated opaque pre-launch snapshot through shell-free argv, refuses to launch
+when a real terminal cannot be captured, skips only non-terminal stdin, and
+cannot replace the managed exit code if restoration fails. Regression coverage
+matches the live failure, returned outcomes, degraded capture, and degraded
+restore paths. The isolated PTY check and full suite are green; the fresh
+full-corpus documentation audit passes. No independent or cross-model review
+was used, per the standalone-story review contract.
