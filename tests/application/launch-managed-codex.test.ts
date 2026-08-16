@@ -89,7 +89,7 @@ function dependencies(
       processes: {
         async version() { events.push("version"); return "0.147.0"; },
         async startAppServer() { events.push("start-server"); return { child: server, endpoint: { websocketUrl: new URL("ws://127.0.0.1:45") } }; },
-        async startRemoteTui() { events.push("start-tui"); return tui; },
+        async startRemoteTui(_endpoint, _args, sessionId) { events.push(`start-tui:${sessionId ?? "missing"}`); return tui; },
         async stop(value) { stopped.push(value.pid); events.push(`stop-${value.pid}`); return stoppedExit; },
       },
       connectClient: async () => { events.push("connect"); return managedClient; },
@@ -117,7 +117,7 @@ test("managed launch subscribes before TUI spawn and records a clean TUI exit", 
   tuiExit.resolve({ exitCode: 0, signal: null });
 
   assert.deepEqual(await launched, { sessionId: "session-1", outcome: "clean", exitCode: 0 });
-  assert.ok(fixture.events.indexOf("subscribe") < fixture.events.indexOf("start-tui"));
+  assert.ok(fixture.events.indexOf("subscribe") < fixture.events.indexOf("start-tui:session-1"));
   assert.deepEqual(fixture.stopped, [10]);
   assert.equal(fixture.current().agent.activity, "idle");
   assert.equal(fixture.current().agent.health, "live");

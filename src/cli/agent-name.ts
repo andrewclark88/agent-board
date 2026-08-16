@@ -9,6 +9,7 @@ import { isMain } from "./is-main.js";
 export interface AgentNameCommandDependencies {
   register(input: RegisterSessionInput): Promise<RegisterSessionResult>;
   promptRename(): Promise<PromptRenameSessionResult>;
+  targetSessionId?: string;
   stdin: Pick<NodeJS.ReadStream, "isTTY">;
   stdout: Pick<NodeJS.WriteStream, "write">;
   stderr: Pick<NodeJS.WriteStream, "write">;
@@ -30,7 +31,7 @@ export async function runAgentName(
     dependencies.stderr.write(USAGE);
     return 2;
   }
-  if (argv.length === 1 && dependencies.stdin.isTTY !== true) {
+  if (argv.length === 1 && dependencies.targetSessionId === undefined && dependencies.stdin.isTTY !== true) {
     dependencies.stderr.write(DETACHED_LABEL_ERROR);
     return 1;
   }
@@ -43,7 +44,10 @@ export async function runAgentName(
       }
       return 0;
     }
-    const result = await dependencies.register({ projectLabel: argv[0] });
+    const result = await dependencies.register({
+      projectLabel: argv[0],
+      ...(dependencies.targetSessionId === undefined ? {} : { targetSessionId: dependencies.targetSessionId }),
+    });
     dependencies.stdout.write(`${result.created ? "Registered" : "Renamed"} ${result.record.identity.projectLabel}\n`);
     return 0;
   } catch (error) {
@@ -56,6 +60,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2)): Pro
   const command = createAgentNameCommand();
   return runAgentName(argv, {
     ...command,
+    targetSessionId: process.env.AGENT_BOARD_SESSION_ID?.trim() || undefined,
     stdin: process.stdin,
     stdout: process.stdout,
     stderr: process.stderr,

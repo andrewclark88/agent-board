@@ -124,6 +124,32 @@ test("invalid labels are rejected before any external call", async () => {
   assert.equal(lockCalls, 0);
 });
 
+test("managed session rename uses exact identity without consulting Ghostty focus", async () => {
+  const root = await mkdtemp(join(tmpdir(), "agent-board-registration-"));
+  try {
+    const store = new JsonSessionStore({ paths: paths(join(root, "v1")) });
+    const context = { adapter: "ghostty" as const, windowId: "w", tabId: "t", terminalId: "term", workingDirectory: "/tmp/data-platform" };
+    const terminal = new FakeTerminal(context);
+    const repositories = new FakeRepositories({ repoPath: "/tmp/data-platform" });
+    await registerSession(deps(store, terminal, repositories), { projectLabel: "old" });
+    terminal.currentCalls = 0;
+    repositories.calls = 0;
+
+    const renamed = await registerSession(deps(store, terminal, repositories), {
+      projectLabel: "crux-2",
+      targetSessionId: "session-1",
+    });
+
+    assert.equal(renamed.created, false);
+    assert.equal(renamed.record.identity.projectLabel, "crux-2");
+    assert.equal(terminal.currentCalls, 0);
+    assert.equal(repositories.calls, 0);
+    assert.equal(terminal.titles.at(-1)?.title, "? crux-2");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("explicit rename preserves discovered context and durable state when title fails", async () => {
   const root = await mkdtemp(join(tmpdir(), "agent-board-registration-"));
   try {

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { AgentBoardError } from "../../src/domain/errors.js";
 import { runAgentName } from "../../src/cli/agent-name.js";
+import type { RegisterSessionInput } from "../../src/application/register-session.js";
 
 function streams() {
   let stdout = "";
@@ -104,4 +105,26 @@ test("agent-name refuses a detached label invocation before targeting the focuse
   }), 0);
   assert.equal(promptCalls, 1);
   assert.equal(shortcut.stderr, "");
+});
+
+test("agent-name uses managed session identity for a detached Codex shell command", async () => {
+  const output = streams();
+  let received: RegisterSessionInput | undefined;
+  const result = await runAgentName(["crux-2"], {
+    register: async (input) => {
+      received = input;
+      return {
+        created: false,
+        record: { identity: { projectLabel: input.projectLabel } } as never,
+      };
+    },
+    promptRename: async () => ({ status: "cancelled" }),
+    targetSessionId: "managed-session",
+    stdin: { isTTY: false },
+    ...output.output,
+  });
+
+  assert.equal(result, 0);
+  assert.deepEqual(received, { projectLabel: "crux-2", targetSessionId: "managed-session" });
+  assert.equal(output.stdout, "Renamed crux-2\n");
 });

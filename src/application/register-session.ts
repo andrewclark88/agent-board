@@ -13,6 +13,7 @@ import { renderSessionTitle } from "./render-title.js";
 
 export interface RegisterSessionInput {
   readonly projectLabel?: string;
+  readonly targetSessionId?: string;
 }
 
 export interface RegisterSessionResult {
@@ -56,6 +57,15 @@ function isSameTerminal(record: SessionRecord, terminalId: string): boolean {
   return record.terminal.terminalId === terminalId;
 }
 
+function terminalIdentity(record: SessionRecord) {
+  return {
+    adapter: record.terminal.adapter,
+    windowId: record.terminal.windowId,
+    tabId: record.terminal.tabId,
+    terminalId: record.terminal.terminalId,
+  } as const;
+}
+
 export async function registerSession(
   dependencies: RegisterSessionDependencies,
   input: RegisterSessionInput = {},
@@ -65,6 +75,20 @@ export async function registerSession(
   const explicitLabel = input.projectLabel === undefined
     ? undefined
     : parseProjectLabel(input.projectLabel);
+
+  if (input.targetSessionId !== undefined) {
+    if (explicitLabel === undefined) {
+      throw new AgentBoardError("INVALID_LABEL", "An explicit session rename requires a project label");
+    }
+    const renamed = await dependencies.store.mutate(input.targetSessionId, (current) => ({
+      ...current,
+      identity: { ...current.identity, projectLabel: explicitLabel },
+    }));
+    const record = await renderSessionTitle(dependencies, renamed.sessionId, {
+      expectedIdentity: terminalIdentity(renamed),
+    });
+    return { record, created: false };
+  }
 
   // Capture one focused snapshot. In particular, do not re-query after Git
   // discovery: the user may change focus while these bounded probes run.

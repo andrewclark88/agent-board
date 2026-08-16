@@ -18,9 +18,18 @@ test("packed install exposes source-free public bins over isolated executable bo
     assert.equal(named.code, 0, named.stderr);
     assert.match(named.stdout, /Registered data-platform/u);
 
+    const registered = JSON.parse((await harness.run("agents", ["--json"])).stdout) as {
+      sessions: Array<{ sessionId: string }>;
+    };
+    const managedRename = await harness.run("agent-name", ["data-hub"], {
+      env: { AGENT_BOARD_SESSION_ID: registered.sessions[0]?.sessionId },
+    });
+    assert.equal(managedRename.code, 0, managedRename.stderr);
+    assert.match(managedRename.stdout, /Renamed data-hub/u);
+
     const board = await harness.run("agents");
     assert.equal(board.code, 0, board.stderr);
-    assert.match(board.stdout, /data-platform/u);
+    assert.match(board.stdout, /data-hub/u);
 
     const doctor = await harness.run("agent-board", ["doctor"]);
     assert.equal(doctor.code, 0, doctor.stderr);

@@ -145,7 +145,7 @@ export async function launchManagedCodex(
       () => ({ kind: "observer" as const }),
       (error) => ({ kind: "failure" as const, error }),
     );
-    tui = await dependencies.processes.startRemoteTui(appServer.endpoint, forwardedArgs);
+    tui = await dependencies.processes.startRemoteTui(appServer.endpoint, forwardedArgs, sessionId);
     focusController = new AbortController();
     focusPromise = watchCompletionFocus({
       store: dependencies.store,

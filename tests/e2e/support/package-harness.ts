@@ -58,7 +58,7 @@ export interface PackageHarness {
   bin(name: "agent-name" | "agent-codex" | "agents" | "agent-board"): string;
   readScenario(): Promise<Scenario>;
   writeScenario(mutator: (current: Scenario) => Scenario): Promise<void>;
-  run(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[], options?: { timeoutMs?: number; stdinIsTTY?: boolean }): Promise<{ code: number; stdout: string; stderr: string }>;
+  run(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[], options?: { timeoutMs?: number; stdinIsTTY?: boolean; env?: NodeJS.ProcessEnv }): Promise<{ code: number; stdout: string; stderr: string }>;
   start(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[]): RunningProcess;
   close(): Promise<void>;
 }
@@ -157,7 +157,7 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
         : [...args];
       const result = await execFileAsync(executable, executableArgs, {
         cwd: projectRoot,
-        env,
+        env: { ...env, ...options.env },
         timeout: options.timeoutMs ?? 5_000,
         maxBuffer: 2 ** 20,
       }).catch((error: unknown) => {
