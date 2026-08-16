@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-production-message-limit
 kind: story
-stage: review
+stage: done
 tags: [bug]
 parent: null
 depends_on: []
@@ -61,3 +61,23 @@ ignores it while completing the following request.
   the full suite passes (173 passed, 2 opt-in skipped).
 - Adjacent issues parked: none; general forced-shutdown TTY restoration remains
   separately tracked by `idea-terminal-mode-restoration`.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review. The 8 MiB default remains a
+finite defensive bound while exceeding the measured 3.7 MiB production
+notification. Explicit caller-supplied lower bounds retain their rejection
+behavior, and the regression proves an ignored production-sized notification
+cannot prevent the following request from completing. Typecheck and the full
+test suite are green. No independent or cross-model review was used, per the
+standalone-story review contract.
