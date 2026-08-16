@@ -15,7 +15,7 @@ decisions:
   - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical truth.
   - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation evidence.
   - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
-  - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary-TUI observation remains an explicitly degraded-confidence fallback.
+  - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary mode remains a registered-but-unmanaged diagnostic state until managed observation attaches.
   - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
   - The first release is observation-only and exposes no semantic agent actions.
 ---
@@ -71,19 +71,19 @@ The desired visible semantics are:
 “Needs user input” includes approval and direct-question waits at the projection
 layer. Adapter detail may distinguish them for diagnostics.
 
-The completed runtime prototype keeps two integration modes deliberately
-distinct. Managed-TUI observation is the supported default:
+The completed runtime prototype keeps registration and managed observation
+deliberately distinct:
 
-- Ordinary-TUI observation preserves an unchanged `codex` launch and uses
-  documented hooks and notifications. Its incomplete working/idle coverage must
-  remain visibly lower-confidence.
+- `agent-name` registers or renames a Ghostty tab but does not attach a live
+  observer. The resulting ordinary-mode record remains diagnostic with
+  `session is not managed` until a managed launcher claims the session.
 - Managed-TUI observation launches app-server first and connects the Codex TUI
   with `codex --remote`, preserving the terminal interface while enabling richer
   machine-readable lifecycle state. A concurrent observer successfully received
   a remote-TUI thread's active and idle transitions on the installed build.
 
-The product must not claim ordinary-TUI observation has the same fidelity as the
-managed path without evidence.
+The product must not claim ordinary registration has the same fidelity as the
+managed path or project ordinary sessions into canonical agent states.
 
 ### Render the Ghostty tab title
 
@@ -186,6 +186,8 @@ observation:
 ### Projection precedence
 
 ```text
+terminal presence!=visible              -> ? diagnostic
+mode=ordinary                           -> ? diagnostic
 health=error                           -> × error
 attention=input_required               -> ! needs input
 attention=completion_unread             -> ✓ finished / unread
@@ -198,6 +200,8 @@ The projection policy is a single source of truth shared by title and board
 renderers. A clean agent-process exit is recorded as observation evidence, not
 as agent health. If the registered Ghostty tab remains live, the agent becomes
 idle; terminal disappearance is represented independently by terminal presence.
+Ordinary mode is a registration state, not a lower-confidence idle/working
+state. Only managed sessions may reach the five canonical glyphs.
 
 The normalized transition boundary includes an explicit `interrupted` outcome.
 It produces `idle + attention=none + health=live`, allowing an authoritative
@@ -270,8 +274,9 @@ documentation.
 Managed-TUI launch is accepted as the default. Its activity coverage is
 sufficient for the core contract; human-wait, detailed turn outcome, and
 acknowledgement behavior remain required implementation-level integration tests.
-Ordinary mode may be offered only with a visibly narrower confidence promise;
-it must never relabel inference as equivalent native state.
+Ordinary mode is a registration-only diagnostic state. It does not project the
+five canonical agent states; only a managed launcher with live observation may
+unlock those glyphs.
 
 ## Preserved future options
 

@@ -113,6 +113,11 @@ TUI. It forwards supported extra Codex arguments unchanged; Agent Board reserves
 the remote transport and terminal-title override, so arguments that set
 `--remote` or `tui.terminal_title` are rejected.
 
+`agent-name` only registers and names the tab. Until `agent-codex` establishes
+managed observation, the session remains ordinary and the board reports `?`
+with the diagnostic `session is not managed` instead of guessing that the tab
+is idle.
+
 You may omit the separate `agent-name` step. The launcher then registers the
 current tab with a label derived from its repository or working directory.
 
@@ -132,7 +137,7 @@ Use JSON when a script needs session IDs or diagnostic details:
 agents --json
 ```
 
-The five normal symbols have one meaning each:
+The five normal symbols apply only to managed sessions with live observation:
 
 | Symbol | Meaning | Operator action |
 | --- | --- | --- |
@@ -143,10 +148,11 @@ The five normal symbols have one meaning each:
 | `×` | The agent or managed launcher failed. | Visit the tab and inspect the error. |
 
 A `?` row is a diagnostic state, not a sixth agent outcome. It means Agent
-Board cannot prove a current state or terminal presence.
+Board cannot prove a current managed state or terminal presence.
 
-Board diagnostics may report stale evidence, hidden tabs, missing terminals, or
-title synchronization failures. Agent Board does not relabel uncertainty as idle.
+Board diagnostics may report stale evidence, hidden tabs, missing terminals,
+title synchronization failures, or an ordinary session that has only been
+registered by `agent-name`. Agent Board does not relabel uncertainty as idle.
 
 When you close a managed tab with `⌘W`, there is no normal cleanup command to
 run. The next `agents` refresh takes one validated Ghostty snapshot and removes

@@ -9,7 +9,7 @@ updated: 2026-08-16
 summary: |
   Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote TUI, and observer; normalized state is atomically persisted and projected through one policy into Ghostty titles and the `agents` board.
 decisions:
-  - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary Codex remains an explicit degraded-confidence fallback.
+  - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary mode remains a registration-only diagnostic state until a managed observer attaches.
   - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group; there is no global resident daemon.
   - The stable Board session, Ghostty binding, and project identity outlive a managed runtime; each relaunch replaces the prior launcher metadata and native Codex thread binding.
   - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external boundaries.
@@ -65,9 +65,12 @@ both the remote TUI and a concurrent observer. Unix-socket multi-client support
 may replace it later if an integration test proves equivalent behavior. The
 launcher exists only while that Codex TUI exists.
 
-The ordinary `codex` path is not presented as evidence-equivalent. A later
-fallback adapter may consume documented hooks and notifications, but every
-record and board row must identify that mode as partial-confidence observation.
+The ordinary `codex` path is not presented as evidence-equivalent. `agent-name`
+alone only creates or updates a registered session record; it does not attach a
+live observer. Until `agent-codex` claims that session and binds managed
+observation, projection treats the visible ordinary record as `? diagnostic`
+with `session is not managed`. Only managed mode can produce the five canonical
+agent glyphs.
 
 ## Process topology
 
@@ -113,6 +116,8 @@ service.
   re-renders from the latest complete session record. With no label, it captures
   the focused registered session before opening the native macOS rename prompt;
   Cancel is a successful no-op and Rename changes only the project label/title.
+  Registration without `agent-codex` leaves the session in ordinary mode, so
+  projection stays diagnostic until managed observation attaches.
 - `agents` reconciles Ghostty presence, renders every registered session, and
   repairs stale title projection where safe. One successfully validated
   application-wide snapshot is also the authority for closed-session cleanup:
@@ -291,11 +296,12 @@ labels, glyphs, precedence, confidence, and freshness in one place.
 
 ```text
 terminal missing or observation unusable       -> ? diagnostic
+agent mode ordinary                            -> ? diagnostic
 agent health error                             -> × error
 attention input_required                       -> ! needs input
 attention completion_unread                    -> ✓ finished / unread
 activity working with fresh evidence           -> ● working
-visible registered tab otherwise               -> ○ idle
+visible managed tab with live idle evidence    -> ○ idle
 ```
 
 Managed event rules:
@@ -412,6 +418,9 @@ dependency. `node:util.parseArgs` and small command modules are sufficient.
 - Debug logging is opt-in, structured, local, and redacts prompt content and
   tokens. Agent Board needs lifecycle metadata, not conversation content.
 - Degraded modes are named in every detailed board row and diagnostic output.
+- Projection precedence treats non-visible terminals and ordinary mode as
+  diagnostics before health, attention, or activity. Registration and naming
+  are therefore distinct from managed observation.
 
 ## Testing strategy
 

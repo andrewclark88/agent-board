@@ -8,7 +8,7 @@ depends_on: [epic-trustworthy-session-core-domain-contract, epic-trustworthy-ses
 release_binding: null
 gate_origin: null
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-16
 ---
 
 # Transition and Projection Policy
@@ -47,9 +47,12 @@ tests covering field ownership and acknowledgement boundaries.
   subsequent interaction; ordinary idle observations preserve attention.
 - Clean process exit sets activity idle and process-exit evidence but does not
   invent stale/error health. Terminal reconciliation owns disconnection.
-- Projection follows the specification's precedence. Stale/hidden/missing
-  diagnostics replace only otherwise-working/idle/unknown glyphs; explicit
-  error and attention glyphs remain visible with diagnostic annotations.
+- Projection follows the specification's precedence. Non-visible terminals and
+  ordinary-mode records project `? diagnostic` before health, attention, or
+  activity; only managed mode can reach the five canonical glyphs. Within
+  managed mode, stale diagnostics replace only otherwise-working/idle/unknown
+  glyphs; explicit error and attention glyphs remain visible with diagnostic
+  annotations.
 
 ## Architectural choice
 
@@ -170,15 +173,17 @@ export interface ProjectionOptions { now: Date; workingFreshForMs: number; }
 export function projectSession(record: Readonly<SessionRecord>, options: ProjectionOptions): SessionProjection;
 ```
 
-Precedence: error; input required; completion unread; fresh working; live idle;
-diagnostic. Add diagnostics for stale health, non-visible/unknown terminal,
-expired/future working evidence, inferred confidence, and detail without changing
-the primary attention glyph. The exact title is `<glyph> <projectLabel>` and
-contains no diagnostic suffix.
+Precedence: non-visible terminal; ordinary mode; error; input required;
+completion unread; fresh working; live idle; diagnostic. Add diagnostics for
+stale health, non-visible/unknown terminal, unmanaged ordinary mode,
+expired/future working evidence, inferred confidence, and detail without
+changing the primary attention glyph once a session is managed. The exact title
+is `<glyph> <projectLabel>` and contains no diagnostic suffix.
 
 **Acceptance Criteria**:
 
 - [ ] The five architecture examples project exactly.
+- [ ] A visible ordinary-mode record projects `? diagnostic` with `session is not managed`, never `○ idle`.
 - [ ] Stale working and unknown activity project `?`, never idle/error.
 - [ ] Title and row callers receive one immutable projection object.
 - [ ] Boundary timestamps and invalid projection options fail deterministically.
@@ -238,6 +243,20 @@ one owner best preserves semantic coherence.
 - Discrepancies from design: initial implementation used the latest general agent-observation timestamp as a completion proxy. Review proved that an intervening idle observation could suppress a legitimate acknowledgement, so the canonical record now carries `completionObservedAt` only while completion is unread.
 - Adjacent issues parked: none.
 - Verification: `npm run typecheck` passed; `npm run build` passed; `npm test` passed (33 tests, 33 passed).
+
+### Addendum (2026-08-16)
+
+- Regression addressed: visible ordinary-mode sessions were still falling
+  through to `○ idle` when they had only registration evidence. This let an
+  `agent-name`-only tab or an otherwise unobserved session claim a canonical
+  managed state.
+- Contract correction: `projectSession` now appends `session is not managed`
+  whenever `agent.mode === "ordinary"` and short-circuits projection to
+  `? diagnostic` before health, attention, or activity precedence.
+- Operator impact: `agent-name` remains the supported registration/naming
+  surface, but it no longer implies live supervision. `agent-codex` is the
+  managed launcher that attaches observation and unlocks the canonical
+  `○ ● ✓ ! ×` states.
 
 ## Review (2026-08-14)
 
