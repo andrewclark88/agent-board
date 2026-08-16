@@ -82,3 +82,8 @@ export interface TerminalPort {
 export interface AgentObservationSource {
   observations(signal: AbortSignal): AsyncIterable<unknown>;
 }
+
+/** Establishes whether a managed launcher process still exists. */
+export interface LauncherLivenessPort {
+  isAlive(pid: number): Promise<boolean>;
+}
