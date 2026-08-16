@@ -217,8 +217,8 @@ only the stored label and canonical title. Passing more than one label prints
 To bind the prompt to `⌘⇧R`, follow the [Shortcut setup in the companion
 configuration guide](docs/configuration.md#title-ownership-and-rename-shortcut).
 It uses the macOS Services shortcut, which avoids the Shortcuts editor
-intercepting `⌘⇧R` as Repeat. Leave the Ghostty chord unbound so its app
-keybinds do not intercept the keystroke.
+intercepting `⌘⇧R` as Repeat. The companion config explicitly unbinds Ghostty's
+default native title action so the Agent Board Service receives the chord.
 
 While the managed launcher runs, it acknowledges unread completion when the
 registered Ghostty tab becomes frontmost. After the launcher exits, or when

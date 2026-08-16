@@ -77,9 +77,13 @@ in the macOS title bar.
 
 Do not bind `cmd+shift+r` to Ghostty's `prompt_tab_title` for registered Agent
 Board tabs. A manual Ghostty title override competes with Agent Board's
-machine-rendered `<status> <project>` title. Leave that Ghostty chord unbound so
-the macOS Shortcut can receive it; Ghostty app keybinds would intercept the
-keystroke first.
+machine-rendered `<status> <project>` title. Ghostty supplies that native menu
+shortcut by default on macOS, so merely omitting a binding is not enough.
+Explicitly remove it so the Agent Board Service can receive the chord:
+
+```text
+keybind = cmd+shift+r=unbind
+```
 
 For a direct rename, pass one label:
 
@@ -138,6 +142,13 @@ In **Shortcut Details**, enable **Services Menu**. Then open **System Settings
 it, and assign `⌘⇧R`. The Shortcuts editor's **Add Keyboard Shortcut** can
 intercept that chord as Repeat, so treat it as an optional first attempt rather
 than the preferred method. Shortcuts saves automatically.
+
+Reload Ghostty's configuration, then open **Ghostty → Services**. **Rename
+Agent Tab** should display `⌘⇧R`; Ghostty's **View → Change Tab Title...** should
+not. Pressing the chord should open a dialog titled **Agent Board** with the
+prompt **Rename project**. After Rename, the tab keeps its status glyph and the
+new stored label. A plain title with no glyph means Ghostty's native manual
+title prompt still owns the chord.
 
 Under Shortcuts **Advanced**, only **Allow Running Scripts** is required; do
 not enable large-data or deletion permissions. The first invocation may show a
