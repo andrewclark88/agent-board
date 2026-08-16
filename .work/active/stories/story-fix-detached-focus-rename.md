@@ -1,7 +1,7 @@
 ---
 id: story-fix-detached-focus-rename
 kind: story
-stage: review
+stage: done
 tags: [bug, cli, integration]
 parent: null
 depends_on: []
@@ -95,3 +95,27 @@ does not depend on a TTY or Ghostty focus.
 - `npm run typecheck` passes.
 - `npm test` passes the full hermetic suite, with the two real-environment
   probes remaining opt-in and skipped by default.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review. The first TTY-only guard was
+rejected after Andrew's live Codex `!` reproduction proved that legitimate path
+is also non-TTY. The final repair instead propagates the stable Agent Board
+session ID into both owned Codex processes, explicitly bridges Codex's shell
+environment policy for agent-tool descendants, and performs exact-record rename
+without consulting focus. Unbound detached calls remain refused and the
+no-argument Shortcut contract is unchanged. Focused, process, packaged, and
+full-suite regressions pass. The fresh full-corpus audit reports 0 Critical and
+0 High findings; its two Medium findings are unrelated pre-existing substrate
+hygiene. No independent or cross-model code reviewer was used, per the
+standalone-story review contract.
