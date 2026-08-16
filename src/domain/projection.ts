@@ -55,6 +55,7 @@ export function projectSession(
 
   if (record.agent.health === "stale") diagnostics.push("agent health is stale");
   addTerminalDiagnostic(diagnostics, record.terminal.presence);
+  if (record.agent.mode === "ordinary") diagnostics.push("session is not managed");
   if (record.agent.activity === "unknown") diagnostics.push("activity is unknown");
   if (workingFuture) diagnostics.push("working evidence is from the future");
   else if (workingStale) diagnostics.push("working evidence is stale");
@@ -65,6 +66,10 @@ export function projectSession(
   let status: ProjectionStatus;
   switch (true) {
     case record.terminal.presence !== "visible":
+      glyph = "?";
+      status = "diagnostic";
+      break;
+    case record.agent.mode === "ordinary":
       glyph = "?";
       status = "diagnostic";
       break;

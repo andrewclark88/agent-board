@@ -91,7 +91,7 @@ test("registration creates an ordinary inferred session and canonical title", as
     assert.equal(result.record.agent.evidenceKind, "registration");
     assert.deepEqual(terminal.titles[0], {
       identity: { adapter: "ghostty", windowId: "w", tabId: "t", terminalId: "term" },
-      title: "○ data-platform",
+      title: "? data-platform",
     });
   } finally {
     await rm(root, { recursive: true, force: true });

@@ -78,9 +78,6 @@ function boardDiagnostics(
   if (record.terminal.presence === "visible" && !result.titleRendered) {
     diagnostics.push("title is not synchronized");
   }
-  if (record.agent.mode === "ordinary") {
-    diagnostics.push("agent mode is ordinary");
-  }
   if (record.agent.confidence === "corroborated" && !diagnostics.includes("evidence is corroborated")) {
     diagnostics.push("evidence is corroborated");
   }

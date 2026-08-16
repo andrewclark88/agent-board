@@ -20,7 +20,7 @@ test("packed golden journeys preserve board/title parity and independent session
     result = await harness.run("agent-name");
     assert.equal(result.code, 0, result.stderr);
     assert.equal(result.stdout, "Renamed data-hub\n");
-    assert.equal((await harness.readScenario()).ghostty.terminals["term-one"]?.title, "○ data-hub");
+    assert.equal((await harness.readScenario()).ghostty.terminals["term-one"]?.title, "? data-hub");
     result = await harness.run("agent-name", ["data-platform"]);
     assert.equal(result.code, 0, result.stderr);
     await harness.writeScenario((scenario) => ({ ...scenario, ghostty: { ...scenario.ghostty, focusedTerminalId: "term-two" } }));
@@ -30,8 +30,8 @@ test("packed golden journeys preserve board/title parity and independent session
     let currentRows = await readBoardRows(harness);
     assert.deepEqual(currentRows.map((row) => row.label), ["acquisition", "data-platform"]);
     let scenario = await harness.readScenario();
-    assert.equal(scenario.ghostty.terminals["term-one"]?.title, "○ data-platform");
-    assert.equal(scenario.ghostty.terminals["term-two"]?.title, "○ acquisition");
+    assert.equal(scenario.ghostty.terminals["term-one"]?.title, "? data-platform");
+    assert.equal(scenario.ghostty.terminals["term-two"]?.title, "? acquisition");
 
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, focusedTerminalId: "term-one" }, codex: { ...value.codex, status: "idle" } }));
     launcher = harness.start("agent-codex");
@@ -90,7 +90,7 @@ test("packed golden journeys preserve board/title parity and independent session
     currentRows = await readBoardRows(harness);
     assert.deepEqual(currentRows.map((row) => row.label), ["acquisition"]);
     scenario = await harness.readScenario();
-    assert.equal(scenario.ghostty.terminals["term-two"]?.title, "○ acquisition");
+    assert.equal(scenario.ghostty.terminals["term-two"]?.title, "? acquisition");
   } finally {
     if (launcher) launcher.child.kill("SIGTERM");
     await harness.close();

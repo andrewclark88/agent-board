@@ -39,9 +39,9 @@ test("snapshot loss and restoration yields a diagnostic then repairs the canonic
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: false } }));
     await waitForBoardRow(harness, (row) => row.glyph === "?");
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: true } }));
-    await waitForBoardRow(harness, (row) => row.glyph === "○");
+    await waitForBoardRow(harness, (row) => row.glyph === "?" && row.diagnostics.includes("session is not managed"));
     const scenario = await harness.readScenario();
-    assert.equal(scenario.ghostty.terminals["term-one"]?.title, "○ recovery");
+    assert.equal(scenario.ghostty.terminals["term-one"]?.title, "? recovery");
     await assertCanonicalState(harness);
   } finally {
     await harness.close();

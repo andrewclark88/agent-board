@@ -16,7 +16,7 @@ function record(sessionId: string, terminal: Partial<SessionRecord["terminal"]> 
     schemaVersion: SCHEMA_VERSION, revision: 0, sessionId,
     identity: { projectLabel: sessionId, createdAt: at },
     terminal: { ...identity, presence: "visible", observedAt: at, ...terminal },
-    agent: { adapter: "codex", mode: "ordinary", activity: "idle", attention: "none", health: "live", observedAt: at, evidenceKind: "test", confidence: "authoritative", ...agent, ...(completionObservedAt === undefined ? {} : { completionObservedAt }) },
+    agent: { adapter: "codex", mode: "managed", activity: "idle", attention: "none", health: "live", observedAt: at, evidenceKind: "test", confidence: "authoritative", ...agent, ...(completionObservedAt === undefined ? {} : { completionObservedAt }) },
   };
 }
 

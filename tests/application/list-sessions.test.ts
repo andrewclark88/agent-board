@@ -83,9 +83,9 @@ test("buildBoardRows shares projection precedence, exposes board diagnostics, an
   assert.deepEqual(rows.map((row) => row.sessionId), ["idle", "abcdef12-one", "abcdef12-two"]);
   assert.equal(rows[1]?.displayLabel, "[abcdef12-o] same");
   assert.equal(rows[2]?.displayLabel, "[abcdef12-t] same");
-  assert.equal(rows[1]?.glyph, "!");
-  assert.equal(rows[1]?.status, "needs-input");
-  assert.deepEqual(rows[1]?.diagnostics, ["evidence is inferred", "agent mode is ordinary"]);
+  assert.equal(rows[1]?.glyph, "?");
+  assert.equal(rows[1]?.status, "diagnostic");
+  assert.deepEqual(rows[1]?.diagnostics, ["session is not managed", "evidence is inferred"]);
   assert.deepEqual(rows[2]?.diagnostics, ["title is not synchronized", "evidence is corroborated"]);
   assert.equal(Object.isFrozen(rows), true);
   assert.equal(Object.isFrozen(rows[1]), true);
