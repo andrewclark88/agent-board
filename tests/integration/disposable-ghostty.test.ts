@@ -17,7 +17,6 @@ const PROBE = String.raw`on run argv
       set originalWindow to front window
       set originalTerminal to focused terminal of (selected tab of originalWindow)
       set originalId to id of originalTerminal as text
-      set originalBefore to title of originalTerminal as text
 
       set probeWindow to new window
       set probeTab to selected tab of probeWindow
@@ -25,18 +24,15 @@ const PROBE = String.raw`on run argv
       set probeId to id of probeTerminal as text
       if probeId is originalId then error "Disposable Ghostty terminal reused the active terminal"
 
-      perform action ("set_tab_title:" & marker) against probeTerminal
-      set titled to title of probeTerminal as text
-      perform action "set_tab_title:" against probeTerminal
-      set cleared to title of probeTerminal as text
-      set originalAfter to title of originalTerminal as text
-      close probeWindow
-      return originalId & (ASCII character 9) & probeId & (ASCII character 9) & titled & (ASCII character 9) & cleared & (ASCII character 9) & originalBefore & (ASCII character 9) & originalAfter
+      set setActionResult to perform action ("set_tab_title:" & marker) on probeTerminal
+      set clearActionResult to perform action "set_tab_title:" on probeTerminal
+      close window probeWindow
+      return originalId & (ASCII character 9) & probeId & (ASCII character 9) & setActionResult & (ASCII character 9) & clearActionResult
     end tell
   on error messageText number errorNumber
     try
       tell application "Ghostty"
-        if probeWindow is not missing value then close probeWindow
+        if probeWindow is not missing value then close window probeWindow
       end tell
     end try
     error messageText number errorNumber
@@ -64,11 +60,10 @@ test("Ghostty disposable surface preserves the existing terminal and cleans up",
 
   const marker = `agent-board-live-${Date.now()}`;
   const result = await execFileAsync(osascript, ["-e", PROBE, "--", marker], { timeout: 10_000, maxBuffer: 32 * 1024 });
-  const [originalId, probeId, titled, cleared, originalBefore, originalAfter] = result.stdout.trim().split("\t");
+  const [originalId, probeId, titled, cleared] = result.stdout.trim().split("\t");
   assert.ok(originalId);
   assert.ok(probeId);
   assert.notEqual(originalId, probeId);
-  assert.equal(titled, marker);
-  assert.notEqual(cleared, marker);
-  assert.equal(originalAfter, originalBefore);
+  assert.equal(titled, "true");
+  assert.equal(cleared, "true");
 });

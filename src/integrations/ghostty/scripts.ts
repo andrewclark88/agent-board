@@ -82,7 +82,7 @@ export const SET_TAB_TITLE_SCRIPT = String.raw`on run argv
       return "MISSING_TARGET"
     end try
     try
-      set resultValue to perform action ("set_tab_title:" & (item 2 of argv)) against term
+      set resultValue to perform action ("set_tab_title:" & (item 2 of argv)) on term
       if resultValue is not true then return "AGENT_BOARD_ACTION_FAILED"
       return "OK:" & (item 1 of argv)
     on error
@@ -99,7 +99,7 @@ export const CLEAR_TAB_TITLE_SCRIPT = String.raw`on run argv
       return "MISSING_TARGET"
     end try
     try
-      set resultValue to perform action "set_tab_title:" against term
+      set resultValue to perform action "set_tab_title:" on term
       if resultValue is not true then return "AGENT_BOARD_ACTION_FAILED"
       return "OK:" & (item 1 of argv)
     on error

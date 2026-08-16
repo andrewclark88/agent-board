@@ -34,6 +34,8 @@ test("client uses exact osascript argv and enriches active context", async () =>
   assert.deepEqual(runner.requests[3]?.args.slice(-2), ["--", "term"]);
   assert.equal(runner.requests[2]?.args.at(-2), "term");
   assert.equal(runner.requests[2]?.args.includes("bad; $(not-shell)"), true);
+  assert.match(runner.requests[2]?.args[1] ?? "", /perform action .* on term/u);
+  assert.match(runner.requests[3]?.args[1] ?? "", /perform action .* on term/u);
 });
 
 test("client maps permission failures without exposing script details", async () => {
