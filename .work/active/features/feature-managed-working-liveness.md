@@ -1,7 +1,7 @@
 ---
 id: feature-managed-working-liveness
 kind: feature
-stage: implementing
+stage: review
 created: 2026-08-16
 updated: 2026-08-16
 tags: [state, integration]
@@ -237,3 +237,12 @@ export interface ReconcileDependencies {
   tests/application/launch-managed-codex.test.ts
   tests/application/operator-controls.test.ts` (37 passed); `npm run typecheck`
   (passed); `git diff --check` (passed).
+- Integrated verification after documentation alignment: `npm run typecheck`
+  (passed), `npm run build` (passed), and `npm test` (191 total, 189 passed,
+  2 opt-in live probes skipped, 0 failed). The first full-suite attempt was
+  blocked by two orphaned test process groups from earlier invocations; after
+  terminating only those stale test groups, the isolated Codex client suite
+  passed 6/6 and the complete suite passed normally.
+- Current operator, specification, and architecture docs now describe positive
+  managed-launcher liveness, conservative unbound freshness fallback, and the
+  no-daemon reconciliation boundary (`14c1510`).
