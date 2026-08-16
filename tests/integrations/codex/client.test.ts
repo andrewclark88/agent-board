@@ -111,6 +111,24 @@ test("disconnect rejects pending requests and notification iterators", async () 
   });
 });
 
+test("default limit accepts a production-sized ignored notification", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+      else if (request.method === "emit-large-notification") {
+        socket.send(JSON.stringify({ method: "app/list/updated", params: { catalog: "x".repeat(4 * 1_048_576) } }));
+        socket.send(JSON.stringify({ id: request.id, result: { ok: true } }));
+      }
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory });
+    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+    assert.deepEqual(await client.request("emit-large-notification", {}, z.unknown()), { ok: true });
+    await client.close();
+  });
+});
+
 test("rejects notification buffer overflow, oversized, and binary messages", async () => {
   await withServer((socket) => {
     socket.on("message", (raw) => {

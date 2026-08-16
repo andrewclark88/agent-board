@@ -14,7 +14,7 @@ import {
 import { defaultWebSocketFactory, type WebSocketFactory, type WebSocketLike } from "./websocket-port.js";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
-const DEFAULT_MAX_MESSAGE_BYTES = 1_048_576;
+const DEFAULT_MAX_MESSAGE_BYTES = 8 * 1_048_576;
 const DEFAULT_MAX_BUFFERED_NOTIFICATIONS = 256;
 const DEFAULT_MAX_PENDING_REQUESTS = 128;
 
