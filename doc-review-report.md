@@ -2,19 +2,23 @@
 
 **Project:** Agent Board
 **Date:** 2026-08-16
-**Audited HEAD:** `2d94a1b` plus the shared uncommitted ordinary-projection implementation, tests, and story
-**Documents reviewed:** 6 current system planning documents (6 system + 0 module), plus 1 superseded historical document, 10 indexed research records, `AGENTS.md`, `README.md`, operator examples, implementation, tests, and all 44 current `.work/` records
+**Audited HEAD:** `5af8411`
+**Documents reviewed:** 6 current system planning documents (6 system + 0 module), plus 1 superseded historical document, 10 indexed research records, `AGENTS.md`, `README.md`, operator examples, implementation, tests, and all 45 current `.work/` records
 **Passes run:** 1 fresh independent system-level pass; 0 module passes
-**Issues found:** Critical **0** · High **0** · Medium **4** · Low **0** · Info **1**
+**Issues found:** Critical **0** · High **0** · Medium **2** · Low **0** · Info **1**
 
 ## Mechanical Critical/High Gate
 
 **PASS — Critical = 0 and High = 0.**
 
-The fresh full system pass found no Critical or High issue. The invocation's
-explicit read-only boundary superseded the skill's auto-fix and index-regeneration
-phases, so no planning document, generated index, source file, test, work item,
-commit, or remote state was changed.
+The fresh full Phase 1–3 audit found no Critical or High issue. The
+identity-based detached-rename repair is consistent across the shipped command
+path, process topology, operator documentation, specification, architecture,
+tests, work item, and regenerated knowledge indexes.
+
+This delegated audit was explicitly limited to the canonical report. No
+planning document, generated index, source file, test, work item, commit, or
+remote state was changed.
 
 ## Phase 1: Discovery
 
@@ -29,9 +33,11 @@ commit, or remote state was changed.
 - Current planning frontmatter compliance is **6/6**. Each current planning
   document has a non-empty description, project-supported type, and updated
   date. Planning types do not require `research_method`.
-- All local Markdown links resolve. The canonical absolute references in
-  `AGENTS.md` resolve, every indexed path exists, and every archive-stub
-  `git_ref` resolves to a commit.
+- All local Markdown links resolve. Every indexed path exists, and all nine
+  archive-stub `git_ref` values resolve to commits.
+- The regenerated navigator matches the current substrate: 5 active epics,
+  15 active features, 7 active stories, 9 backlog records, and 9 archive
+  records.
 
 ## Pass 1: System-Level
 
@@ -43,26 +49,7 @@ None.
 
 None.
 
-### Medium (4)
-
-#### Generated knowledge artifacts predate the ordinary-projection decision
-
-**Files:** `docs/ARCHITECTURE.md:12`, `docs/SPEC.md:18`,
-`docs/knowledge-index-detail.yaml:15`,
-`docs/knowledge-index-detail.yaml:67`, and
-`docs/knowledge-index-nav.yaml:18`
-
-**What:** The source frontmatter now says ordinary mode is a registration-only
-diagnostic state until managed observation attaches. The derived detail index
-still preserves the superseded claim that ordinary observation is a
-degraded-confidence fallback. The navigator was generated before the current
-story and two rename-safety backlog records: it reports 6 active stories and 7
-backlog records, while the worktree contains 7 and 9 respectively. The source
-docs and `.work/bin/work-view` remain authoritative, so this does not create a
-Critical/High delivery gap.
-
-**Fix:** Regenerate all knowledge-index layers from current frontmatter and
-substrate state after the ordinary-projection story reaches its settled tier.
+### Medium (2)
 
 #### Completed features retain 84 unchecked acceptance criteria
 
@@ -79,34 +66,16 @@ substrate state after the ordinary-projection story reaches its settled tier.
 review evidence, and have their claimed production/test outputs on disk, but
 their bodies retain 84 unchecked acceptance boxes: 14, 14, 13, 12, 11, 10, and
 10 respectively. This is systematic stale substrate status prose, not evidence
-of missing DONE capability.
+of a missing DONE capability.
 
 **Fix:** In a substrate-hygiene pass, verify each criterion against the existing
 implementation/review evidence and check the satisfied boxes without reopening
 the completed designs.
 
-#### Board-command feature assigns ordinary diagnostics to the wrong layer
-
-**Files:**
-`.work/active/features/epic-swarm-attention-board-board-command.md:74`,
-`.work/active/features/epic-swarm-attention-board-board-command.md:93`,
-`.work/active/features/epic-swarm-attention-board-board-command.md:139`,
-`src/domain/projection.ts:56`, and `src/application/list-sessions.ts:71`
-
-**What:** The completed feature still says the board layer adds ordinary-mode
-detail. Current source correctly centralizes `session is not managed` in
-`projectSession`, and the board consumes that canonical diagnostic without
-adding a duplicate. The stale ownership prose could invite a later builder to
-reintroduce renderer drift.
-
-**Fix:** Update the completed feature's design and implementation notes to say
-ordinary-mode diagnostics originate in canonical projection; the board layer
-adds only board-specific title-sync and corroborated-evidence annotations.
-
 #### Packaged-E2E design retains a consolidated file path
 
 **Files:**
-`.work/active/features/epic-operational-readiness-packaged-e2e.md:109` and
+`.work/active/features/epic-operational-readiness-packaged-e2e.md:110` and
 `tests/e2e/support/package-harness.ts`
 
 **What:** The done feature's Unit 1 still lists
@@ -127,7 +96,7 @@ None.
 
 #### No module-level planning corpus discovered
 
-**Files:** `docs/` and `docs/ARCHITECTURE.md:498`
+**Files:** `docs/` and `docs/ARCHITECTURE.md:520`
 
 **What:** There are no module north stars, `docs/*/architecture/` planning
 trees, or `modules/` planning directories. Architecture also states that no
@@ -136,52 +105,60 @@ other architecture document exists in the index.
 **Disposition:** Informational. The full cascading review therefore consists of
 one system pass and zero module passes.
 
-## Ordinary-Projection Contract Verification
+## Identity-Based Detached Rename Verification
 
 | Contract | Evidence inspected | Result |
 | --- | --- | --- |
-| Registration without observation remains ordinary. | `src/application/register-session.ts` and registration tests | Consistent. A new registration stores `mode: ordinary`, registration evidence, and inferred confidence. |
-| Every visible ordinary record is diagnostic before health, attention, or activity. | `src/domain/projection.ts`, domain and board tests | Consistent. Projection appends exact `session is not managed` and short-circuits to `? diagnostic` before all managed-state branches. |
-| Titles and board rows share the same policy. | `src/application/render-title.ts`, `src/application/list-sessions.ts`, registration/board/E2E tests | Consistent. Both consume `projectSession`; the board no longer duplicates the ordinary-mode diagnostic. |
-| Managed launch unlocks the five canonical glyphs. | `src/application/launch-managed-codex.ts`, lifecycle tests, packaged golden journey | Consistent. The managed launcher changes the mode to `managed`; ordinary registration alone never claims `○`, `●`, `✓`, `!`, or `×`. |
-| Source docs and delivery record state the same invariant. | `README.md`, `docs/SPEC.md`, `docs/ARCHITECTURE.md`, transition/projection feature, active repair story | Consistent. All describe registration as distinct from managed observation and use the exact operator diagnostic. |
+| Managed launch carries the stable Board identity into both Codex processes. | `src/application/launch-managed-codex.ts`, launcher tests | Consistent. The registered `sessionId` is passed to both `startAppServer` and `startRemoteTui`; relaunch retains the Board/Ghostty identity while replacing managed runtime metadata. |
+| App-server receives process identity and an explicit shell-policy bridge. | `src/integrations/codex/process.ts`, `tests/integrations/codex/process.test.ts`, captured Codex 0.147.0 app-server help | Consistent. Spawn receives `env.AGENT_BOARD_SESSION_ID`, and argv receives `-c shell_environment_policy.set.AGENT_BOARD_SESSION_ID=<JSON string>`. The installed help capture documents dotted `-c key=value` parsing as TOML and uses `shell_environment_policy` as its example family. |
+| Agent-tool shell descendants receive exact identity after Codex filtering. | Architecture, active story root-cause record, process-host implementation/test | Consistent at Agent Board's owned boundary. The policy `set` override is passed on app-server startup instead of relying on process inheritance alone. |
+| Remote TUI and Codex `!` descendants carry exact identity. | `src/integrations/codex/process.ts`, process-host test | Consistent. The remote TUI spawn inherits stdio and receives `env.AGENT_BOARD_SESSION_ID` while retaining the reserved `tui.terminal_title=[]` override. |
+| Bound one-label rename never consults focus. | `src/cli/agent-name.ts`, `src/application/register-session.ts`, CLI/application tests | Consistent. The CLI trims the inherited ID and supplies `targetSessionId`; registration mutates that exact record and renders its stored terminal identity. The explicit path never calls `terminal.current()` or repository discovery. |
+| Unbound detached rename is refused before a focus-derived mutation. | `src/cli/agent-name.ts`, CLI regression, packed-install journey | Consistent. A non-TTY one-label call without a bound ID returns exit 1 with the stable conflict and makes zero registration calls. The packed binary reproduces the refusal. |
+| Interactive unbound fallback remains available. | CLI regression, packed-install journey | Consistent. With no bound ID and interactive stdin, the one-label form retains the intended current-Ghostty-focus registration/rename behavior. |
+| No-argument macOS Shortcut behavior is unchanged. | `src/cli/agent-name.ts`, `src/application/prompt-rename-session.ts`, prompt/CLI tests, configuration guide | Consistent. Zero arguments bypass the one-label TTY guard, capture the focused registered session before opening the native dialog, treat Cancel as success, and preserve identity/state/binding on Rename. |
+| Existing managed sessions require one restart. | `README.md`, `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/configuration.md`, active story | Consistent and prominent. Environment changes are not retroactive; a session launched before this build can still emit the unbound conflict from `! agent-name ...` until it exits and restarts through `agent-codex`. |
 
-Fresh verification completed successfully:
-
-- `npm run typecheck`
-- `npm run build`
-- `npm test`: **183 tests**, **181 passing**, **0 failing**, **2 opt-in live probes skipped**
+The reported `!agent-name crux-2` conflict is therefore compatible with the
+documented upgrade boundary when it came from a managed Codex process launched
+before this repair. After one fresh `agent-codex` launch, both Codex `!` and
+agent-tool invocations take the identity-bound path; the exact error remains the
+correct safeguard for truly unbound non-TTY calls.
 
 ## Clean Areas
 
-- The committed README, specification, architecture, and completed projection
-  feature agree with the shared implementation and regressions: ordinary mode
-  always projects `? diagnostic` with `session is not managed`.
-- Managed app-server plus remote TUI remains the V1 default everywhere current
-  truth describes it; the five canonical glyphs require managed observation.
-- Vision and principles remain aligned with the repair: inference never
-  masquerades as native state, and title/board rendering has one source of truth.
-- The two rename concerns are explicitly parked as unverified backlog work. They
-  do not make the current configuration guidance false and do not expand this
-  repair's delivery scope.
-- Stable Board/Ghostty/project identity remains distinct from launcher PID and
-  native thread binding across docs, code, and tests.
-- Local-first storage, centralized projection, Ghostty stable-ID targeting,
-  conservative liveness, completion acknowledgement, and observation-only
-  scope remain consistent.
+- README, configuration guide, specification, architecture, and the active
+  story agree on the two one-label targeting paths and the exact restart caveat.
+- The stable Board session ID is distinct from the human label, Ghostty adapter
+  identity, launcher PID, and native Codex thread binding across docs and code.
+- Exact targeting remains constrained to the stored session's terminal identity;
+  title rendering re-reads current durable state and rejects a changed binding.
+- The no-argument Shortcut path remains focus-captured and race-aware rather
+  than inheriting the managed-session environment path.
+- Managed app-server plus remote TUI remains the V1 default throughout current
+  product truth and the completed research record.
+- Vision and principles remain aligned with the repair: a detached command may
+  not infer semantic target identity from incidental frontmost focus.
+- Generated knowledge layers are current with their source frontmatter and
+  substrate counts.
 - All four packaged commands named by architecture and operator docs match
-  `package.json` and the CLI composition roots.
+  `package.json` and the installed-bin E2E coverage.
 
 ## Blocking Briefs Status
 
-There is no missing NEXT blocker. The locked V1 architecture remains grounded
-by these on-disk artifacts.
+There is no missing NEXT blocker. The locked V1 architecture and this repair's
+unchanged topology remain grounded by these on-disk artifacts.
 
 | Brief | Supports | Exists on disk? | Status |
 | --- | --- | --- | --- |
-| `.research/analysis/briefs/codex-detector-topology.md` | Managed Codex observation and launcher topology | Yes | Locked; `/research` complete |
-| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity, title, liveness, and cleanup | Yes | Locked; `/research` complete |
+| `.research/analysis/briefs/codex-detector-topology.md` | Managed Codex app-server/remote-TUI topology | Yes | Locked; `/research` complete |
+| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity, targeted title rendering, and conservative liveness | Yes | Locked; `/research` complete |
 | `.research/analysis/campaigns/agent-board-prior-art/parent.md` | Foundational V1 scope and deferred horizon | Yes | Locked; `/scout` complete |
+
+The later `shell_environment_policy.set` bridge is a bounded implementation
+correction inside the accepted managed topology. Its external CLI shape is
+supported by the checked-in Codex 0.147.0 help capture, and its exact argv is
+covered at the process boundary; it does not reopen the topology decision.
 
 ## DONE Output Verification
 
@@ -190,17 +167,17 @@ No separate phase roadmap exists; delivery state is intentionally owned by
 
 | Delivery arc | Current status | Expected output verified on disk | Result |
 | --- | --- | --- | --- |
-| Trustworthy session core | Done | Domain contracts, atomic store/lock, transition/projection code and tests | Present; ordinary-projection addendum aligns with the shared repair |
+| Trustworthy session core | Done | Domain contracts, atomic store/lock, transition/projection code and tests | Present |
 | Ghostty project surface | Done | AppleScript client/protocol/diagnostics, registration, reconciliation, title code and tests | Present |
-| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, protocol/process tests, and opt-in probe | Present |
-| Swarm attention board | Done | Board query/rendering, acknowledgement/unregister controls, and tests | Present; one Medium ownership-prose finding above |
-| Operational readiness | Done | Doctor, packed-artifact harness, golden/failure/chaos journeys, and opt-in probes | Present; one consolidated planned-path finding above |
+| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, protocol/process tests, and opt-in probe | Present; repair extends its existing process boundary |
+| Swarm attention board | Done | Board query/rendering, acknowledgement/unregister controls, and tests | Present |
+| Operational readiness | Done | Doctor, packed-artifact harness, golden/failure/chaos journeys, and opt-in probes | Present; one stale planned-path Medium above |
 | Companion terminal configuration | Done | Ghostty/Codex examples, configuration guide, README routing, and validation evidence | Present |
-| Ordinary-projection repair | Implementing | Canonical policy change, board deduplication, unit/application/E2E regressions, README/SPEC/architecture alignment | Present and green; normal review/tier transition remains |
+| Detached-focus rename repair | Review | Exact identity propagation, CLI/application guard, tests, docs, work record, and regenerated indexes | Present and green; normal bounded review/tier transition remains |
 
-The ordinary-projection story is `stage: implementing`, so it is not subject to
-the skill's DONE-output enforcement. No done item is missing a runtime
-capability or test suite.
+The repair story is at `stage: review`, so it is not subject to the skill's
+DONE-output enforcement. No done item is missing a runtime capability or test
+suite.
 
 ## Provenance Summary
 
@@ -214,16 +191,25 @@ decision briefs older than a newer higher-tier run, so there are no refresh
 candidates. The remaining indexed campaign components are supporting scaffold
 or specialist artifacts without load-bearing `research_method` fields.
 
+## Verification
+
+Fresh verification completed successfully against audited HEAD:
+
+- `npm run typecheck`
+- `npm test`: **186 tests**, **184 passing**, **0 failing**, **2 opt-in live probes skipped**
+- all local Markdown links in `README.md` and `docs/*.md` resolve
+- all 17 knowledge-index paths exist
+- all 9 archive-stub commit references resolve
+- tracked worktree was clean before this report was replaced
+
 ## Audit Boundary
 
-This fresh Phase 1–3 cascading audit inspected every current system planning
-document discovered from `docs/knowledge-index.yaml`, the superseded historical
-checkpoint for conflict only, operator docs and examples, implementation and
-test sources, all active/backlog/archive substrate records, blocking research
-existence/provenance, generated-index consistency, local links, schema and
-decision consistency, staleness, completed outputs, and the full tracked plus
-untracked worktree diff. No module planning corpus was discovered.
+This fresh Phase 1–3 system audit inspected every current planning document
+discovered from `docs/knowledge-index.yaml`, the superseded historical checkpoint
+for conflict only, operator docs and examples, the identity/launch/registration/
+title implementation paths, focused and packaged regressions, all current
+active/backlog/archive records, blocking research existence and provenance,
+generated-index consistency, local links, schema and decision consistency,
+staleness, and completed outputs. No module planning corpus was discovered.
 
-Only `doc-review-report.md` was overwritten. No source planning document,
-generated index, implementation file, test, work item, package file, commit, or
-remote state was changed by this audit.
+Only `doc-review-report.md` was overwritten by this audit.
