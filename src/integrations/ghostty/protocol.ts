@@ -43,18 +43,18 @@ function parseIdentity(fields: readonly string[], row: string): TerminalIdentity
   return { adapter: "ghostty", windowId: fields[0], tabId: fields[1], terminalId: fields[2] };
 }
 
-function withoutOneTrailingLineBreak(stdout: string): string {
-  return stdout.endsWith("\n") ? stdout.slice(0, -1) : stdout;
+function withoutTrailingLineBreaks(stdout: string): string {
+  return stdout.replace(/(?:\r?\n)+$/u, "");
 }
 
 export function parseActiveContext(stdout: string): GhosttyContext {
-  const body = withoutOneTrailingLineBreak(stdout);
+  const body = withoutTrailingLineBreaks(stdout);
   if (body.length === 0 || body.includes("\n")) fail("Ghostty active-context output must contain one row");
   return parseIdentity(body.split("\t"), body);
 }
 
 export function parseFocusedTerminal(stdout: string): TerminalIdentity | null {
-  const body = withoutOneTrailingLineBreak(stdout);
+  const body = withoutTrailingLineBreaks(stdout);
   if (body === "AGENT_BOARD_NOT_FRONTMOST") return null;
   if (body.length === 0 || body.includes("\n")) fail("Ghostty focus output must contain one row");
   const fields = body.split("\t");
@@ -63,7 +63,7 @@ export function parseFocusedTerminal(stdout: string): TerminalIdentity | null {
 }
 
 export function parseHierarchy(stdout: string): readonly GhosttyHierarchyEntry[] {
-  const body = withoutOneTrailingLineBreak(stdout);
+  const body = withoutTrailingLineBreaks(stdout);
   if (body.length === 0) return [];
   const rows = body.split("\n");
   const entries = rows.map((row) => parseIdentity(row.split("\t"), row));
@@ -76,7 +76,7 @@ export function parseHierarchy(stdout: string): readonly GhosttyHierarchyEntry[]
 }
 
 export function parseGhosttySnapshot(stdout: string): GhosttySnapshot {
-  const body = withoutOneTrailingLineBreak(stdout);
+  const body = withoutTrailingLineBreaks(stdout);
   if (body.length === 0) return { visible: [], enumerableTerminalIds: [] };
 
   const visible: GhosttyHierarchyEntry[] = [];
@@ -118,7 +118,7 @@ export function parseWorkingDirectory(stdout: string): string | undefined {
 }
 
 export function parseActionEcho(stdout: string, terminalId: string): void {
-  const value = withoutOneTrailingLineBreak(stdout);
+  const value = withoutTrailingLineBreaks(stdout);
   if (value === "MISSING_TARGET") {
     throw new GhosttyAdapterError("GHOSTTY_TARGET_NOT_FOUND", `Ghostty terminal ${terminalId} was not found`);
   }
