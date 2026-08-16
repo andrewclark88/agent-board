@@ -142,6 +142,11 @@ Run the human-readable board from any terminal:
 agents
 ```
 
+Today, `agents` prints one current snapshot and exits. It is not yet a
+continuously refreshing board, a separate resident window, or a menu-bar app.
+The simplest workflow is to keep a spare terminal handy and rerun `agents`
+whenever you want a fresh read of the swarm.
+
 Use JSON when a script needs session IDs or diagnostic details:
 
 ```bash
