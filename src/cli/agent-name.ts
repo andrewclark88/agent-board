@@ -9,11 +9,13 @@ import { isMain } from "./is-main.js";
 export interface AgentNameCommandDependencies {
   register(input: RegisterSessionInput): Promise<RegisterSessionResult>;
   promptRename(): Promise<PromptRenameSessionResult>;
+  stdin: Pick<NodeJS.ReadStream, "isTTY">;
   stdout: Pick<NodeJS.WriteStream, "write">;
   stderr: Pick<NodeJS.WriteStream, "write">;
 }
 
 const USAGE = "Usage: agent-name [label]\n";
+const DETACHED_LABEL_ERROR = "CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt\n";
 
 function errorMessage(error: unknown): string {
   if (error instanceof AgentBoardError) return `${error.code}: ${error.message}`;
@@ -27,6 +29,10 @@ export async function runAgentName(
   if (argv.length > 1) {
     dependencies.stderr.write(USAGE);
     return 2;
+  }
+  if (argv.length === 1 && dependencies.stdin.isTTY !== true) {
+    dependencies.stderr.write(DETACHED_LABEL_ERROR);
+    return 1;
   }
 
   try {
@@ -50,6 +56,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2)): Pro
   const command = createAgentNameCommand();
   return runAgentName(argv, {
     ...command,
+    stdin: process.stdin,
     stdout: process.stdout,
     stderr: process.stderr,
   });

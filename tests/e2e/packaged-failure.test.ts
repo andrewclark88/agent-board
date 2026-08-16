@@ -8,7 +8,7 @@ test("packed failure journeys preserve actionable errors and retryable records",
   const harness = await createPackageHarness();
   let launcher;
   try {
-    let result = await harness.run("agent-name", ["unsafe\nlabel"]);
+    let result = await harness.run("agent-name", ["unsafe\nlabel"], { stdinIsTTY: true });
     assert.equal(result.code, 1);
     assert.match(result.stderr, /INVALID_LABEL/u);
     assert.match((await harness.run("agents", ["--json"])).stdout, /sessions":\[\]/u);
@@ -36,7 +36,7 @@ test("packed failure journeys preserve actionable errors and retryable records",
       ghostty: { ...value.ghostty, version: "Ghostty 1.3.1", userConfig: "macos-applescript = true\n", automationDenied: false },
       codex: { ...value.codex, version: "codex-cli 0.147.2", status: "error" },
     }));
-    result = await harness.run("agent-name", ["reporting"]);
+    result = await harness.run("agent-name", ["reporting"], { stdinIsTTY: true });
     assert.equal(result.code, 0, result.stderr);
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: false } }));
     const diagnostic = await waitForBoardRow(harness, (row) => row.label === "reporting" && row.glyph === "?");
@@ -57,7 +57,7 @@ test("packed failure journeys preserve actionable errors and retryable records",
 test("failed title clear retains a record for a healthy retry", async () => {
   const harness = await createPackageHarness();
   try {
-    let result = await harness.run("agent-name", ["clear-me"]);
+    let result = await harness.run("agent-name", ["clear-me"], { stdinIsTTY: true });
     assert.equal(result.code, 0, result.stderr);
     const current = await harness.run("agents", ["--json"]);
     const sessionId = (JSON.parse(current.stdout) as { sessions: Array<{ sessionId: string }> }).sessions[0]?.sessionId;

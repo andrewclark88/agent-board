@@ -34,7 +34,7 @@ test("killing the owned app-server projects bounded error evidence without corru
 test("snapshot loss and restoration yields a diagnostic then repairs the canonical title", async () => {
   const harness = await createPackageHarness();
   try {
-    const named = await harness.run("agent-name", ["recovery"]);
+    const named = await harness.run("agent-name", ["recovery"], { stdinIsTTY: true });
     assert.equal(named.code, 0, named.stderr);
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: false } }));
     await waitForBoardRow(harness, (row) => row.glyph === "?");

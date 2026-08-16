@@ -1,7 +1,7 @@
 ---
 id: story-fix-detached-focus-rename
 kind: story
-stage: implementing
+stage: review
 tags: [bug, cli, integration]
 parent: null
 depends_on: []
@@ -54,3 +54,15 @@ reproduced the unintended registration call and now passes with the guard.
 - The operator guide, configuration guide, specification, and architecture now
   distinguish these two invocation contracts. Regenerate the knowledge index
   and run the documentation review after the implementation verification pass.
+
+## Verification
+
+- The focused CLI regression proves a detached one-label invocation returns
+  exit 1 without calling registration, while the noninteractive no-argument
+  Shortcut path remains available.
+- The packed-install journey proves the shipped binary refuses a detached
+  rename and still registers normally when the harness explicitly supplies an
+  interactive terminal boundary.
+- `npm run typecheck` passes.
+- `npm test` passes all 181 tests, with the two real-environment probes remaining
+  opt-in and skipped by default.

@@ -58,7 +58,7 @@ export interface PackageHarness {
   bin(name: "agent-name" | "agent-codex" | "agents" | "agent-board"): string;
   readScenario(): Promise<Scenario>;
   writeScenario(mutator: (current: Scenario) => Scenario): Promise<void>;
-  run(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[], options?: { timeoutMs?: number }): Promise<{ code: number; stdout: string; stderr: string }>;
+  run(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[], options?: { timeoutMs?: number; stdinIsTTY?: boolean }): Promise<{ code: number; stdout: string; stderr: string }>;
   start(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[]): RunningProcess;
   close(): Promise<void>;
 }
@@ -151,7 +151,11 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
       await rename(temporary, scenarioPath);
     },
     run: async (name, args = [], options = {}) => {
-      const result = await execFileAsync(harness.bin(name), [...args], {
+      const executable = options.stdinIsTTY ? process.execPath : harness.bin(name);
+      const executableArgs = options.stdinIsTTY
+        ? ["--require", join(fixtures, "fake-tty.cjs"), harness.bin(name), ...args]
+        : [...args];
+      const result = await execFileAsync(executable, executableArgs, {
         cwd: projectRoot,
         env,
         timeout: options.timeoutMs ?? 5_000,

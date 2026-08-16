@@ -14,17 +14,17 @@ test("packed golden journeys preserve board/title parity and independent session
   });
   let launcher;
   try {
-    let result = await harness.run("agent-name", ["data-platform"]);
+    let result = await harness.run("agent-name", ["data-platform"], { stdinIsTTY: true });
     assert.equal(result.code, 0, result.stderr);
     await harness.writeScenario((scenario) => ({ ...scenario, renamePrompt: { response: "data-hub" } }));
     result = await harness.run("agent-name");
     assert.equal(result.code, 0, result.stderr);
     assert.equal(result.stdout, "Renamed data-hub\n");
     assert.equal((await harness.readScenario()).ghostty.terminals["term-one"]?.title, "? data-hub");
-    result = await harness.run("agent-name", ["data-platform"]);
+    result = await harness.run("agent-name", ["data-platform"], { stdinIsTTY: true });
     assert.equal(result.code, 0, result.stderr);
     await harness.writeScenario((scenario) => ({ ...scenario, ghostty: { ...scenario.ghostty, focusedTerminalId: "term-two" } }));
-    result = await harness.run("agent-name", ["acquisition"]);
+    result = await harness.run("agent-name", ["acquisition"], { stdinIsTTY: true });
     assert.equal(result.code, 0, result.stderr);
 
     let currentRows = await readBoardRows(harness);

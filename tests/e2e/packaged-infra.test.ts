@@ -10,7 +10,11 @@ test("packed install exposes source-free public bins over isolated executable bo
     const installed = await readdir(`${harness.prefix}/node_modules/agent-board`);
     assert.deepEqual(installed.sort(), ["README.md", "dist", "package.json"]);
 
-    const named = await harness.run("agent-name", ["data-platform"]);
+    const detached = await harness.run("agent-name", ["wrong-target"]);
+    assert.equal(detached.code, 1);
+    assert.match(detached.stderr, /must run in the target terminal/u);
+
+    const named = await harness.run("agent-name", ["data-platform"], { stdinIsTTY: true });
     assert.equal(named.code, 0, named.stderr);
     assert.match(named.stdout, /Registered data-platform/u);
 

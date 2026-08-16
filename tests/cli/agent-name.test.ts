@@ -14,14 +14,16 @@ function streams() {
   };
 }
 
+const interactive = { stdin: { isTTY: true } };
+
 test("agent-name routes zero arguments to the prompt and rejects multiple labels", async () => {
   const output = streams();
   let calls = 0;
   const register = async () => { calls += 1; throw new Error("should not run"); };
   const promptRename = async () => ({ status: "cancelled" as const });
 
-  assert.equal(await runAgentName([], { register, promptRename, ...output.output }), 0);
-  assert.equal(await runAgentName(["one", "two"], { register, promptRename, ...output.output }), 2);
+  assert.equal(await runAgentName([], { register, promptRename, ...interactive, ...output.output }), 0);
+  assert.equal(await runAgentName(["one", "two"], { register, promptRename, ...interactive, ...output.output }), 2);
   assert.equal(calls, 0);
   assert.equal(output.stdout, "");
   assert.equal(output.stderr, "Usage: agent-name [label]\n");
@@ -35,6 +37,7 @@ test("agent-name writes terse success and stable typed failure output", async ()
       record: { identity: { projectLabel: input.projectLabel ?? "" } } as never,
     }),
     promptRename: async () => ({ status: "cancelled" }),
+    ...interactive,
     ...success.output,
   });
   assert.equal(result, 0);
@@ -45,6 +48,7 @@ test("agent-name writes terse success and stable typed failure output", async ()
   assert.equal(await runAgentName(["bad"], {
     register: async () => { throw new AgentBoardError("CONFLICT", "already registered"); },
     promptRename: async () => ({ status: "cancelled" }),
+    ...interactive,
     ...failure.output,
   }), 1);
   assert.equal(failure.stdout, "");
@@ -59,6 +63,7 @@ test("agent-name prints prompted renames and keeps cancellation silent", async (
       status: "renamed",
       record: { identity: { projectLabel: "acquisition" } } as never,
     }),
+    ...interactive,
     ...renamed.output,
   }), 0);
   assert.equal(renamed.stdout, "Renamed acquisition\n");
@@ -67,8 +72,36 @@ test("agent-name prints prompted renames and keeps cancellation silent", async (
   assert.equal(await runAgentName([], {
     register: async () => { throw new Error("should not run"); },
     promptRename: async () => ({ status: "cancelled" }),
+    ...interactive,
     ...cancelled.output,
   }), 0);
   assert.equal(cancelled.stdout, "");
   assert.equal(cancelled.stderr, "");
+});
+
+test("agent-name refuses a detached label invocation before targeting the focused tab", async () => {
+  const output = streams();
+  let registerCalls = 0;
+  const result = await runAgentName(["wrong-tab"], {
+    register: async () => { registerCalls += 1; throw new Error("must not run"); },
+    promptRename: async () => ({ status: "cancelled" }),
+    stdin: { isTTY: false },
+    ...output.output,
+  });
+
+  assert.equal(result, 1);
+  assert.equal(registerCalls, 0);
+  assert.equal(output.stdout, "");
+  assert.equal(output.stderr, "CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt\n");
+
+  const shortcut = streams();
+  let promptCalls = 0;
+  assert.equal(await runAgentName([], {
+    register: async () => { throw new Error("must not run"); },
+    promptRename: async () => { promptCalls += 1; return { status: "cancelled" }; },
+    stdin: { isTTY: false },
+    ...shortcut.output,
+  }), 0);
+  assert.equal(promptCalls, 1);
+  assert.equal(shortcut.stderr, "");
 });
