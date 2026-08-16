@@ -26,15 +26,22 @@ and did not carry the managed session's stable identity into Codex descendants.
 Agent-tool execution therefore targeted whichever tab happened to be frontmost.
 The first TTY-only safeguard was incomplete because Codex `!` also runs without
 a TTY, despite being a legitimate descendant of the intended managed session.
+Live verification then showed that app-server process environment alone was
+also insufficient: Codex filters agent-tool shell subprocess environments
+through `shell_environment_policy`.
 
 ## Fix approach
 
 Give both the Codex app-server and remote TUI launched by `agent-codex` their
-originating Agent Board session ID through `AGENT_BOARD_SESSION_ID`. A one-label
-command inheriting that ID—whether through Codex `!` or agent tool execution—
-renames the exact session and never consults focus. Require interactive stdin
-only for the fallback focus-based form used outside a managed session. Keep the
-no-argument native rename prompt available to the noninteractive macOS Shortcut.
+originating Agent Board session ID through their process environments. For the
+app-server, also set
+`shell_environment_policy.set.AGENT_BOARD_SESSION_ID` through a Codex `-c`
+override so agent-tool shells reliably inherit the ID after policy filtering.
+A one-label command inheriting that ID—whether through Codex `!` or agent tool
+execution—renames the exact session and never consults focus. Require
+interactive stdin only for the fallback focus-based form used outside a managed
+session. Keep the no-argument native rename prompt available to the
+noninteractive macOS Shortcut.
 
 ## Regression test
 
@@ -46,9 +53,14 @@ does not depend on a TTY or Ghostty focus.
 ## Implementation and documentation notes
 
 - `agent-codex` passes the stable Board session ID into both owned Codex process
-  environments. The CLI forwards an inherited ID to registration as an
-  explicit target, which renames only that record and renders its stored
-  terminal without querying current focus.
+  environments. Its app-server command also passes
+  `-c shell_environment_policy.set.AGENT_BOARD_SESSION_ID=<JSON-encoded-session-id>`;
+  this explicit policy bridge, rather than process inheritance alone, carries
+  the ID into agent-tool shell descendants. The remote TUI environment carries
+  it into Codex `!` descendants.
+- The CLI forwards an inherited ID to registration as an explicit target, which
+  renames only that record and renders its stored terminal without querying
+  current focus.
 - Without a bound ID, the CLI rejects a non-TTY one-label invocation before
   calling registration or resolving Ghostty focus. The stable failure is:
 
@@ -74,10 +86,12 @@ does not depend on a TTY or Ghostty focus.
   exit 1 without calling registration, while a non-TTY command with a managed
   session ID passes that explicit target and the no-argument Shortcut path
   remains available.
-- Process integration coverage proves both the app-server and remote TUI receive
-  `AGENT_BOARD_SESSION_ID`. The packed-install journey proves the shipped binary
-  refuses an unbound detached rename, supports the interactive focus fallback,
-  and accepts an explicit managed-session target without a TTY.
+- Process integration coverage proves the app-server receives both its
+  `AGENT_BOARD_SESSION_ID` process environment and JSON-encoded
+  `shell_environment_policy.set` argument, while the remote TUI receives the
+  process environment binding. The packed-install journey proves the shipped
+  binary refuses an unbound detached rename, supports the interactive focus
+  fallback, and accepts an explicit managed-session target without a TTY.
 - `npm run typecheck` passes.
 - `npm test` passes the full hermetic suite, with the two real-environment
   probes remaining opt-in and skipped by default.

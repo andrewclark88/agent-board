@@ -82,9 +82,12 @@ One `agent-codex` process owns one supervised tab's runtime:
 2. Find the existing Board session for that terminal or register one using the
    repository directory name as an editable initial label.
 3. Start app-server on an ephemeral loopback WebSocket endpoint with the stable
-   Board session ID in `AGENT_BOARD_SESSION_ID`, then wait for its advertised
-   readiness with a bounded timeout. Agent-tool descendants inherit this exact
-   targeting context.
+   Board session ID in its process environment as `AGENT_BOARD_SESSION_ID`.
+   Also pass the Codex config override
+   `-c shell_environment_policy.set.AGENT_BOARD_SESSION_ID=<JSON-encoded-session-id>`
+   so Codex's shell-environment filtering explicitly bridges that identity into
+   agent-tool shell descendants. Then wait for advertised readiness with a
+   bounded timeout.
 4. Claim that stable session for this launcher by recording its process ID and
    clearing any native thread binding left by the prior managed runtime.
 5. Connect the Board observer and complete protocol initialization.
