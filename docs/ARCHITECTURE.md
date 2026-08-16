@@ -113,9 +113,19 @@ service.
 ### Independent CLI invocations
 
 - `agent-name [label]` registers or renames the focused Ghostty tab, then
-  re-renders from the latest complete session record. With no label, it captures
-  the focused registered session before opening the native macOS rename prompt;
-  Cancel is a successful no-op and Rename changes only the project label/title.
+  re-renders from the latest complete session record. The one-label path
+  requires interactive stdin and fails before Ghostty focus resolution when
+  invoked from a detached or non-TTY process. This confines focus-derived
+  mutation to a normal target-terminal shell prompt or Codex `!` shell escape.
+  Its stable error is shown below. With no label, the command remains callable
+  noninteractively by the macOS Shortcut: it captures the focused registered
+  session before opening the native rename prompt; Cancel is a successful no-op
+  and Rename changes only the project label/title.
+
+  ```text
+  CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+  ```
+
   Registration without `agent-codex` leaves the session in ordinary mode, so
   projection stays diagnostic until managed observation attaches.
 - `agents` reconciles Ghostty presence, renders every registered session, and

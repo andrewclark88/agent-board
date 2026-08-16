@@ -43,15 +43,25 @@ registers or renames the supervised agent in the currently focused Ghostty tab.
 Registration records a stable Agent Board session ID, the human label, repository
 context when available, adapter identity, and Ghostty window/tab/terminal IDs.
 
+The one-label form requires interactive stdin and must run in the target
+terminal, either at its normal shell prompt or through Codex's `!` shell escape.
+This requirement is checked before Ghostty focus resolution because a detached
+tool process has no trustworthy originating tab. A detached or non-TTY
+one-label invocation exits nonzero with the stable conflict:
+
+```text
+CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+```
+
 Renaming changes only the display label. It does not change session identity,
 machine state, repo path, or adapter binding.
 
-With no label, `agent-name` captures the focused registered Ghostty session
-before opening the native macOS rename prompt. Cancel is a silent successful
-no-op. Confirming a label changes only `identity.projectLabel` and the canonical
-title projection; it preserves session identity, agent state, and terminal
-binding. One-label invocation retains the direct rename behavior, while more
-than one label returns `Usage: agent-name [label]`.
+With no label, `agent-name` remains available to noninteractive callers such as
+the macOS Shortcut. It captures the focused registered Ghostty session before
+opening the native macOS rename prompt. Cancel is a silent successful no-op.
+Confirming a label changes only `identity.projectLabel` and the canonical title
+projection; it preserves session identity, agent state, and terminal binding.
+More than one label returns `Usage: agent-name [label]`.
 
 ### Observe Codex state
 

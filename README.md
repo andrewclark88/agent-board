@@ -102,6 +102,10 @@ agent-board doctor --json
    agent-name agent-board
    ```
 
+   Run this directly at that tab's shell prompt. From inside Codex, use the
+   `! agent-name agent-board` shell escape; do not ask an agent to run the
+   command through a detached tool process.
+
 3. Start Codex through the managed launcher.
 
    ```bash
@@ -169,6 +173,15 @@ Focus a registered Ghostty tab, then rename it:
 agent-name data-platform
 ```
 
+Run the one-label form directly in the target terminal, either from its normal
+shell prompt or through Codex's `!` shell escape. It requires interactive stdin
+because Ghostty focus determines the target. A detached or non-TTY one-label
+invocation fails before focus resolution with:
+
+```text
+CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+```
+
 The label changes independently from agent state and session identity.
 
 For a native macOS rename prompt, run the command without a label:
@@ -177,9 +190,11 @@ For a native macOS rename prompt, run the command without a label:
 agent-name
 ```
 
-It captures the focused registered Ghostty session before opening the dialog.
-Cancel is a silent successful no-op; Rename changes only the stored label and
-canonical title. Passing more than one label prints `Usage: agent-name [label]`.
+The no-argument form remains intentionally available to noninteractive callers
+such as the macOS Shortcut. It captures the focused registered Ghostty session
+before opening the dialog. Cancel is a silent successful no-op; Rename changes
+only the stored label and canonical title. Passing more than one label prints
+`Usage: agent-name [label]`.
 
 To bind the prompt to `⌘⇧R`, follow the [Shortcut setup in the companion
 configuration guide](docs/configuration.md#title-ownership-and-rename-shortcut).

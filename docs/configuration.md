@@ -87,16 +87,28 @@ For a direct rename, pass one label from a shell prompt:
 agent-name data-platform
 ```
 
+Run the one-label form directly in the target terminal. A normal shell prompt
+or Codex's `! agent-name data-platform` shell escape supplies the required
+interactive stdin. Do not ask an agent to invoke it through a detached tool
+process: Agent Board refuses detached and non-TTY one-label calls before
+resolving Ghostty focus, with:
+
+```text
+CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+```
+
 For a native macOS rename prompt, run `agent-name` with no label:
 
 ```bash
 agent-name
 ```
 
-Agent Board captures the focused registered Ghostty session before opening the
-dialog. Rename changes only the stored project label and canonical title; it
-does not change session identity, agent state, or terminal binding. Cancel is a
-silent successful no-op. Passing more than one label prints:
+Unlike the one-label form, this no-argument form is intentionally usable from a
+noninteractive caller such as the macOS Shortcut. Agent Board captures the
+focused registered Ghostty session before opening the dialog. Rename changes
+only the stored project label and canonical title; it does not change session
+identity, agent state, or terminal binding. Cancel is a silent successful no-op.
+Passing more than one label prints:
 
 ```text
 Usage: agent-name [label]
@@ -128,9 +140,9 @@ not enable large-data or deletion permissions. The first invocation may show a
 separate macOS Automation permission prompt; grant it to let the
 Shortcut-launched command inspect and retitle Ghostty.
 
-The direct shell command remains available when the Shortcut is inconvenient.
-Agent Board then retains the label while status changes update only the leading
-glyph.
+The direct shell command remains available when the Shortcut is inconvenient;
+run it from the target terminal or Codex `!` shell escape. Agent Board then
+retains the label while status changes update only the leading glyph.
 
 ### Required integration values
 
