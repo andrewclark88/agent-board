@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-loaded-thread-schema
 kind: story
-stage: review
+stage: done
 tags: [bug, integration]
 parent: null
 depends_on: []
@@ -71,3 +71,27 @@ string` at `data[0]`, matching the live session failure.
   client suite passed 20 consecutive runs; packaged E2E passes; typecheck and
   build pass; the full hermetic suite passes 192 tests with 2 opt-in probes
   skipped.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review; no independent or cross-model
+code reviewer ran. The review checked wire/internal schema separation,
+subscription-before-discovery ordering, thread identity and cwd/parent binding,
+abort/timeout cleanup, strict failure semantics, installed-version evidence,
+and regression quality. Sequential `thread/read` calls keep pending requests
+bounded and preserve source order; exact returned-ID checking prevents silent
+misbinding. The current generated schema probe, 20 repeated client-suite passes,
+green packaged journeys, and full suite support closure. The fresh corpus audit
+returns 0 Critical and 0 High findings. The previously parked intermittent
+WebSocket test-cleanup hang was the now-repaired fixture race, so its backlog
+record is resolved with this story.
