@@ -8,7 +8,7 @@ depends_on: [epic-managed-codex-observation-app-server-client, epic-managed-code
 release_binding: null
 gate_origin: null
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-16
 ---
 
 # Supervised Codex Launcher
@@ -58,7 +58,8 @@ clean TUI exit. It does not install a resident service.
 - **User Codex arguments remain argv data**: forward arguments without a shell,
   but reject caller-supplied `--remote`, remote-auth, or
   `tui.terminal_title` overrides. Append Board's endpoint and
-  `-c tui.terminal_title=null` so one component owns the Ghostty title.
+  `-c tui.terminal_title=[]` so one component owns the Ghostty title; Codex
+  requires this setting to be a sequence.
 - **Outcome ownership is explicit**: clean TUI exit records `process-exit: 0`;
   nonzero/signal exit and unexpected server/observer failure record visible
   error; deliberate `SIGHUP`/`SIGTERM` records `interrupted`. Every committed
@@ -148,7 +149,7 @@ export class CodexProcessHost {
 - Spawn the TUI with `shell:false`, `stdio:"inherit"`, and `detached:false`.
   Validate forwarded arguments before spawn, then construct exact argv:
   `[...forwardedArgs, "--remote", endpoint.websocketUrl.toString(), "-c",
-  "tui.terminal_title=null"]`.
+  "tui.terminal_title=[]"]`.
 - Expose one exit promise that settles on `exit`/spawn error exactly once. Never
   include environment dumps or prompt content in diagnostics.
 - `stop` sends `SIGTERM` to the process or negative app-server process-group

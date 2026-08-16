@@ -2,21 +2,32 @@
 
 **Project:** Agent Board
 **Date:** 2026-08-16
-**Documents reviewed:** 17 indexable documents (7 system/historical planning + 10 research records), plus `AGENTS.md`, `README.md`, examples, current `.work/` state, implementation, tests, and recent fix commits
+**Documents reviewed:** 17 indexable documents (7 system/historical planning + 10 research records), plus `AGENTS.md`, `README.md`, examples, current `.work/` state, implementation, tests, and the terminal-title repair commits
 **Passes run:** 1 system-level pass; 0 module passes (no module planning corpus exists)
-**Issues found:** Critical **0** · High **0** · Medium **0** · Low **0** · Info **2**
+**Issues found:** Critical **0** · High **0** · Medium **0** · Low **0** · Info **3**
 
 ## Exit Gate
 
 **Clean:** Critical = **0** and High = **0**.
 
+This fresh full pass followed the completed Medium correction. It found no
+Critical or High findings, so the Phase 4 auto-fix loop was not entered.
+
 ## Phase 1: Discovery
 
-- `docs/knowledge-index.yaml` is present, schema-enforced (`schema_version: 2`), and lists 17 existing paths.
-- System planning corpus: `VISION.md`, `PRINCIPLES.md`, `SPEC.md`, `ARCHITECTURE.md`, `configuration.md`, `research-plan.md`, and the explicitly superseded historical `project-brief.md`.
-- All 7 planning/historical documents have non-empty `description`, `type`, and `updated` frontmatter. The two decision briefs declare `research_method: /research`; the prior-art campaign parent declares `/scout`.
-- No module north stars, `docs/*/architecture/` module trees, or `modules/` planning directories were found. A module pass would have no subject.
-- All local Markdown links in `README.md`, `AGENTS.md`, and `docs/*.md` resolve. All index entries resolve to files.
+- `docs/knowledge-index.yaml` is present, schema-enforced (`schema_version: 2`),
+  regenerated after the terminal-title repair, and lists 17 existing paths.
+- System planning corpus: `VISION.md`, `PRINCIPLES.md`, `SPEC.md`,
+  `ARCHITECTURE.md`, `configuration.md`, `research-plan.md`, and the explicitly
+  superseded historical `project-brief.md`.
+- Frontmatter compliance is 17/17 under the project's enforced index schema.
+  All planning/historical documents have non-empty `description`, `type`, and
+  `updated` fields. The two decision briefs declare `research_method: /research`;
+  the prior-art campaign parent declares `/scout`.
+- No module north stars, `docs/*/architecture/` module trees, or `modules/`
+  planning directories were found. A module pass would have no subject.
+- All local Markdown links in `README.md`, `AGENTS.md`, and `docs/*.md` resolve.
+  All knowledge-index paths and all five archive-stub `git_ref` values resolve.
 
 ## Pass 1: System-Level
 
@@ -36,56 +47,96 @@ None.
 
 None.
 
-### Info (2)
+### Info (3)
+
+#### Frozen research retains the formerly documented `null` off-switch
+
+**Files:** `.research/attestation/config-reference-tui.md`,
+`.research/analysis/campaigns/agent-board-prior-art/parent.md`,
+`.research/analysis/campaigns/agent-board-prior-art/specialists/codex-lifecycle.md`,
+`.research/analysis/campaigns/agent-board-prior-art/verification-checklist.md`
+
+**What:** These evidence artifacts accurately preserve what the consulted
+reference said during the 2026-08-14 research engagement: that `null` disabled
+Codex title updates. They are not executable instructions or current product
+truth. The subsequent installed-runtime failure and repair supersede that claim
+for Agent Board's Codex 0.147.x launcher.
+
+**Disposition:** Preserve the research record. All current product and delivery
+documents use the validated empty-sequence override. No non-historical `null`
+contract remains.
 
 #### No separate roadmap document
 
 **Files:** `docs/research-plan.md`, `.work/backlog/roadmap-deferred-product-horizon.md`
-**What:** Delivery status is correctly owned by `.work/`; the research plan owns completed/deferred research and the backlog preserves non-binding future product options. No current planning document claims a separate phase roadmap exists.
+
+**What:** Delivery status is correctly owned by `.work/`; the research plan owns
+completed/deferred research and the backlog preserves non-binding future product
+options. No current planning document claims a separate phase roadmap exists.
+
 **Disposition:** Informational, not drift and not a missing blocker.
 
 #### Generated knowledge-index refresh is intentionally uncommitted
 
-**Files:** `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`, `docs/knowledge-index-detail.yaml`
-**What:** The working tree contains only the expected derived refresh: generation timestamp, `configuration.md`'s 2026-08-16 date, and substrate counts updated to six backlog items and four archived items. The derived index agrees with current source frontmatter.
-**Disposition:** Informational. This audit made no change to those user-owned working-tree updates.
+**Files:** `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`,
+`docs/knowledge-index-detail.yaml`
 
-## Latest Ghostty Integration Verification
+**What:** The working tree contains the expected derived refresh after the
+architecture correction and archived repair story: generation timestamps,
+`ARCHITECTURE.md`'s 2026-08-16 update, and the archive count increasing from four
+to five. The completed feature-body correction changes no indexed planning-doc
+frontmatter, so the derived indexes remain consistent with current sources.
 
-The live Ghostty 1.3.1 repair record, code, tests, and operator documentation are aligned.
+**Disposition:** Informational. This audit did not modify those working-tree
+updates.
+
+## Codex Terminal-Title Override Verification
+
+The live failure, repair story, current contract, implementation, and regression
+test were inspected as one chain.
 
 | Contract | Evidence inspected | Result |
 | --- | --- | --- |
-| Contiguous trailing AppleScript terminators are accepted, while blank/malformed interior rows remain invalid. | `.work/archive/story-fix-ghostty-trailing-newlines.md` resolves to `e0e2f89`; `src/integrations/ghostty/protocol.ts`; `tests/integrations/ghostty/protocol.test.ts`. | Consistent. `withoutTrailingLineBreaks` is applied to structured protocol payloads; the test accepts `\n\n` only at the boundary and still rejects an interior blank row. |
-| Title set and clear use Ghostty's declared targeted-action parameter. | `.work/archive/story-fix-ghostty-title-action-parameter.md` resolves to `36042ce`; `src/integrations/ghostty/scripts.ts`; `tests/integrations/ghostty/client.test.ts`. | Consistent. Both scripts issue `perform action … on term`, not the invalid historical `against term` syntax. |
-| A disposable live integration covers the same grammar without borrowing a user tab. | `tests/integration/disposable-ghostty.test.ts` and archived story acceptance evidence. | Consistent. The opt-in probe creates a separate window, sets and clears the tab title with `on probeTerminal`, then closes it. |
-| Doctor's deliberately non-destructive title-action limitation is not represented as shipped capability. | `.work/backlog/idea-doctor-title-action-probe.md`; `src/integrations/ghostty/diagnostics.ts`; `README.md`. | Consistent. Doctor checks version/config/Automation/current context but does not claim to execute a targeted `set_tab_title` readiness probe. The backlog item remains future hardening. |
+| Codex receives a typed empty sequence, not a string-like `null`. | `docs/ARCHITECTURE.md`; `src/integrations/codex/process.ts`; `tests/integrations/codex/process.test.ts`. | Consistent. All use the exact pair `-c`, `tui.terminal_title=[]`. |
+| Agent Board rejects caller attempts to replace its title or remote-transport ownership. | `README.md`; `src/integrations/codex/process.ts`; process-host tests. | Consistent. `--remote` and all supported `tui.terminal_title` override forms are rejected before spawn. |
+| The repair has durable diagnosis and review provenance. | Archive stub `story-fix-codex-terminal-title-override` → review commit `a402d3b`; implementation commit `c0bc19a`; documentation commit `43dd7be`. | Consistent. The recorded symptom is the installed Codex sequence-type error, and the accepted fix is `[]`. |
+| Exact argv remains executable and type-safe. | `npm run typecheck`; `npx tsx --test tests/integrations/codex/process.test.ts`. | Pass. Typecheck succeeded; focused process suite passed 7/7. |
 
-## Services Rename Setup Verification
-
-`README.md`, `docs/configuration.md`, and `examples/ghostty/agent-board.conf` agree with the proved macOS workflow:
-
-- `agent-name` with no label is the focused-session native rename prompt; `agent-name <label>` remains the direct shell path.
-- The Shortcut uses **Run Shell Script**, `/bin/zsh`, an explicit Homebrew PATH, `exec /opt/homebrew/bin/agent-name`, and **Run as Administrator** remains off.
-- **Services Menu** is enabled in Shortcut Details; `⌘⇧R` is assigned through **System Settings → Keyboard → Keyboard Shortcuts → Services**.
-- Ghostty leaves `cmd+shift+r` unbound so `prompt_tab_title` cannot intercept the shortcut.
-- Only Shortcuts **Allow Running Scripts** is required; the separately prompted macOS Automation grant is accurately described.
-
-The configuration guide is the detailed source of truth and the README links to it without duplicating obsolete setup instructions. The example fragment likewise leaves the chord unbound and does not mutate an operator's full Ghostty configuration.
+The old `null` contract no longer appears in source code, tests, README,
+foundation planning truth, or current delivery records. It remains only in
+frozen research evidence and this report's historical explanation.
 
 ## Clean Areas
 
-- Product truth is consistent across vision, principles, specification, architecture, README, and backlog: local-first attention routing; one Codex session per Ghostty tab; no tmux, resident daemon, semantic actions, GUI, remote service, or hardware requirement in V1.
-- The settled managed app-server plus remote-TUI default and ordinary-mode degraded-confidence boundary agree across `AGENTS.md`, `docs/research-plan.md`, `docs/SPEC.md`, `docs/ARCHITECTURE.md`, code, and package commands.
-- The four documented binaries—`agent-codex`, `agent-name`, `agents`, and `agent-board`—match `package.json`, `src/cli/`, and composition roots.
-- The Ghostty ownership, ID-targeting, title-clear, hierarchy-aware liveness, and non-destructive uncertainty contracts remain consistent with the locked Ghostty brief and implementation.
-- The five-state board/title projection, acknowledgement fallback, local atomic store, and error/degradation rules agree between the foundation documents and their domain/application surfaces.
-- All five epics, 15 features, six stories, and the standalone lock-contention story currently shown by `work-view` are `done` with their expected source/test surfaces present. The four archive stubs have resolving `git_ref` provenance.
-- The archived 2026-08-16 Ghostty fixes are accurately represented as completed history. The only related unfinished item is explicitly the **backlog** doctor-title-action probe; it is not treated as implemented.
+- Product truth remains consistent across vision, principles, specification,
+  architecture, README, and backlog: local-first attention routing; one Codex
+  session per Ghostty tab; no tmux, resident daemon, semantic actions, GUI,
+  remote service, or hardware requirement in V1.
+- The managed app-server plus remote-TUI default and ordinary-mode
+  degraded-confidence boundary agree across `AGENTS.md`, the foundation docs,
+  code, and package commands.
+- The completed managed-launcher feature, locked architecture, implementation,
+  and exact-argv regression test all specify `-c tui.terminal_title=[]` and
+  explain or enforce the sequence requirement consistently.
+- The four documented binaries—`agent-codex`, `agent-name`, `agents`, and
+  `agent-board`—match `package.json`, `src/cli/`, and composition roots.
+- Ghostty title ownership, stable-ID targeting, title clearing,
+  hierarchy-aware liveness, and conservative uncertainty remain aligned with
+  the locked Ghostty brief, implementation, tests, and operator guide.
+- The five-state board/title projection, acknowledgement fallback, local atomic
+  store, and error/degradation rules agree between foundation documents and
+  domain/application surfaces.
+- The expected source and test surfaces exist for all five completed epics, 15
+  completed features, six active-tier completed stories, and five archived
+  items. Every archive stub resolves to a commit.
+- README and `docs/configuration.md` continue to route users through
+  `agent-codex` without asking them to edit `tui.terminal_title` manually; the
+  user's configured Codex status line remains a separate in-terminal surface.
 
 ## Blocking Briefs Status
 
-There is no NEXT delivery phase that names a missing blocking brief. The current architecture is grounded by the following on-disk, locked artifacts.
+There is no NEXT delivery phase that names a missing blocking brief. The locked
+architecture is grounded by these on-disk artifacts.
 
 | Brief | Supports | Exists on disk? | Status |
 | --- | --- | --- | --- |
@@ -95,17 +146,15 @@ There is no NEXT delivery phase that names a missing blocking brief. The current
 
 ## DONE Verification
 
-This read-only audit verified expected files and recorded evidence; it did not rerun tests.
-
 | Delivery arc | Status | Expected output verified on disk | Result |
 | --- | --- | --- | --- |
 | Trustworthy session core | Done | Domain, storage, lock, and transition/projection tests | Present |
 | Ghostty project surface | Done | AppleScript client/protocol/diagnostics, registration, reconciliation, and title tests | Present |
-| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, and integration tests | Present |
+| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, exact empty-sequence argv test, and integration tests | Present and consistent |
 | Swarm attention board | Done | Board application, CLI renderer, acknowledgement/unregister, and tests | Present |
 | Operational readiness | Done | Doctor, packed artifact harness, golden/failure/chaos tests, and opt-in live probes | Present |
 | Companion terminal configuration | Done | Ghostty/Codex fragments, configuration guide, README routing, and recorded validation | Present |
-| Latest Ghostty repairs | Done and archived | Terminator regression test, `on term` request assertions, and disposable live probe | Present |
+| Codex terminal-title repair | Done and archived | Valid `[]` launcher argument, regression test, architecture correction, review evidence | Present; focused verification passes |
 
 ## Provenance Summary
 
@@ -114,8 +163,21 @@ This read-only audit verified expected files and recorded evidence; it did not r
 | `/research` | 2 | 2026-08-14 |
 | `/scout` | 1 | 2026-08-14 |
 
-The highest applicable brief tier is `/research`; there are no lower-tier decision briefs older than a newer higher-tier run, so there are no refresh candidates. Remaining indexed campaign records and attestations are supporting research artifacts, not duplicate current planning truth.
+The highest applicable brief tier is `/research`; there are no lower-tier
+decision briefs older than a newer higher-tier run, so there are no refresh
+candidates. Remaining indexed campaign records and attestations are supporting
+research artifacts, not duplicate current planning truth.
 
-## Audit Boundary
+## Audit Boundary and Provenance
 
-This is a Phase 1–3 documentation and artifact-consistency audit. It intentionally does not flag unimplemented future options, absent test coverage, or the preserved doctor-title-action probe as documentation drift. No source documentation, code, work item, index, package file, commit, or remote state was changed; only this report was overwritten.
+This was a fresh Phase 1–3 full system-level re-audit after the Medium
+delivery-record correction, discovered from the regenerated knowledge index. It
+inspected all system planning/historical docs, `AGENTS.md`, README, examples,
+code, tests, current work/archive/backlog state, the two blocking runtime
+briefs, the prior-art parent, and the terminal-title repair commits. No module
+planning corpus was discovered, so no module pass was applicable.
+
+The audit was performed with the inherited reviewer capability because the
+configured Sonnet-named pass override was unavailable in the active roster. It
+did not modify source documentation, code, work items, generated indexes,
+package files, commits, or remote state; only this report was overwritten.
