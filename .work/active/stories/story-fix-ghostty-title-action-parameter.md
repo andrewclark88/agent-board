@@ -1,7 +1,7 @@
 ---
 id: story-fix-ghostty-title-action-parameter
 kind: story
-stage: review
+stage: done
 tags: [bug, integration]
 parent: null
 depends_on: []
@@ -67,3 +67,22 @@ surface integration probe.
   not execute a targeted title action, so it could not catch this shipped
   script defect. Preserve that as a separate diagnostic-hardening item.
 - Simplification: no action abstraction or fallback transport was added.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review. The implementation matches
+the installed Ghostty 1.3.1 dictionary, retains positional argument transport
+and terminal-ID targeting, and has unit, full-suite, direct-live, and
+disposable-live evidence. The stale integration-probe assertions were narrowed
+to the stable action result contract. No independent or cross-model reviewer
+ran, as required for a standalone story.
