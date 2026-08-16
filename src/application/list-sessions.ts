@@ -91,7 +91,12 @@ export function buildBoardRows(
   const sorted = [...results].sort((left, right) => compareRecords(left.record, right.record));
   const labels = displayLabels(sorted.map((result) => result.record));
   const rows = sorted.map((result): BoardRow => {
-    const projection = projectSession(result.record, options);
+    const projection = projectSession(result.record, {
+      ...options,
+      ...(result.verifiedLauncherPid === undefined
+        ? {}
+        : { verifiedLauncherPid: result.verifiedLauncherPid }),
+    });
     return Object.freeze({
       sessionId: result.record.sessionId,
       label: projection.label,

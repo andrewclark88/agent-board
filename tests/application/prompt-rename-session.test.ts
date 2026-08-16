@@ -90,6 +90,22 @@ test("prompt cancellation is a successful no-op", async () => {
   assert.deepEqual(setup.titles, []);
 });
 
+test("prompt rename does not treat a persisted launcher PID as verified liveness", async () => {
+  const store = new MemoryStore(record({
+    agent: {
+      ...record().agent,
+      launcherPid: 999_999,
+      observedAt: "2026-08-15T10:00:00.000Z",
+    },
+  }));
+  const setup = dependencies(store, async () => "renamed");
+
+  const result = await promptRenameSession(setup.value);
+
+  assert.equal(result.status, "renamed");
+  assert.deepEqual(setup.titles, ["? renamed"]);
+});
+
 test("invalid labels fail before persistence and title output", async () => {
   const store = new MemoryStore(record());
   const setup = dependencies(store, async () => "bad\nlabel");

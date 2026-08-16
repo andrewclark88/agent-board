@@ -19,6 +19,8 @@ export interface SessionProjection {
 export interface ProjectionOptions {
   now: Date;
   workingFreshForMs: number;
+  /** Launcher PID positively verified for this projection operation. */
+  verifiedLauncherPid?: number;
 }
 
 function invalidOptions(message: string): AgentBoardError {
@@ -45,20 +47,23 @@ export function projectSession(
   if (!Number.isFinite(options.workingFreshForMs) || options.workingFreshForMs < 0) {
     throw invalidOptions("Projection freshness must be a non-negative finite number");
   }
+  if (options.verifiedLauncherPid !== undefined &&
+      (!Number.isSafeInteger(options.verifiedLauncherPid) || options.verifiedLauncherPid <= 0)) {
+    throw invalidOptions("Verified launcher PID must be a positive safe integer");
+  }
 
   const diagnostics: string[] = [];
   const observedTime = Date.parse(record.agent.observedAt);
   const now = options.now.getTime();
   const age = now - observedTime;
   const workingFuture = record.agent.activity === "working" && age < 0;
-  const launcherBoundWorking = record.agent.mode === "managed" &&
+  const launcherVerifiedWorking = record.agent.mode === "managed" &&
     record.agent.activity === "working" &&
     record.agent.health === "live" &&
     record.agent.launcherPid !== undefined &&
-    Number.isSafeInteger(record.agent.launcherPid) &&
-    record.agent.launcherPid > 0;
+    record.agent.launcherPid === options.verifiedLauncherPid;
   const workingStale = record.agent.activity === "working" &&
-    !launcherBoundWorking &&
+    !launcherVerifiedWorking &&
     age > options.workingFreshForMs;
 
   if (record.agent.health === "stale") diagnostics.push("agent health is stale");

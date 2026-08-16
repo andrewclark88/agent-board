@@ -28,6 +28,8 @@ export interface ReconcileDependencies {
 export interface ReconcileResult {
   readonly record: SessionRecord;
   readonly titleRendered: boolean;
+  /** PID whose existence was positively established for this result. */
+  readonly verifiedLauncherPid?: number;
 }
 
 /** Distinguishes an attempted Ghostty title write from store/snapshot failures. */
@@ -152,8 +154,8 @@ function hasManagedWorkingLauncher(record: SessionRecord): boolean {
 async function reconcileLauncherLiveness(
   dependencies: ReconcileDependencies,
   record: SessionRecord,
-): Promise<SessionRecord> {
-  if (!hasManagedWorkingLauncher(record)) return record;
+): Promise<{ readonly record: SessionRecord; readonly verifiedLauncherPid?: number }> {
+  if (!hasManagedWorkingLauncher(record)) return { record };
 
   let alive = false;
   try {
@@ -162,10 +164,12 @@ async function reconcileLauncherLiveness(
     // An adapter that cannot establish process existence is not positive
     // liveness evidence; keep the board conservative and diagnostic.
   }
-  if (alive) return record;
+  if (alive) {
+    return { record, verifiedLauncherPid: record.agent.launcherPid as number };
+  }
 
   const observedAt = timestamp(dependencies.clock);
-  return dependencies.store.mutate(record.sessionId, (current) => {
+  const stale = await dependencies.store.mutate(record.sessionId, (current) => {
     if (!hasManagedWorkingLauncher(current) || current.agent.launcherPid !== record.agent.launcherPid) {
       return current;
     }
@@ -181,6 +185,7 @@ async function reconcileLauncherLiveness(
       },
     };
   });
+  return { record: stale };
 }
 
 async function persistUnknown(
@@ -203,7 +208,8 @@ async function reconcileLoaded(
   record: SessionRecord,
   snapshot: TerminalSnapshot,
 ): Promise<ReconcileResult> {
-  const launcherReconciled = await reconcileLauncherLiveness(dependencies, record);
+  const launcherReconciliation = await reconcileLauncherLiveness(dependencies, record);
+  const launcherReconciled = launcherReconciliation.record;
   const observedAt = timestamp(dependencies.clock);
   let updated: SessionRecord;
   try {
@@ -220,11 +226,23 @@ async function reconcileLoaded(
   const latest = await dependencies.store.get(launcherReconciled.sessionId);
   if (latest === null) throw new AgentBoardError("NOT_FOUND", `Session not found: ${launcherReconciled.sessionId}`);
   if (updated.terminal.presence !== "visible" || latest.terminal.presence !== "visible") {
-    return { record: latest, titleRendered: false };
+    return {
+      record: latest,
+      titleRendered: false,
+      ...(launcherReconciliation.verifiedLauncherPid === undefined
+        ? {}
+        : { verifiedLauncherPid: launcherReconciliation.verifiedLauncherPid }),
+    };
   }
   const visible = snapshot.visible.find((candidate) => candidate.terminalId === latest.terminal.terminalId);
   if (visible === undefined || !sameIdentity(latest.terminal, visible)) {
-    return { record: latest, titleRendered: false };
+    return {
+      record: latest,
+      titleRendered: false,
+      ...(launcherReconciliation.verifiedLauncherPid === undefined
+        ? {}
+        : { verifiedLauncherPid: launcherReconciliation.verifiedLauncherPid }),
+    };
   }
 
   try {
@@ -239,8 +257,19 @@ async function reconcileLoaded(
           }
         },
       },
-    }, launcherReconciled.sessionId, { expectedIdentity: visible });
-    return { record: rendered, titleRendered: true };
+    }, launcherReconciled.sessionId, {
+      expectedIdentity: visible,
+      ...(launcherReconciliation.verifiedLauncherPid === undefined
+        ? {}
+        : { verifiedLauncherPid: launcherReconciliation.verifiedLauncherPid }),
+    });
+    return {
+      record: rendered,
+      titleRendered: true,
+      ...(launcherReconciliation.verifiedLauncherPid === undefined
+        ? {}
+        : { verifiedLauncherPid: launcherReconciliation.verifiedLauncherPid }),
+    };
   } catch (error) {
     if (error instanceof TitleRenderFailure && hasGhosttyCode(error.cause, "GHOSTTY_TARGET_NOT_FOUND")) {
       await persistUnknown(dependencies, launcherReconciled.sessionId);

@@ -56,14 +56,23 @@ test("stale, future, hidden, and ambiguous records use diagnostic glyph", () => 
 });
 
 test("healthy managed launcher authorizes hours-old working evidence", () => {
-  const projection = projectSession(record({ activity: "working", launcherPid: 1234, observedAt: observedAt }), {
+  const value = record({ activity: "working", launcherPid: 1234, observedAt: observedAt });
+  const projection = projectSession(value, {
     now: new Date("2026-08-15T18:00:00Z"),
     workingFreshForMs: 60_000,
+    verifiedLauncherPid: 1234,
   });
 
   assert.equal(projection.glyph, "●");
   assert.equal(projection.status, "working");
   assert.deepEqual(projection.diagnostics, []);
+
+  const unverified = projectSession(value, {
+    now: new Date("2026-08-15T18:00:00Z"),
+    workingFreshForMs: 60_000,
+  });
+  assert.equal(unverified.glyph, "?");
+  assert.deepEqual(unverified.diagnostics, ["working evidence is stale"]);
 });
 
 test("ordinary registrations remain visibly unobserved instead of claiming idle", () => {
@@ -90,6 +99,7 @@ test("disconnected terminal diagnostics outrank attention glyphs", () => {
 test("projection validates options and is immutable", () => {
   assert.throws(() => projectSession(record(), { now: new Date("invalid"), workingFreshForMs: 1 }), (error: unknown) => error instanceof AgentBoardError && error.code === "INVALID_RECORD");
   assert.throws(() => projectSession(record(), { now, workingFreshForMs: -1 }), (error: unknown) => error instanceof AgentBoardError && error.code === "INVALID_RECORD");
+  assert.throws(() => projectSession(record(), { now, workingFreshForMs: 1, verifiedLauncherPid: 0 }), (error: unknown) => error instanceof AgentBoardError && error.code === "INVALID_RECORD");
   const projection = projectSession(record(), { now, workingFreshForMs: 1 });
   assert.throws(() => { (projection as { glyph: string }).glyph = "×"; }, TypeError);
   assert.throws(() => { (projection.diagnostics as string[]).push("bad"); }, TypeError);

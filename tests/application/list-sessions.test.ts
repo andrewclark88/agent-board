@@ -144,3 +144,26 @@ test("listSessions omits and removes terminals missing from a valid snapshot", a
   assert.deepEqual(rows.map((row) => row.sessionId), ["visible"]);
   assert.equal(await store.get("missing"), null);
 });
+
+test("listSessions carries verified launcher liveness into board projection", async () => {
+  const store = new MemoryStore([
+    record("long-running", "long-running", at, {}, {
+      activity: "working",
+      launcherPid: 1234,
+    }),
+  ]);
+
+  const rows = await listSessions({
+    store,
+    terminal: new FakeTerminal({
+      visible: [identity],
+      enumerableTerminalIds: [identity.terminalId],
+    }),
+    launcher: { isAlive: async () => true },
+    clock: { now: () => new Date(later) },
+    workingFreshForMs: 1,
+  });
+
+  assert.equal(rows[0]?.glyph, "●");
+  assert.equal(rows[0]?.status, "working");
+});

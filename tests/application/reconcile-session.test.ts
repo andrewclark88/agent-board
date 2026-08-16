@@ -105,11 +105,14 @@ test("healthy managed launcher preserves old working evidence without rewriting 
   });
   const store = new MemoryStore([before]);
   const launcher = new FakeLauncher(true);
-  const result = await reconcileSession(dependencies(store, new FakeTerminal(snapshot(identity)), launcher), before.sessionId);
+  const terminal = new FakeTerminal(snapshot(identity));
+  const result = await reconcileSession(dependencies(store, terminal, launcher), before.sessionId);
 
   assert.deepEqual(result.record.agent, (await store.get(before.sessionId))?.agent);
   assert.equal(result.record.agent.evidenceKind, "codex.turn.started");
+  assert.equal(result.verifiedLauncherPid, 1234);
   assert.deepEqual(launcher.pids, [1234]);
+  assert.equal(terminal.titles.at(-1)?.title, "● long-running");
 });
 
 test("missing managed launcher becomes stale diagnostic evidence before title projection", async () => {
@@ -122,6 +125,7 @@ test("missing managed launcher becomes stale diagnostic evidence before title pr
   assert.equal(result.record.agent.launcherPid, 4321);
   assert.equal(result.record.agent.confidence, "corroborated");
   assert.match(result.record.agent.detail ?? "", /launcher/i);
+  assert.equal(result.verifiedLauncherPid, undefined);
   assert.equal(result.titleRendered, true);
 });
 

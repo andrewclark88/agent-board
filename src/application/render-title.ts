@@ -13,6 +13,8 @@ export interface RenderTitleDependencies {
 export interface RenderTitleOptions {
   /** Identity proven visible by the snapshot that authorized this write. */
   readonly expectedIdentity?: TerminalIdentity;
+  /** Launcher PID positively verified before this title projection. */
+  readonly verifiedLauncherPid?: number;
 }
 
 /** Render a title from the latest durable record, after registration locking. */
@@ -39,6 +41,9 @@ export async function renderSessionTitle(
   const projection = projectSession(record, {
     now: dependencies.clock.now(),
     workingFreshForMs: dependencies.workingFreshForMs,
+    ...(options.verifiedLauncherPid === undefined
+      ? {}
+      : { verifiedLauncherPid: options.verifiedLauncherPid }),
   });
   const identity = {
     adapter: record.terminal.adapter,
