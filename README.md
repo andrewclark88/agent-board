@@ -165,6 +165,12 @@ Board diagnostics may report stale evidence, hidden tabs, missing terminals,
 title synchronization failures, or an ordinary session that has only been
 registered by `agent-name`. Agent Board does not relabel uncertainty as idle.
 
+A quiet managed turn may run for hours and remains `● working` while its owned
+launcher is still positively alive. Each `agents` read reconciles the registered
+launcher before rendering the board; if that launcher has vanished or cannot be
+probed, the session degrades to a `?` diagnostic until new managed evidence is
+available.
+
 When you close a managed tab with `⌘W`, there is no normal cleanup command to
 run. The next `agents` refresh takes one validated Ghostty snapshot and removes
 that session if its terminal is no longer present. A hidden undo-closed tab is

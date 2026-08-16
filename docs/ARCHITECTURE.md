@@ -15,6 +15,7 @@ decisions:
   - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external boundaries.
   - One versioned session record is the source of truth and is updated atomically under a per-session lock.
   - The domain stores orthogonal identity, activity, attention, health, adapter evidence, and terminal presence; visible statuses are derived centrally.
+  - Managed working projection uses positive launcher process existence; the 60-second freshness threshold remains only as a fallback for working records without a valid managed launcher binding.
   - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
   - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably focused, with an explicit acknowledgement command as fallback.
   - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than being reclassified as native state.
@@ -176,7 +177,7 @@ src/
     observe-agent.ts        apply validated Codex observations
     observe-managed-codex.ts managed Codex lifecycle observation
     prompt-rename-session.ts focused-session capture and native rename application
-    reconcile-session.ts    terminal/launcher presence and expiry
+    reconcile-session.ts    terminal and managed-launcher liveness reconciliation
     register-session.ts     idempotent register/rename use case
     render-title.ts         locked read-current-state then targeted render
     resolve-session-target.ts explicit/focused session resolution
@@ -187,6 +188,7 @@ src/
   integrations/
     codex/                  app-server protocol, WebSocket client, lifecycle,
                             thread binding, compatibility, and process hosting
+    launcher-liveness.ts    non-destructive local signal-zero process probe
     ghostty/                AppleScript client/protocol, title actions, and diagnostics
     macos/                  native rename prompt through macOS Automation
     git/                    repository context lookup
@@ -322,7 +324,8 @@ agent mode ordinary                            -> ? diagnostic
 agent health error                             -> × error
 attention input_required                       -> ! needs input
 attention completion_unread                    -> ✓ finished / unread
-activity working with fresh evidence           -> ● working
+managed/live working with live launcher        -> ● working
+working without launcher binding and fresh     -> ● working
 visible managed tab with live idle evidence    -> ○ idle
 ```
 
@@ -371,6 +374,15 @@ enumerable with stable IDs. Batch reconciliation for `agents` removes only the
 authoritatively `missing` records from that validated snapshot. Single-session
 reconciliation remains diagnostic, and an invalid or unavailable snapshot maps
 sessions to `unknown` without deleting anything.
+
+Before shared projection, reconciliation probes the persisted managed launcher
+PID with local signal-zero process existence. A live probe leaves native agent
+evidence unchanged and does not refresh it periodically. A missing or
+unprobeable launcher atomically records stale health with corroborated local
+launcher-liveness diagnostic evidence, retaining the PID for runtime context.
+Working records without a valid managed launcher binding retain the configured
+freshness fallback. Because V1 has no resident daemon, hard launcher death is
+discovered when `agents` or another state reconciliation runs.
 
 Setup diagnostics require:
 
