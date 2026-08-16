@@ -1,7 +1,7 @@
 ---
 id: story-fix-managed-relaunch-thread-binding
 kind: story
-stage: review
+stage: done
 tags: [bug]
 parent: null
 depends_on: []
@@ -63,3 +63,22 @@ thread bound.
 - Adjacent issue parked: `idea-websocket-test-cleanup-hang` records an
   intermittent unrelated full-suite cleanup hang that passed in isolation and
   on rerun.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve with comments
+
+**Blockers**: none
+**Important**: `idea-terminal-mode-restoration` preserves exact TTY restoration
+after any future Agent Board-forced remote-TUI shutdown; it does not block the
+verified sequential-relaunch repair.
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review; no independent or cross-model
+reviewer ran. Correctness, sequencing, persistence boundaries, regression
+coverage, command/security impact, compatibility, and foundation-doc alignment
+were inspected. Clearing only the prior runtime-owned thread binding at the
+new launch claim preserves stable session, identity, terminal, attention, and
+observation fields. The deterministic failed-retry test, focused tests, and
+green full-suite rerun support closure.
