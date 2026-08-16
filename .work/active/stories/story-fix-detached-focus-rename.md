@@ -1,7 +1,7 @@
 ---
 id: story-fix-detached-focus-rename
 kind: story
-stage: implementing
+stage: review
 tags: [bug, cli, integration]
 parent: null
 depends_on: []
@@ -79,5 +79,5 @@ does not depend on a TTY or Ghostty focus.
   refuses an unbound detached rename, supports the interactive focus fallback,
   and accepts an explicit managed-session target without a TTY.
 - `npm run typecheck` passes.
-- `npm test` passes all 181 tests, with the two real-environment probes remaining
-  opt-in and skipped by default.
+- `npm test` passes the full hermetic suite, with the two real-environment
+  probes remaining opt-in and skipped by default.
