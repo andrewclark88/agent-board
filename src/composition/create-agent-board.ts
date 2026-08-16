@@ -1,7 +1,7 @@
 import { acknowledgeSession, type AcknowledgeSessionDependencies, type AcknowledgeSessionResult } from "../application/acknowledge-session.js";
 import { diagnoseSystem, type DoctorDependencies, type DoctorReport } from "../application/doctor.js";
 import { unregisterAgentSession, type UnregisterAgentSessionDependencies } from "../application/unregister-agent-session.js";
-import type { FocusedTerminalPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { FocusedTerminalPort, LauncherLivenessPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import type { SessionRecord } from "../domain/session.js";
 import { JsonSessionStore } from "../infrastructure/json-session-store.js";
 import { StateDirectoryProbe } from "../infrastructure/state-diagnostics.js";
@@ -9,6 +9,7 @@ import { CodexProcessHost } from "../integrations/codex/process.js";
 import { GhosttyClient } from "../integrations/ghostty/client.js";
 import { diagnoseGhostty } from "../integrations/ghostty/diagnostics.js";
 import { configuredCommand } from "../integrations/command-config.js";
+import { NodeLauncherLiveness } from "../integrations/launcher-liveness.js";
 
 export interface AgentBoardCommand {
   readonly ack: (explicitSessionId?: string) => Promise<AcknowledgeSessionResult>;
@@ -19,6 +20,7 @@ export interface AgentBoardCommand {
 export interface AgentBoardCompositionOptions {
   readonly store?: SessionStore;
   readonly terminal?: ReconciliationTerminalPort & FocusedTerminalPort;
+  readonly launcher?: LauncherLivenessPort;
   readonly workingFreshForMs?: number;
   readonly doctorDependencies?: DoctorDependencies;
 }
@@ -35,6 +37,7 @@ export function createAgentBoardCommand(
   const acknowledgeDependencies: AcknowledgeSessionDependencies = {
     store,
     terminal,
+    launcher: options.launcher ?? new NodeLauncherLiveness(),
     clock,
     workingFreshForMs,
   };

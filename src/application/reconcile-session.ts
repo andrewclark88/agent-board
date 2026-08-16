@@ -1,6 +1,7 @@
 import { AgentBoardError } from "../domain/errors.js";
 import type {
   Clock,
+  LauncherLivenessPort,
   ReconciliationTerminalPort,
   SessionStore,
   TerminalSnapshot,
@@ -19,6 +20,7 @@ import { renderSessionTitle } from "./render-title.js";
 export interface ReconcileDependencies {
   readonly store: SessionStore;
   readonly terminal: ReconciliationTerminalPort;
+  readonly launcher: LauncherLivenessPort;
   readonly clock: Clock;
   readonly workingFreshForMs: number;
 }
@@ -139,6 +141,48 @@ function unknownTerminal(current: SessionRecord, observedAt: string): SessionRec
   };
 }
 
+function hasManagedWorkingLauncher(record: SessionRecord): boolean {
+  const pid = record.agent.launcherPid;
+  return record.agent.mode === "managed" &&
+    record.agent.activity === "working" &&
+    record.agent.health === "live" &&
+    pid !== undefined;
+}
+
+async function reconcileLauncherLiveness(
+  dependencies: ReconcileDependencies,
+  record: SessionRecord,
+): Promise<SessionRecord> {
+  if (!hasManagedWorkingLauncher(record)) return record;
+
+  let alive = false;
+  try {
+    alive = await dependencies.launcher.isAlive(record.agent.launcherPid as number);
+  } catch {
+    // An adapter that cannot establish process existence is not positive
+    // liveness evidence; keep the board conservative and diagnostic.
+  }
+  if (alive) return record;
+
+  const observedAt = timestamp(dependencies.clock);
+  return dependencies.store.mutate(record.sessionId, (current) => {
+    if (!hasManagedWorkingLauncher(current) || current.agent.launcherPid !== record.agent.launcherPid) {
+      return current;
+    }
+    return {
+      ...current,
+      agent: {
+        ...current.agent,
+        health: "stale",
+        observedAt,
+        evidenceKind: "agent-board.launcher-liveness",
+        confidence: "corroborated",
+        detail: "Managed launcher process is no longer running",
+      },
+    };
+  });
+}
+
 async function persistUnknown(
   dependencies: ReconcileDependencies,
   sessionId: string,
@@ -159,21 +203,22 @@ async function reconcileLoaded(
   record: SessionRecord,
   snapshot: TerminalSnapshot,
 ): Promise<ReconcileResult> {
+  const launcherReconciled = await reconcileLauncherLiveness(dependencies, record);
   const observedAt = timestamp(dependencies.clock);
   let updated: SessionRecord;
   try {
-    const observation = classifyTerminalPresence(identityOf(record), snapshot, observedAt);
-    updated = await dependencies.store.mutate(record.sessionId, (current) => ({
+    const observation = classifyTerminalPresence(identityOf(launcherReconciled), snapshot, observedAt);
+    updated = await dependencies.store.mutate(launcherReconciled.sessionId, (current) => ({
       ...current,
       terminal: observation,
     }));
   } catch (error) {
-    await persistUnknown(dependencies, record.sessionId);
+    await persistUnknown(dependencies, launcherReconciled.sessionId);
     throw error;
   }
 
-  const latest = await dependencies.store.get(record.sessionId);
-  if (latest === null) throw new AgentBoardError("NOT_FOUND", `Session not found: ${record.sessionId}`);
+  const latest = await dependencies.store.get(launcherReconciled.sessionId);
+  if (latest === null) throw new AgentBoardError("NOT_FOUND", `Session not found: ${launcherReconciled.sessionId}`);
   if (updated.terminal.presence !== "visible" || latest.terminal.presence !== "visible") {
     return { record: latest, titleRendered: false };
   }
@@ -194,11 +239,11 @@ async function reconcileLoaded(
           }
         },
       },
-    }, record.sessionId, { expectedIdentity: visible });
+    }, launcherReconciled.sessionId, { expectedIdentity: visible });
     return { record: rendered, titleRendered: true };
   } catch (error) {
     if (error instanceof TitleRenderFailure && hasGhosttyCode(error.cause, "GHOSTTY_TARGET_NOT_FOUND")) {
-      await persistUnknown(dependencies, record.sessionId);
+      await persistUnknown(dependencies, launcherReconciled.sessionId);
     }
     throw error;
   }

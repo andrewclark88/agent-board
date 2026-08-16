@@ -2,12 +2,13 @@ import { acknowledgeCompletion } from "./acknowledge.js";
 import { reconcileSession, TitleRenderFailure } from "./reconcile-session.js";
 import { resolveSessionTarget } from "./resolve-session-target.js";
 import { AgentBoardError } from "../domain/errors.js";
-import type { Clock, FocusedTerminalPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { Clock, FocusedTerminalPort, LauncherLivenessPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import type { SessionRecord } from "../domain/session.js";
 
 export interface AcknowledgeSessionDependencies {
   readonly store: SessionStore;
   readonly terminal: ReconciliationTerminalPort & FocusedTerminalPort;
+  readonly launcher: LauncherLivenessPort;
   readonly clock: Clock;
   readonly workingFreshForMs: number;
 }
@@ -50,6 +51,7 @@ export async function acknowledgeSession(
       {
         store: dependencies.store,
         terminal: dependencies.terminal,
+        launcher: dependencies.launcher,
         clock: dependencies.clock,
         workingFreshForMs: dependencies.workingFreshForMs,
       },

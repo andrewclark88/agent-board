@@ -100,6 +100,7 @@ function dependencies(
         async setTitle() {},
         async clearTitle() {},
       },
+      launcher: { isAlive: async () => true },
       clock: { now: () => new Date(at) },
       workingFreshForMs: 60_000,
       bindTimeoutMs: 100,

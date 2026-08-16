@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import { reconcileSession, reconcileSessions, classifyTerminalPresence } from "../../src/application/reconcile-session.js";
 import { AgentBoardError } from "../../src/domain/errors.js";
-import type { ReconciliationTerminalPort, SessionStore, TerminalSnapshot } from "../../src/domain/ports.js";
+import type { LauncherLivenessPort, ReconciliationTerminalPort, SessionStore, TerminalSnapshot } from "../../src/domain/ports.js";
 import { SCHEMA_VERSION, type SessionRecord, type TerminalIdentity } from "../../src/domain/session.js";
 
 const at = "2026-08-14T23:00:00.000Z";
@@ -58,8 +58,17 @@ class FakeTerminal implements ReconciliationTerminalPort {
   async clearTitle(value: TerminalIdentity) { this.clears.push(value); }
 }
 
-const dependencies = (store: SessionStore, terminal: ReconciliationTerminalPort) => ({
-  store, terminal, clock: { now: () => new Date(later) }, workingFreshForMs: 60_000,
+class FakeLauncher implements LauncherLivenessPort {
+  readonly pids: number[] = [];
+  constructor(private readonly alive: boolean) {}
+  async isAlive(pid: number) {
+    this.pids.push(pid);
+    return this.alive;
+  }
+}
+
+const dependencies = (store: SessionStore, terminal: ReconciliationTerminalPort, launcher: LauncherLivenessPort = new FakeLauncher(true)) => ({
+  store, terminal, launcher, clock: { now: () => new Date(later) }, workingFreshForMs: 60_000,
 });
 
 function snapshot(...entries: readonly TerminalIdentity[]): TerminalSnapshot {
@@ -85,6 +94,35 @@ test("all-session reconciliation takes one snapshot and renders only verified vi
   assert.deepEqual(results.map((result) => result.record.sessionId), ["a", "b"]);
   assert.deepEqual(terminal.titles.map((entry) => entry.title), ["● a", "✓ b"]);
   assert.equal((await store.get("a"))?.agent.activity, "working");
+});
+
+test("healthy managed launcher preserves old working evidence without rewriting native observation", async () => {
+  const before = record("long-running", {}, {
+    activity: "working",
+    launcherPid: 1234,
+    observedAt: at,
+    evidenceKind: "codex.turn.started",
+  });
+  const store = new MemoryStore([before]);
+  const launcher = new FakeLauncher(true);
+  const result = await reconcileSession(dependencies(store, new FakeTerminal(snapshot(identity)), launcher), before.sessionId);
+
+  assert.deepEqual(result.record.agent, (await store.get(before.sessionId))?.agent);
+  assert.equal(result.record.agent.evidenceKind, "codex.turn.started");
+  assert.deepEqual(launcher.pids, [1234]);
+});
+
+test("missing managed launcher becomes stale diagnostic evidence before title projection", async () => {
+  const before = record("abandoned", {}, { activity: "working", launcherPid: 4321, observedAt: at });
+  const store = new MemoryStore([before]);
+  const result = await reconcileSession(dependencies(store, new FakeTerminal(snapshot(identity)), new FakeLauncher(false)), before.sessionId);
+
+  assert.equal(result.record.agent.health, "stale");
+  assert.equal(result.record.agent.activity, "working");
+  assert.equal(result.record.agent.launcherPid, 4321);
+  assert.equal(result.record.agent.confidence, "corroborated");
+  assert.match(result.record.agent.detail ?? "", /launcher/i);
+  assert.equal(result.titleRendered, true);
 });
 
 test("hidden and missing records are diagnostic and receive no title write", async () => {

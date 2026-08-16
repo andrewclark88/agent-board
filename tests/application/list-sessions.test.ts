@@ -102,6 +102,7 @@ test("listSessions takes one shared snapshot and the empty store takes none", as
   const rows = await listSessions({
     store,
     terminal,
+    launcher: { isAlive: async () => true },
     clock: { now: () => new Date(later) },
     workingFreshForMs: 60_000,
   });
@@ -113,6 +114,7 @@ test("listSessions takes one shared snapshot and the empty store takes none", as
   const emptyRows = await listSessions({
     store: new MemoryStore([]),
     terminal: emptyTerminal,
+    launcher: { isAlive: async () => true },
     clock: { now: () => new Date(later) },
     workingFreshForMs: 60_000,
   });
@@ -134,6 +136,7 @@ test("listSessions omits and removes terminals missing from a valid snapshot", a
       visible: [visibleIdentity],
       enumerableTerminalIds: [visibleIdentity.terminalId],
     }),
+    launcher: { isAlive: async () => true },
     clock: { now: () => new Date(later) },
     workingFreshForMs: 60_000,
   });

@@ -216,3 +216,24 @@ export interface ReconcileDependencies {
   discovered when a command such as `agents` reconciles state. This matches the
   current local-first architecture; proactive expiry remains a future daemon or
   notification concern.
+
+## Integrated implementation summary
+
+- Added a signal-zero `LauncherLivenessPort` and injected Node adapter with
+  conservative process-existence semantics (`ee060ff`).
+- Reconciliation now checks positive managed launcher liveness before shared
+  projection. Healthy launchers preserve native working evidence; missing or
+  unprobeable launchers become stale, corroborated diagnostic evidence while
+  retaining the PID.
+- Projection authorizes hours-old working state only for a valid live managed
+  launcher binding; unbound working records retain the existing freshness
+  fallback and future timestamp guard.
+- Wired explicit liveness dependencies through `agents`, managed Codex launch,
+  and acknowledgement roots. Regression coverage protects live, missing,
+  unbound, and ordinary behavior.
+- Focused verification: `npx tsx --test --test-concurrency=1
+  tests/domain/projection.test.ts tests/application/reconcile-session.test.ts
+  tests/application/list-sessions.test.ts
+  tests/application/launch-managed-codex.test.ts
+  tests/application/operator-controls.test.ts` (37 passed); `npm run typecheck`
+  (passed); `git diff --check` (passed).

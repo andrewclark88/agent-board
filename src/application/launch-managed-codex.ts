@@ -3,7 +3,7 @@ import { observeManagedCodex } from "./observe-managed-codex.js";
 import { reconcileSession } from "./reconcile-session.js";
 import { watchCompletionFocus } from "./watch-completion-focus.js";
 import type { RegisterSessionResult } from "./register-session.js";
-import type { ReconciliationTerminalPort, SessionStore, Clock } from "../domain/ports.js";
+import type { Clock, LauncherLivenessPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import type { CodexProcessHost, ManagedChild, ProcessExit, StartedAppServer } from "../integrations/codex/process.js";
 import type { ThreadBindingClient } from "../integrations/codex/thread-binding.js";
 import { AgentBoardError } from "../domain/errors.js";
@@ -14,6 +14,7 @@ export interface ManagedLaunchDependencies {
   readonly connectClient: (endpoint: StartedAppServer["endpoint"]) => Promise<ManagedClient>;
   readonly store: SessionStore;
   readonly terminal: ReconciliationTerminalPort & FocusedTerminalPort;
+  readonly launcher: LauncherLivenessPort;
   readonly clock: Clock;
   readonly workingFreshForMs: number;
   readonly bindTimeoutMs: number;
@@ -44,6 +45,7 @@ async function bestEffortReconcile(dependencies: ManagedLaunchDependencies, sess
     await reconcileSession({
       store: dependencies.store,
       terminal: dependencies.terminal,
+      launcher: dependencies.launcher,
       clock: dependencies.clock,
       workingFreshForMs: dependencies.workingFreshForMs,
     }, sessionId);

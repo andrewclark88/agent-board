@@ -51,7 +51,15 @@ export function projectSession(
   const now = options.now.getTime();
   const age = now - observedTime;
   const workingFuture = record.agent.activity === "working" && age < 0;
-  const workingStale = record.agent.activity === "working" && age > options.workingFreshForMs;
+  const launcherBoundWorking = record.agent.mode === "managed" &&
+    record.agent.activity === "working" &&
+    record.agent.health === "live" &&
+    record.agent.launcherPid !== undefined &&
+    Number.isSafeInteger(record.agent.launcherPid) &&
+    record.agent.launcherPid > 0;
+  const workingStale = record.agent.activity === "working" &&
+    !launcherBoundWorking &&
+    age > options.workingFreshForMs;
 
   if (record.agent.health === "stale") diagnostics.push("agent health is stale");
   addTerminalDiagnostic(diagnostics, record.terminal.presence);

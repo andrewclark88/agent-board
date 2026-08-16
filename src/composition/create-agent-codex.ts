@@ -6,8 +6,9 @@ import { CodexProcessHost } from "../integrations/codex/process.js";
 import { GitRepositoryContext } from "../integrations/git/repository-context.js";
 import { GhosttyClient } from "../integrations/ghostty/client.js";
 import { JsonSessionStore } from "../infrastructure/json-session-store.js";
-import type { RegistrationStore, RegistrationTerminalPort, RepositoryContextPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { LauncherLivenessPort, RegistrationStore, RegistrationTerminalPort, RepositoryContextPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import { configuredCommand } from "../integrations/command-config.js";
+import { NodeLauncherLiveness } from "../integrations/launcher-liveness.js";
 
 export interface AgentCodexCommand {
   launch(args: readonly string[], signal: AbortSignal): Promise<ManagedLaunchResult>;
@@ -21,6 +22,7 @@ export interface AgentCodexCompositionOptions {
   workingFreshForMs?: number;
   bindTimeoutMs?: number;
   focusPollIntervalMs?: number;
+  launcher?: LauncherLivenessPort;
 }
 
 export function createAgentCodexCommand(options: AgentCodexCompositionOptions = {}): AgentCodexCommand {
@@ -42,6 +44,7 @@ export function createAgentCodexCommand(options: AgentCodexCompositionOptions = 
     connectClient: (endpoint) => AppServerClient.connect(endpoint),
     store,
     terminal,
+    launcher: options.launcher ?? new NodeLauncherLiveness(),
     clock: registerDependencies.clock,
     workingFreshForMs: options.workingFreshForMs ?? 60_000,
     bindTimeoutMs: options.bindTimeoutMs ?? 10_000,

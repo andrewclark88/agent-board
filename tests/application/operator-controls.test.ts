@@ -127,7 +127,7 @@ test("focused adapter failures propagate without becoming NOT_FOUND", async () =
 test("acknowledgement clears unread state and reconciles the title", async () => {
   const store = new MemoryStore([record()]);
   const terminal = new FakeTerminal();
-  const result = await acknowledgeSession({ store, terminal, clock, workingFreshForMs: 60_000 }, "session-1");
+  const result = await acknowledgeSession({ store, terminal, launcher: { isAlive: async () => true }, clock, workingFreshForMs: 60_000 }, "session-1");
   assert.equal(result.record.agent.attention, "none");
   assert.equal(result.titleRendered, true);
   assert.deepEqual(terminal.titles, ["○ session-1"]);
@@ -136,7 +136,7 @@ test("acknowledgement clears unread state and reconciles the title", async () =>
 test("input-required acknowledgement remains unchanged while title still converges", async () => {
   const store = new MemoryStore([record("session-1", identity, "input_required")]);
   const terminal = new FakeTerminal();
-  const result = await acknowledgeSession({ store, terminal, clock, workingFreshForMs: 60_000 }, "session-1");
+  const result = await acknowledgeSession({ store, terminal, launcher: { isAlive: async () => true }, clock, workingFreshForMs: 60_000 }, "session-1");
   assert.equal(result.record.agent.attention, "input_required");
   assert.equal(result.titleRendered, true);
   assert.deepEqual(terminal.titles, ["! session-1"]);
@@ -145,7 +145,7 @@ test("input-required acknowledgement remains unchanged while title still converg
 test("title failure is deferred after durable acknowledgement", async () => {
   const store = new MemoryStore([record()]);
   const terminal = new FakeTerminal(identity, undefined, new AgentBoardError("ADAPTER_FAILURE", "title failed"));
-  const result = await acknowledgeSession({ store, terminal, clock, workingFreshForMs: 60_000 }, "session-1");
+  const result = await acknowledgeSession({ store, terminal, launcher: { isAlive: async () => true }, clock, workingFreshForMs: 60_000 }, "session-1");
   assert.equal(result.titleRendered, false);
   assert.equal(result.record.agent.attention, "none");
   assert.equal((await store.get("session-1"))?.agent.attention, "none");
@@ -165,7 +165,7 @@ test("store failure while recording a vanished title target is not degraded", as
   const store = new FailingDiagnosticStore([record()]);
   const terminal = new FakeTerminal(identity, undefined, { ghosttyCode: "GHOSTTY_TARGET_NOT_FOUND" });
   await assert.rejects(
-    acknowledgeSession({ store, terminal, clock, workingFreshForMs: 60_000 }, "session-1"),
+    acknowledgeSession({ store, terminal, launcher: { isAlive: async () => true }, clock, workingFreshForMs: 60_000 }, "session-1"),
     (error: unknown) => error instanceof AgentBoardError && error.code === "LOCK_TIMEOUT",
   );
   assert.equal((await store.get("session-1"))?.agent.attention, "none");
@@ -176,7 +176,7 @@ test("snapshot failure remains a visible acknowledgement failure", async () => {
   const terminal = new FakeTerminal();
   terminal.snapshot = async () => { throw new AgentBoardError("ADAPTER_FAILURE", "snapshot failed"); };
   await assert.rejects(
-    acknowledgeSession({ store, terminal, clock, workingFreshForMs: 60_000 }, "session-1"),
+    acknowledgeSession({ store, terminal, launcher: { isAlive: async () => true }, clock, workingFreshForMs: 60_000 }, "session-1"),
     /snapshot failed/,
   );
   assert.equal((await store.get("session-1"))?.agent.attention, "none");

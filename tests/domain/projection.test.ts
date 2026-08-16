@@ -55,6 +55,17 @@ test("stale, future, hidden, and ambiguous records use diagnostic glyph", () => 
   assert.equal(boundary.diagnostics.length, 0);
 });
 
+test("healthy managed launcher authorizes hours-old working evidence", () => {
+  const projection = projectSession(record({ activity: "working", launcherPid: 1234, observedAt: observedAt }), {
+    now: new Date("2026-08-15T18:00:00Z"),
+    workingFreshForMs: 60_000,
+  });
+
+  assert.equal(projection.glyph, "●");
+  assert.equal(projection.status, "working");
+  assert.deepEqual(projection.diagnostics, []);
+});
+
 test("ordinary registrations remain visibly unobserved instead of claiming idle", () => {
   const projection = projectSession(record({
     mode: "ordinary",
