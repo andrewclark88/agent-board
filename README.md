@@ -279,11 +279,13 @@ actions:
 If title clearing fails, Agent Board keeps the session record. Repair Ghostty,
 then retry `agent-board unregister` with the exact session ID.
 
-`agent-codex` captures the exact terminal mode before launching Codex and
-restores it after every managed exit path, including observer or app-server
-failure. If capture fails on a terminal, Codex does not launch. If restoration
-itself fails, Agent Board prints a recovery message. Run `reset` and press
-Return to recover that shell; if necessary, follow with `stty sane`.
+`agent-codex` captures the exact terminal mode before launching Codex. After
+every managed exit path, including observer or app-server failure, it restores
+that exact mode and clears the CSI-u and modifyOtherKeys keyboard reporting
+that Codex may have enabled. If capture fails on a terminal, Codex does not
+launch. Only if restoration itself fails does Agent Board print a recovery
+message: run `reset` and press Return to recover that shell; if necessary,
+follow with `stty sane`.
 
 ## Current limits
 
@@ -309,7 +311,9 @@ The suite builds and installs a packed artifact in temporary directories. It
 uses private executable substitutes and does not touch live Ghostty tabs.
 
 Two live compatibility probes are opt-in. The Codex probe reads generated
-protocol schemas. The Ghostty probe creates and removes a disposable window.
+protocol schemas, including the `thread/loaded/list` ID response and the
+`thread/read` metadata response used during discovery. The Ghostty probe
+creates and removes a disposable window.
 
 ```bash
 AGENT_BOARD_LIVE_CODEX=1 npm run test:integration:codex

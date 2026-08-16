@@ -91,7 +91,10 @@ One `agent-codex` process owns one supervised tab's runtime:
    bounded timeout.
 4. Claim that stable session for this launcher by recording its process ID and
    clearing any native thread binding left by the prior managed runtime.
-5. Connect the Board observer and complete protocol initialization.
+5. Connect the Board observer, complete protocol initialization, subscribe to
+   notifications, and discover existing threads. Discovery validates the
+   `thread/loaded/list` wire response as thread-ID strings, then resolves each
+   ID through `thread/read` with turns omitted before root-thread binding.
 6. Start the remote Codex TUI with inherited stdin/stdout/stderr, the same
    `AGENT_BOARD_SESSION_ID`, and the exact override
    `-c tui.terminal_title=[]`; Codex requires this setting to be a sequence,
@@ -108,10 +111,11 @@ One `agent-codex` process owns one supervised tab's runtime:
 10. On launcher, protocol, or app-server failure, record a visible diagnostic or
    error before bounded cleanup.
 11. After every managed exit path, restore the exact controlling-terminal mode
-   captured before launch. Non-terminal stdin skips this operation; capture
-   failure on a terminal stops before Codex launches. Restoration failure is
-   reported with an operator recovery command and never replaces the managed
-   outcome.
+   captured before launch, then pop/reset Codex's CSI-u keyboard-reporting stack
+   and disable xterm modifyOtherKeys. Non-terminal stdin skips this operation;
+   capture failure on a terminal stops before Codex launches. Failure in either
+   restoration step is reported with the fallback `reset` recovery command and
+   never replaces the managed outcome.
 
 The launcher ignores terminal `SIGINT` while the child TUI is active so Codex
 retains its normal interrupt behavior. Termination and hangup signals trigger
@@ -349,11 +353,14 @@ success.
 
 The lifecycle adapter keeps the app-server notification iterator established
 before discovery so a root-thread start/discovery race cannot lose the first
-event. It binds only one viable root in the dedicated process, persists the
-native thread binding before applying lifecycle observations, and refuses
-ambiguous or contradictory evidence. An authoritative interruption is a
-distinct normalized transition that clears completion attention; retryable
-Codex errors remain diagnostic evidence within the active lifecycle.
+event. Loaded-thread discovery first validates the ordered ID list, then reads
+each thread with `{ threadId, includeTurns: false }` to obtain the status,
+working directory, and parent metadata consumed by binding. It binds only one
+viable root in the dedicated process, persists the native thread binding before
+applying lifecycle observations, and refuses ambiguous, mismatched, or
+contradictory evidence. An authoritative interruption is a distinct normalized
+transition that clears completion attention; retryable Codex errors remain
+diagnostic evidence within the active lifecycle.
 
 ## Ghostty integration
 
@@ -414,8 +421,10 @@ Protocol compatibility is checked against the installed Codex version and the
 minimum event/schema shapes Agent Board needs. V1 does not vendor the entire
 generated app-server schema; it maintains narrow boundary schemas for the
 methods it consumes and integration-tests them against the installed generator.
-Unknown additive fields are allowed. Missing required fields or changed enum
-semantics fail the managed adapter visibly.
+The installed probe guards both the `thread/loaded/list` ID surface and the
+`thread/read` metadata surface. Unknown additive fields are allowed. Missing
+required fields or changed enum semantics fail the managed adapter visibly;
+response-validation failures name the JSON-RPC method that drifted.
 
 App-server readiness, observer initialization, and child shutdown all have
 bounded timeouts. The local endpoint binds loopback only, lives for one launcher,
@@ -423,9 +432,13 @@ and is never advertised beyond the machine.
 
 The CLI snapshots the controlling terminal with shell-free `/bin/stty -g`
 before starting the managed runtime and reapplies that opaque snapshot after
-cleanup. It does not impose `stty sane`; preserving the caller's exact prior
-mode avoids leaving raw TUI settings behind without overwriting intentional
-terminal customization.
+cleanup. After exact termios restoration succeeds, it emits Codex-parity
+keyboard cleanup: pop and reset CSI-u enhancement levels, then disable
+modifyOtherKeys before the shell prompt returns. It does not impose `reset` or
+`stty sane` during normal cleanup; those are operator fallbacks only when
+restoration itself fails. This preserves intentional terminal customization
+while preventing forced TUI shutdown from leaving modified-key sequences
+active in Ghostty.
 
 ## Technology and dependencies
 
@@ -440,7 +453,7 @@ terminal customization.
 | Codex CLI | managed agent backend and remote TUI | Version diagnosed at startup; app-server interface is experimental |
 | Ghostty | terminal identity and title projection | macOS AppleScript-capable release |
 | `/usr/bin/osascript` | Ghostty scripting transport | macOS system dependency |
-| `/bin/stty` | Exact terminal-mode capture and restoration around managed TUI launch | macOS system dependency; shell-free, controlling terminal only |
+| `/bin/stty` | Exact termios capture and restoration before keyboard-reporting cleanup around managed TUI launch | macOS system dependency; shell-free, controlling terminal only |
 
 There is no CLI framework, database, web framework, logging service, or GUI
 dependency. `node:util.parseArgs` and small command modules are sufficient.
@@ -466,15 +479,17 @@ The test pyramid follows contracts rather than implementation lines:
 1. Pure domain tests exhaust projection precedence and transition tables.
 2. Store tests cover atomic replacement, schema rejection, lock contention,
    stale-lock recovery, and concurrent rename/status updates.
-3. Codex adapter tests replay minimal recorded protocol fixtures for idle,
-   working, both wait flags, completion, interruption, failure, system error,
-   incompatible schema, and disconnect.
+3. Codex adapter tests replay minimal recorded protocol fixtures for loaded-ID
+   discovery plus metadata reads, idle, working, both wait flags, completion,
+   interruption, failure, system error, incompatible schema, and disconnect.
 4. Ghostty adapter tests cover structured snapshot parsing, ID-based targeting,
    label escaping, title clear, hidden/undoable hierarchy, and failures.
 5. Hermetic end-to-end tests use fake `codex` and `osascript` executables to
    prove register -> working -> waiting/completed/error -> title + board parity.
-6. Opt-in installed integration tests verify the current Codex schema and a
-   temporary Ghostty window without touching existing user tabs.
+6. Opt-in installed integration tests verify both Codex discovery response
+   surfaces and a temporary Ghostty window without touching existing user tabs.
+7. Terminal adapter tests verify exact termios replay, keyboard-reporting
+   cleanup, non-terminal silence, and restoration-failure handling.
 
 No test asserts private function call order where a behavioral contract is
 available. Real-GUI tests remain bounded and opt-in.
