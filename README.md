@@ -177,12 +177,9 @@ canonical title. Passing more than one label prints `Usage: agent-name [label]`.
 
 To bind the prompt to `⌘⇧R`, follow the [Shortcut setup in the companion
 configuration guide](docs/configuration.md#title-ownership-and-rename-shortcut).
-Find the command path with `command -v agent-name`, use a macOS Shortcut's
-**Run Shell Script** action with `exec /absolute/path/to/agent-name`, then in
-**Shortcut Details** choose **Add Keyboard Shortcut** and press `⌘⇧R`. Leave
-the Ghostty chord unbound so its app keybinds do not intercept the keystroke.
-The first Shortcut invocation may request its own macOS Automation permission
-to inspect and retitle the focused Ghostty tab.
+It uses the macOS Services shortcut, which avoids the Shortcuts editor
+intercepting `⌘⇧R` as Repeat. Leave the Ghostty chord unbound so its app
+keybinds do not intercept the keystroke.
 
 While the managed launcher runs, it acknowledges unread completion when the
 registered Ghostty tab becomes frontmost. After the launcher exits, or when

@@ -5,7 +5,7 @@ type: design
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-15
+updated: 2026-08-16
 summary: |
   Agent Board owns the compact Ghostty tab title, while Codex owns the detailed in-tab status line. Minimal merge-only examples preserve Andrew's tab and prompt-navigation workflow without copying or mutating full personal configuration files.
 decisions:
@@ -102,23 +102,31 @@ silent successful no-op. Passing more than one label prints:
 Usage: agent-name [label]
 ```
 
-To bind the no-argument prompt to `⌘⇧R`, first find the installed command's
-absolute path:
+To bind the no-argument prompt to `⌘⇧R`, use a macOS Shortcut with a **Run
+Shell Script** action. For the Homebrew installation, set the shell to
+`/bin/zsh`, leave **Run as Administrator** off, and use:
 
 ```bash
-command -v agent-name
+export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+exec /opt/homebrew/bin/agent-name
 ```
 
-Create a macOS Shortcut with a **Run Shell Script** action containing:
+The Shortcut Input setting may remain at its default; passing input to stdin is
+fine. If `agent-name` is installed elsewhere, replace the executable path with
+the path from `command -v agent-name` and include its containing `bin`
+directory in `PATH`. This is required because the linked executable invokes
+Node through `/usr/bin/env`.
 
-```bash
-exec /absolute/path/to/agent-name
-```
+In **Shortcut Details**, enable **Services Menu**. Then open **System Settings
+→ Keyboard → Keyboard Shortcuts → Services**, find **Rename Agent Tab**, enable
+it, and assign `⌘⇧R`. The Shortcuts editor's **Add Keyboard Shortcut** can
+intercept that chord as Repeat, so treat it as an optional first attempt rather
+than the preferred method. Shortcuts saves automatically.
 
-Replace the placeholder with the path returned by `command -v`. In **Shortcut
-Details**, choose **Add Keyboard Shortcut** and press `⌘⇧R`. The first Shortcut
-invocation may show a distinct macOS Automation permission prompt; grant it if
-you want the Shortcut-launched command to inspect and retitle Ghostty.
+Under Shortcuts **Advanced**, only **Allow Running Scripts** is required; do
+not enable large-data or deletion permissions. The first invocation may show a
+separate macOS Automation permission prompt; grant it to let the
+Shortcut-launched command inspect and retitle Ghostty.
 
 The direct shell command remains available when the Shortcut is inconvenient.
 Agent Board then retains the label while status changes update only the leading
