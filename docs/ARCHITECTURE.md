@@ -11,6 +11,7 @@ summary: |
 decisions:
   - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary Codex remains an explicit degraded-confidence fallback.
   - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group; there is no global resident daemon.
+  - The stable Board session, Ghostty binding, and project identity outlive a managed runtime; each relaunch replaces the prior launcher metadata and native Codex thread binding.
   - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external boundaries.
   - One versioned session record is the source of truth and is updated atomically under a per-session lock.
   - The domain stores orthogonal identity, activity, attention, health, adapter evidence, and terminal presence; visible statuses are derived centrally.
@@ -79,19 +80,21 @@ One `agent-codex` process owns one supervised tab's runtime:
    repository directory name as an editable initial label.
 3. Start app-server on an ephemeral loopback WebSocket endpoint and wait for its
    advertised readiness with a bounded timeout.
-4. Connect the Board observer and complete protocol initialization.
-5. Start the remote Codex TUI with inherited stdin/stdout/stderr and the exact
+4. Claim that stable session for this launcher by recording its process ID and
+   clearing any native thread binding left by the prior managed runtime.
+5. Connect the Board observer and complete protocol initialization.
+6. Start the remote Codex TUI with inherited stdin/stdout/stderr and the exact
    override `-c tui.terminal_title=[]`; Codex requires this setting to be a
    sequence, and the empty sequence disables its title components so the
    Ghostty adapter owns the registered title.
-6. Normalize observed thread and turn events, update the store, and render the
+7. Normalize observed thread and turn events, update the store, and render the
    tab title after each meaningful transition.
-7. Poll focused Ghostty identity only while unread completion exists. Reliable
+8. Poll focused Ghostty identity only while unread completion exists. Reliable
    focus clears completion attention; input-required attention remains until
    Codex reports that the wait ended.
-8. On clean TUI exit, stop app-server, mark the agent activity idle with explicit
+9. On clean TUI exit, stop app-server, mark the agent activity idle with explicit
    process-exit evidence, and leave the project tab registered.
-9. On launcher, protocol, or app-server failure, record a visible diagnostic or
+10. On launcher, protocol, or app-server failure, record a visible diagnostic or
    error before bounded cleanup.
 
 The launcher ignores terminal `SIGINT` while the child TUI is active so Codex
@@ -351,6 +354,12 @@ unrelated or child thread events cannot overwrite the tab record. The binding
 algorithm uses the dedicated process scope, thread start/load events, parent
 metadata when available, and the expected working directory. Ambiguity produces
 an explicit diagnostic instead of guessing.
+
+A native thread binding belongs to one short-lived managed launcher and
+app-server lifetime, not to the stable Board session. Re-running `agent-codex`
+in a registered tab retains its Board session, Ghostty binding, and project
+label while replacing the launcher metadata and native thread binding. The new
+observer can then bind the root thread created by its own private app-server.
 
 Protocol compatibility is checked against the installed Codex version and the
 minimum event/schema shapes Agent Board needs. V1 does not vendor the entire

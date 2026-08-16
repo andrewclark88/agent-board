@@ -5,12 +5,13 @@ type: spec
 kind: planning
 status: draft
 nav_priority: high
-updated: 2026-08-15
+updated: 2026-08-16
 summary: |
   The first Agent Board release registers one Codex session per Ghostty tab, stores identity and observed state locally, projects five attention symbols into machine-maintained tab titles, and renders the same records through an `agents` command. The contract separates activity, attention, health, and evidence so simple labels remain truthful.
 decisions:
   - One supervised agent per Ghostty tab is the first-release operating constraint.
   - Project labels are human-controlled presentation and never session identity.
+  - Stable Board and Ghostty identity survives managed relaunch; native Codex thread binding is scoped to one launcher and app-server lifetime.
   - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical truth.
   - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation evidence.
   - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
@@ -156,13 +157,17 @@ project_label             user-controlled presentation
 repo_path?                discovered context
 git_branch?               discovered context
 adapter                    codex initially
-native_session_id?        adapter binding
+native_thread_id?         managed-runtime binding
 ghostty_window_id
 ghostty_tab_id
 ghostty_terminal_id
 ```
 
 Project label, repo path, branch, and terminal position are not identity keys.
+The Board session and Ghostty binding persist when `agent-codex` is run again in
+the registered tab. Each run owns a short-lived launcher, private app-server,
+and native Codex thread; relaunch replaces that runtime binding without changing
+the stable session or project identity.
 
 ### Normalized observed state
 

@@ -2,32 +2,37 @@
 
 **Project:** Agent Board
 **Date:** 2026-08-16
-**Documents reviewed:** 17 indexable documents (7 system/historical planning + 10 research records), plus `AGENTS.md`, `README.md`, examples, current `.work/` state, implementation, tests, and the terminal-title repair commits
-**Passes run:** 1 system-level pass; 0 module passes (no module planning corpus exists)
-**Issues found:** Critical **0** · High **0** · Medium **0** · Low **0** · Info **3**
+**Documents reviewed:** 6 current system planning documents (6 system + 0 module), plus 1 superseded historical document, 10 indexed research records, `AGENTS.md`, `README.md`, examples, code, tests, and current `.work/` evidence
+**Passes run:** 1 full system-level pass; 0 module passes (no module planning corpus exists)
+**Issues found:** Critical **0** · High **0** · Medium **1** · Low **1** · Info **2**
 
 ## Exit Gate
 
 **Clean:** Critical = **0** and High = **0**.
 
-This fresh full pass followed the completed Medium correction. It found no
-Critical or High findings, so the Phase 4 auto-fix loop was not entered.
+This was the required fresh full audit after the relaunch-binding planning-doc
+edits. The first complete pass returned zero Critical and zero High findings,
+so no Critical/High auto-fix iteration or follow-up re-audit was required.
 
 ## Phase 1: Discovery
 
-- `docs/knowledge-index.yaml` is present, schema-enforced (`schema_version: 2`),
-  regenerated after the terminal-title repair, and lists 17 existing paths.
-- System planning corpus: `VISION.md`, `PRINCIPLES.md`, `SPEC.md`,
-  `ARCHITECTURE.md`, `configuration.md`, `research-plan.md`, and the explicitly
-  superseded historical `project-brief.md`.
-- Frontmatter compliance is 17/17 under the project's enforced index schema.
-  All planning/historical documents have non-empty `description`, `type`, and
-  `updated` fields. The two decision briefs declare `research_method: /research`;
-  the prior-art campaign parent declares `/scout`.
+- `docs/knowledge-index.yaml` exists and lists 17 paths: 6 current planning
+  documents, 10 research records, and 1 explicitly superseded historical
+  document. Every indexed path exists.
+- Current system planning corpus: `docs/VISION.md`, `docs/PRINCIPLES.md`,
+  `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/configuration.md`, and
+  `docs/research-plan.md`.
 - No module north stars, `docs/*/architecture/` module trees, or `modules/`
-  planning directories were found. A module pass would have no subject.
-- All local Markdown links in `README.md`, `AGENTS.md`, and `docs/*.md` resolve.
-  All knowledge-index paths and all five archive-stub `git_ref` values resolve.
+  planning directories were found. A module pass has no subject.
+- Frontmatter compliance is 6/6 for current planning documents and 17/17 under
+  the project's enforced index schema. Each current planning document has a
+  non-empty `description`, supported project `type`, `kind`, `status`, and
+  `updated` value. Decision-bearing research declares `/research` or `/scout`
+  provenance where required.
+- All local Markdown links in the reviewed planning/operator corpus resolve.
+  Both blocking runtime briefs, the prior-art parent, configuration examples,
+  and the managed-runtime attestation exist on disk. All five archive-stub
+  `git_ref` values resolve to commits.
 
 ## Pass 1: System-Level
 
@@ -39,104 +44,115 @@ None.
 
 None.
 
-### Medium (0)
+### Medium (1)
 
-None.
+#### Generated knowledge indexes predate the relaunch-binding decisions
 
-### Low (0)
+**Files:** `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`,
+`docs/knowledge-index-detail.yaml` versus `docs/SPEC.md` and
+`docs/ARCHITECTURE.md`
 
-None.
+**What:** The current source frontmatter updates `docs/SPEC.md` to 2026-08-16
+and adds the stable-session/runtime-binding decision to both `SPEC` and
+`ARCHITECTURE`. The full and navigator indexes still report the specification
+as updated on 2026-08-15. The detail index omits the new relaunch decision from
+both documents' generated `decisions` lists. This is derived-navigation drift,
+not a defect in the source planning documents.
 
-### Info (3)
+**Fix:** Regenerate all three knowledge-index layers from current frontmatter
+with the project's knowledge-index workflow. Do not hand-edit generated YAML.
 
-#### Frozen research retains the formerly documented `null` off-switch
+### Low (1)
 
-**Files:** `.research/attestation/config-reference-tui.md`,
-`.research/analysis/campaigns/agent-board-prior-art/parent.md`,
-`.research/analysis/campaigns/agent-board-prior-art/specialists/codex-lifecycle.md`,
-`.research/analysis/campaigns/agent-board-prior-art/verification-checklist.md`
+#### Completed launcher feature notes omit the new launch-claim step
 
-**What:** These evidence artifacts accurately preserve what the consulted
-reference said during the 2026-08-14 research engagement: that `null` disabled
-Codex title updates. They are not executable instructions or current product
-truth. The subsequent installed-runtime failure and repair supersede that claim
-for Agent Board's Codex 0.147.x launcher.
+**Files:**
+`.work/active/features/epic-managed-codex-observation-supervised-launcher.md`
+versus `.work/active/stories/story-fix-managed-relaunch-thread-binding.md`,
+`docs/ARCHITECTURE.md`, and `src/application/launch-managed-codex.ts`
 
-**Disposition:** Preserve the research record. All current product and delivery
-documents use the validated empty-sequence override. No non-historical `null`
-contract remains.
+**What:** The completed feature's Unit 3 implementation sequence still moves
+directly from app-server startup to client connection/observer initialization.
+The repaired implementation now inserts a session claim that records the
+current launcher PID and removes the prior `nativeThreadId` before connecting
+the observer. The active repair story accurately records the correction, so
+the stale feature prose does not obscure current product truth or acceptance.
+
+**Fix:** When normal delivery bookkeeping next touches the completed feature,
+add the launch-claim step or a short pointer to the relaunch repair story.
+
+### Info (2)
 
 #### No separate roadmap document
 
-**Files:** `docs/research-plan.md`, `.work/backlog/roadmap-deferred-product-horizon.md`
+**Files:** `docs/research-plan.md`, `.work/`,
+`.work/backlog/roadmap-deferred-product-horizon.md`
 
-**What:** Delivery status is correctly owned by `.work/`; the research plan owns
-completed/deferred research and the backlog preserves non-binding future product
-options. No current planning document claims a separate phase roadmap exists.
+**What:** Delivery status is intentionally owned by `.work/`; the research plan
+owns completed and deferred research, while the backlog preserves non-binding
+future product options. No current planning document claims that a separate
+phase roadmap exists.
 
-**Disposition:** Informational, not drift and not a missing blocker.
+**Disposition:** Informational. No NEXT-phase blocker is hidden by this shape.
 
-#### Generated knowledge-index refresh is intentionally uncommitted
+#### Terminal-mode restoration remains explicitly outside the relaunch repair
 
-**Files:** `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`,
-`docs/knowledge-index-detail.yaml`
+**Files:** `docs/ARCHITECTURE.md`, `docs/SPEC.md`,
+`.work/active/stories/story-fix-managed-relaunch-thread-binding.md`,
+`.work/backlog/idea-terminal-mode-restoration.md`
 
-**What:** The working tree contains the expected derived refresh after the
-architecture correction and archived repair story: generation timestamps,
-`ARCHITECTURE.md`'s 2026-08-16 update, and the archive count increasing from four
-to five. The completed feature-body correction changes no indexed planning-doc
-frontmatter, so the derived indexes remain consistent with current sources.
+**What:** The relaunch contract covers persistent Board/Ghostty/project
+identity and replacement of launcher/thread metadata. It does not claim to
+restore an arbitrary shell TTY after Agent Board forcibly tears down a failed
+remote TUI. The observed Control-C/terminal-mode symptom and immediate
+`reset`/`stty sane` recovery are preserved in a dedicated backlog idea.
 
-**Disposition:** Informational. This audit did not modify those working-tree
-updates.
+**Disposition:** Correct scope boundary, not missing current documentation.
 
-## Codex Terminal-Title Override Verification
-
-The live failure, repair story, current contract, implementation, and regression
-test were inspected as one chain.
+## Managed Relaunch Contract Verification
 
 | Contract | Evidence inspected | Result |
 | --- | --- | --- |
-| Codex receives a typed empty sequence, not a string-like `null`. | `docs/ARCHITECTURE.md`; `src/integrations/codex/process.ts`; `tests/integrations/codex/process.test.ts`. | Consistent. All use the exact pair `-c`, `tui.terminal_title=[]`. |
-| Agent Board rejects caller attempts to replace its title or remote-transport ownership. | `README.md`; `src/integrations/codex/process.ts`; process-host tests. | Consistent. `--remote` and all supported `tui.terminal_title` override forms are rejected before spawn. |
-| The repair has durable diagnosis and review provenance. | Archive stub `story-fix-codex-terminal-title-override` → review commit `a402d3b`; implementation commit `c0bc19a`; documentation commit `43dd7be`. | Consistent. The recorded symptom is the installed Codex sequence-type error, and the accepted fix is `[]`. |
-| Exact argv remains executable and type-safe. | `npm run typecheck`; `npx tsx --test tests/integrations/codex/process.test.ts`. | Pass. Typecheck succeeded; focused process suite passed 7/7. |
+| Board session, Ghostty binding, and project label persist across sequential `agent-codex` launches in the same registered tab. | `docs/SPEC.md`; `docs/ARCHITECTURE.md`; `registerSession`; launch mutation; relaunch regression test. | Consistent. Registration reuses terminal identity and the claim mutation spreads the current record without changing `sessionId`, `identity`, or `terminal`. |
+| Every launch owns a short-lived launcher and private app-server/native thread. | Architecture process topology; `launchManagedCodex`; `CodexProcessHost`; active repair story. | Consistent. App-server startup is per invocation, and the native thread is rebound for that managed runtime. |
+| The launch claim records the current launcher PID and clears a previous native thread before observer binding. | `src/application/launch-managed-codex.ts`; `src/application/observe-managed-codex.ts`; `tests/application/launch-managed-codex.test.ts`. | Consistent. The store mutation writes `launcherPid: process.pid` and removes `nativeThreadId` before `connectClient`, initialization, and `observeManagedCodex`; the regression test fails without this order and now binds `root` over `previous-thread`. |
+| Relaunch does not promise general TTY recovery. | `docs/SPEC.md`; `docs/ARCHITECTURE.md`; terminal-mode backlog item. | Consistent. No planning contract claims shell-mode restoration; that separate observed risk remains deferred. |
 
-The old `null` contract no longer appears in source code, tests, README,
-foundation planning truth, or current delivery records. It remains only in
-frozen research evidence and this report's historical explanation.
+Focused executable verification also passed:
+
+- `npm run typecheck`
+- `npx tsx --test --test-concurrency=1 tests/application/launch-managed-codex.test.ts`
+  (6/6 passing)
 
 ## Clean Areas
 
-- Product truth remains consistent across vision, principles, specification,
-  architecture, README, and backlog: local-first attention routing; one Codex
-  session per Ghostty tab; no tmux, resident daemon, semantic actions, GUI,
-  remote service, or hardware requirement in V1.
-- The managed app-server plus remote-TUI default and ordinary-mode
-  degraded-confidence boundary agree across `AGENTS.md`, the foundation docs,
-  code, and package commands.
-- The completed managed-launcher feature, locked architecture, implementation,
-  and exact-argv regression test all specify `-c tui.terminal_title=[]` and
-  explain or enforce the sequence requirement consistently.
-- The four documented binaries—`agent-codex`, `agent-name`, `agents`, and
-  `agent-board`—match `package.json`, `src/cli/`, and composition roots.
-- Ghostty title ownership, stable-ID targeting, title clearing,
-  hierarchy-aware liveness, and conservative uncertainty remain aligned with
-  the locked Ghostty brief, implementation, tests, and operator guide.
-- The five-state board/title projection, acknowledgement fallback, local atomic
-  store, and error/degradation rules agree between foundation documents and
-  domain/application surfaces.
-- The expected source and test surfaces exist for all five completed epics, 15
-  completed features, six active-tier completed stories, and five archived
-  items. Every archive stub resolves to a commit.
-- README and `docs/configuration.md` continue to route users through
-  `agent-codex` without asking them to edit `tui.terminal_title` manually; the
-  user's configured Codex status line remains a separate in-terminal surface.
+- Vision, principles, specification, and architecture retain clear ownership:
+  product outcome and guardrails are separate from behavioral and process
+  contracts, with no duplicated state machine.
+- The relaunch additions agree across `SPEC` and `ARCHITECTURE`: persistent
+  Board/Ghostty/project identity is distinct from launcher-owned PID and native
+  thread metadata.
+- The new contract is narrower than terminal recovery, retroactive attachment,
+  daemon supervision, or concurrent multi-agent control; none of those are
+  implied.
+- Managed app-server plus remote TUI remains the V1 default, and ordinary Codex
+  remains an explicitly degraded-confidence boundary everywhere current truth
+  describes it.
+- Local-first storage, centralized projection, Ghostty stable-ID targeting,
+  conservative liveness, completion acknowledgement, and observation-only
+  scope remain aligned between planning docs and implementation.
+- The four binaries named in architecture and operator docs match
+  `package.json`, `src/cli/`, and composition roots.
+- README/configuration instructions and copyable examples agree on Ghostty
+  title ownership and the typed `tui.terminal_title=[]` override.
+- All completed V1 delivery arcs have their expected implementation and test
+  surfaces on disk. The current relaunch repair story is correctly at review
+  with focused and full-suite verification recorded.
 
 ## Blocking Briefs Status
 
-There is no NEXT delivery phase that names a missing blocking brief. The locked
-architecture is grounded by these on-disk artifacts.
+There is no NEXT delivery phase naming a missing blocking brief. The locked V1
+architecture remains grounded by these on-disk artifacts.
 
 | Brief | Supports | Exists on disk? | Status |
 | --- | --- | --- | --- |
@@ -150,11 +166,11 @@ architecture is grounded by these on-disk artifacts.
 | --- | --- | --- | --- |
 | Trustworthy session core | Done | Domain, storage, lock, and transition/projection tests | Present |
 | Ghostty project surface | Done | AppleScript client/protocol/diagnostics, registration, reconciliation, and title tests | Present |
-| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, exact empty-sequence argv test, and integration tests | Present and consistent |
+| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, protocol/process tests, and opt-in probe | Present |
 | Swarm attention board | Done | Board application, CLI renderer, acknowledgement/unregister, and tests | Present |
-| Operational readiness | Done | Doctor, packed artifact harness, golden/failure/chaos tests, and opt-in live probes | Present |
-| Companion terminal configuration | Done | Ghostty/Codex fragments, configuration guide, README routing, and recorded validation | Present |
-| Codex terminal-title repair | Done and archived | Valid `[]` launcher argument, regression test, architecture correction, review evidence | Present; focused verification passes |
+| Operational readiness | Done | Doctor, packed artifact harness, golden/failure/chaos tests, and opt-in probes | Present |
+| Companion terminal configuration | Done | Ghostty/Codex fragments, configuration guide, README routing, and validation record | Present |
+| Managed relaunch repair | Review | Stale binding cleared on launcher claim; focused regression and full-suite evidence recorded | Present and consistent |
 
 ## Provenance Summary
 
@@ -163,21 +179,20 @@ architecture is grounded by these on-disk artifacts.
 | `/research` | 2 | 2026-08-14 |
 | `/scout` | 1 | 2026-08-14 |
 
-The highest applicable brief tier is `/research`; there are no lower-tier
+The highest applicable brief tier is `/research`. There are no lower-tier
 decision briefs older than a newer higher-tier run, so there are no refresh
-candidates. Remaining indexed campaign records and attestations are supporting
-research artifacts, not duplicate current planning truth.
+candidates.
 
 ## Audit Boundary and Provenance
 
-This was a fresh Phase 1–3 full system-level re-audit after the Medium
-delivery-record correction, discovered from the regenerated knowledge index. It
-inspected all system planning/historical docs, `AGENTS.md`, README, examples,
-code, tests, current work/archive/backlog state, the two blocking runtime
-briefs, the prior-art parent, and the terminal-title repair commits. No module
-planning corpus was discovered, so no module pass was applicable.
+This fresh Phase 1–3 cascading audit inspected all current system planning
+documents discovered from `docs/knowledge-index.yaml`, the superseded
+historical checkpoint for conflict only, current operator docs and examples,
+implementation and focused tests, active/done/backlog/archive substrate state,
+blocking research briefs, and derived-index consistency. No module planning
+corpus was discovered, so no module pass applied.
 
-The audit was performed with the inherited reviewer capability because the
-configured Sonnet-named pass override was unavailable in the active roster. It
-did not modify source documentation, code, work items, generated indexes,
-package files, commits, or remote state; only this report was overwritten.
+The audit used the inherited reviewer capability because the requested
+Sonnet-named override was unavailable. It did not modify source planning docs,
+generated indexes, code, work items, package files, commits, or remote state;
+only this report was replaced.
