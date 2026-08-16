@@ -35,6 +35,24 @@ test("installed Codex reports the narrow compatibility contract", { skip: !enabl
     for (const required of ["waitingOnApproval", "waitingOnUserInput", "idle", "active", "systemError", "completed", "interrupted", "failed", "inProgress"]) {
       assert.match(text, new RegExp(required, "u"), `Codex schema is missing ${required}`);
     }
+
+    const loadedListPath = files.find((file) => file.endsWith("v2/ThreadLoadedListResponse.json"));
+    const threadReadPath = files.find((file) => file.endsWith("v2/ThreadReadResponse.json"));
+    assert.ok(loadedListPath, "Codex schema output did not include v2/ThreadLoadedListResponse.json");
+    assert.ok(threadReadPath, "Codex schema output did not include v2/ThreadReadResponse.json");
+    const loadedList = JSON.parse(await readFile(join(outputRoot, loadedListPath), "utf8")) as {
+      properties?: { data?: { type?: unknown; items?: { type?: unknown } } };
+      required?: unknown;
+    };
+    assert.equal(loadedList.properties?.data?.type, "array");
+    assert.equal(loadedList.properties?.data?.items?.type, "string");
+    assert.ok(Array.isArray(loadedList.required) && loadedList.required.includes("data"));
+    const threadRead = JSON.parse(await readFile(join(outputRoot, threadReadPath), "utf8")) as {
+      properties?: { thread?: unknown };
+      required?: unknown;
+    };
+    assert.ok(threadRead.properties?.thread, "thread/read response must expose thread metadata");
+    assert.ok(Array.isArray(threadRead.required) && threadRead.required.includes("thread"));
   } finally {
     await rm(outputRoot, { recursive: true, force: true });
   }

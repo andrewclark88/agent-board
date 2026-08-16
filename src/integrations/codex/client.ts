@@ -7,7 +7,8 @@ import {
   JsonRpcNotificationSchema,
   JsonRpcResponseSchema,
   parseNotification,
-  ThreadLoadedListResultSchema,
+  ThreadLoadedListResponseSchema,
+  ThreadReadResponseSchema,
   type CodexNotification,
   type ThreadLoadedListResult,
 } from "./protocol.js";
@@ -27,6 +28,7 @@ export interface AppServerClientOptions {
 }
 
 interface PendingRequest<T> {
+  method: string;
   schema: z.ZodType<T>;
   resolve: (value: T) => void;
   reject: (error: unknown) => void;
@@ -201,7 +203,21 @@ export class AppServerClient {
   }
 
   async loadedThreads(signal?: AbortSignal): Promise<ThreadLoadedListResult> {
-    return this.request("thread/loaded/list", {}, ThreadLoadedListResultSchema, signal);
+    const loaded = await this.request("thread/loaded/list", {}, ThreadLoadedListResponseSchema, signal);
+    const data: ThreadLoadedListResult["data"] = [];
+    for (const threadId of loaded.data) {
+      const response = await this.request(
+        "thread/read",
+        { threadId, includeTurns: false },
+        ThreadReadResponseSchema,
+        signal,
+      );
+      if (response.thread.id !== threadId) {
+        throw failure(`Codex thread/read returned unexpected thread id ${response.thread.id}`);
+      }
+      data.push(response.thread);
+    }
+    return { data };
   }
 
   notifications(signal?: AbortSignal): AsyncIterable<CodexNotification> {
@@ -237,7 +253,7 @@ export class AppServerClient {
         this.cleanupPending(current);
         reject(failure(`Codex app-server request timed out: ${method}`));
       }, this.timeoutMs);
-      const pending: PendingRequest<T> = { schema, resolve, reject, timer, signal };
+      const pending: PendingRequest<T> = { method, schema, resolve, reject, timer, signal };
       this.pending.set(id, pending as PendingRequest<unknown>);
       const abort = () => {
         const current = this.pending.get(id);
@@ -297,7 +313,7 @@ export class AppServerClient {
       return;
     }
     const result = pending.schema.safeParse(response.result);
-    if (!result.success) pending.reject(failure("Codex app-server response failed schema validation", result.error));
+    if (!result.success) pending.reject(failure(`Codex app-server response failed schema validation: ${pending.method}`, result.error));
     else pending.resolve(result.data);
   }
 

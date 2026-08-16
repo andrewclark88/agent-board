@@ -6,7 +6,7 @@ import { z } from "zod";
 import { AgentBoardError } from "../../../src/domain/errors.js";
 import { AppServerClient } from "../../../src/integrations/codex/client.js";
 import { parseAdvertisedEndpoint } from "../../../src/integrations/codex/endpoint.js";
-import { ThreadLoadedListResultSchema } from "../../../src/integrations/codex/protocol.js";
+import { ThreadLoadedListResponseSchema } from "../../../src/integrations/codex/protocol.js";
 import type { WebSocketFactory } from "../../../src/integrations/codex/websocket-port.js";
 
 function endpoint(port: number) {
@@ -19,7 +19,15 @@ async function withServer(handler: (socket: WebSocketConnection) => void, run: (
   const address = server.address();
   assert.ok(address && typeof address !== "string");
   server.on("connection", handler);
-  try { await run(address.port); } finally { await new Promise<void>((resolve) => server.close(() => resolve())); }
+  try {
+    await run(address.port);
+  } finally {
+    // Failure-path clients can close while a WebSocket handshake is still in
+    // flight. Bound fixture teardown instead of letting server.close wait
+    // forever for a peer that the assertion has already finished exercising.
+    for (const socket of server.clients) socket.terminate();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
 }
 
 const defaultFactory: WebSocketFactory = (url) => {
@@ -29,29 +37,45 @@ const defaultFactory: WebSocketFactory = (url) => {
 };
 
 test("correlates concurrent requests and delivers ordered notifications", async () => {
+  const reads: Array<{ threadId?: string; includeTurns?: boolean }> = [];
+  let notificationsSent = false;
   await withServer((socket) => {
     socket.on("message", (raw) => {
-      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      const request = JSON.parse(raw.toString()) as { id: number; method: string; params?: { threadId?: string; includeTurns?: boolean } };
       if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: { ok: true } }));
       else if (request.method === "thread/loaded/list") {
-        setTimeout(() => socket.send(JSON.stringify({ id: request.id, result: { data: [{ id: "thread-1", status: { type: "idle" } }] } })), request.id % 2 ? 15 : 1);
+        if (!notificationsSent) {
+          notificationsSent = true;
+          socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "active", activeFlags: [] } } }));
+          socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
+        }
+        setTimeout(() => socket.send(JSON.stringify({ id: request.id, result: { data: ["thread-1"] } })), request.id % 2 ? 15 : 1);
+      } else if (request.method === "thread/read") {
+        reads.push(request.params ?? {});
+        socket.send(JSON.stringify({
+          id: request.id,
+          result: { thread: { id: "thread-1", status: { type: "idle" }, cwd: "/repo", parentThreadId: null } },
+        }));
       }
     });
-    setTimeout(() => {
-      socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "active", activeFlags: [] } } }));
-      socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
-    }, 2);
   }, async (port) => {
     const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory });
-    await client.initialize({ name: "agent-board-test", version: "0.1.0" });
-    const stream = client.notifications();
-    const first = stream[Symbol.asyncIterator]().next();
-    const [one, two] = await Promise.all([client.loadedThreads(), client.loadedThreads()]);
-    assert.equal(one.data[0].id, "thread-1");
-    assert.equal(two.data[0].id, "thread-1");
-    assert.equal((await first).value.params.status.type, "active");
-    assert.equal((await stream[Symbol.asyncIterator]().next()).value.params.status.type, "idle");
-    await client.close();
+    try {
+      await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+      const stream = client.notifications();
+      const first = stream[Symbol.asyncIterator]().next();
+      const [one, two] = await Promise.all([client.loadedThreads(), client.loadedThreads()]);
+      assert.equal(one.data[0].id, "thread-1");
+      assert.equal(two.data[0].id, "thread-1");
+      assert.deepEqual(reads, [
+        { threadId: "thread-1", includeTurns: false },
+        { threadId: "thread-1", includeTurns: false },
+      ]);
+      assert.equal((await first).value.params.status.type, "active");
+      assert.equal((await stream[Symbol.asyncIterator]().next()).value.params.status.type, "idle");
+    } finally {
+      await client.close();
+    }
   });
 });
 
@@ -66,7 +90,7 @@ test("times out and aborts requests independently", async () => {
     await client.initialize({ name: "agent-board-test", version: "0.1.0" });
     await assert.rejects(client.loadedThreads(), /timed out/);
     const controller = new AbortController();
-    const pending = client.request("never", {}, ThreadLoadedListResultSchema, controller.signal);
+    const pending = client.request("never", {}, ThreadLoadedListResponseSchema, controller.signal);
     controller.abort();
     await assert.rejects(pending, /aborted/);
     await client.close();
@@ -137,9 +161,9 @@ test("rejects notification buffer overflow, oversized, and binary messages", asy
       else if (request.method === "oversized") socket.send("x".repeat(10_000));
       else if (request.method === "binary") socket.send(Buffer.from("binary"), { binary: true });
       else if (request.method === "overflow") {
+        socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
+        socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
         socket.send(JSON.stringify({ id: request.id, result: {} }));
-        socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
-        socket.send(JSON.stringify({ method: "thread/status/changed", params: { threadId: "thread-1", status: { type: "idle" } } }));
       }
     });
   }, async (port) => {

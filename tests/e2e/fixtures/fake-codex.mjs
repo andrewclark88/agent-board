@@ -37,7 +37,8 @@ if (args.includes("--remote")) {
     socket.on("message", (raw) => {
       const request = JSON.parse(raw.toString());
       if (request.method === "initialize") socket.send(JSON.stringify({ jsonrpc: "2.0", id: request.id, result: {} }));
-      else if (request.method === "thread/loaded/list") socket.send(JSON.stringify({ jsonrpc: "2.0", id: request.id, result: { data: [{ id: threadId, cwd: process.cwd(), parentThreadId: null, status: statusShape(status()) }] } }));
+      else if (request.method === "thread/loaded/list") socket.send(JSON.stringify({ jsonrpc: "2.0", id: request.id, result: { data: [threadId] } }));
+      else if (request.method === "thread/read") socket.send(JSON.stringify({ jsonrpc: "2.0", id: request.id, result: { thread: { id: threadId, cwd: process.cwd(), parentThreadId: null, status: statusShape(status()) } } }));
       else socket.send(JSON.stringify({ jsonrpc: "2.0", id: request.id, result: {} }));
     });
   });

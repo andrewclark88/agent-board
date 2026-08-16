@@ -60,13 +60,24 @@ export const TurnCompletedParamsSchema = z.object({
   turn: TurnSchema,
 }).passthrough();
 
-const LoadedThreadSchema = z.object({
+export const LoadedThreadSchema = z.object({
   id: z.string().min(1),
   status: ThreadStatusSchema,
   cwd: z.string().min(1).optional(),
   parentThreadId: z.string().min(1).nullable().optional(),
 }).passthrough();
 
+export const ThreadLoadedListResponseSchema = z.object({
+  data: z.array(z.string().min(1)),
+  nextCursor: z.string().nullable().optional(),
+}).passthrough();
+
+export const ThreadReadResponseSchema = z.object({
+  thread: LoadedThreadSchema,
+}).passthrough();
+
+// Enriched internal discovery result consumed by thread binding after each
+// loaded thread id has been resolved through thread/read.
 export const ThreadLoadedListResultSchema = z.object({
   data: z.array(LoadedThreadSchema),
 }).passthrough();

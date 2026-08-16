@@ -3,7 +3,12 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-import { parseNotification, ThreadLoadedListResultSchema, ThreadStatusChangedParamsSchema } from "../../../src/integrations/codex/protocol.js";
+import {
+  parseNotification,
+  ThreadLoadedListResponseSchema,
+  ThreadReadResponseSchema,
+  ThreadStatusChangedParamsSchema,
+} from "../../../src/integrations/codex/protocol.js";
 
 test("parses captured lifecycle notifications and tolerates additive fields", async () => {
   const fixture = await readFile(fileURLToPath(new URL("../../fixtures/codex/app-server.jsonl", import.meta.url)), "utf8");
@@ -28,10 +33,16 @@ test("rejects changed required status and turn semantics", () => {
 });
 
 test("validates loaded thread discovery shape", () => {
-  const result = ThreadLoadedListResultSchema.parse({
-    data: [{ id: "thread-1", status: { type: "idle" }, cwd: "/tmp/project", parentThreadId: null, future: 1 }],
+  const result = ThreadLoadedListResponseSchema.parse({
+    data: ["thread-1"],
     nextCursor: null,
   });
-  assert.equal(result.data[0].id, "thread-1");
-  assert.throws(() => ThreadLoadedListResultSchema.parse({ data: [{ id: "thread-1", status: { type: "active" } }] }));
+  assert.equal(result.data[0], "thread-1");
+  assert.throws(() => ThreadLoadedListResponseSchema.parse({ data: [{ id: "thread-1" }] }));
+
+  const read = ThreadReadResponseSchema.parse({
+    thread: { id: "thread-1", status: { type: "idle" }, cwd: "/tmp/project", parentThreadId: null, future: 1 },
+  });
+  assert.equal(read.thread.id, "thread-1");
+  assert.throws(() => ThreadReadResponseSchema.parse({ thread: { id: "thread-1", status: { type: "active" } } }));
 });
