@@ -5,7 +5,7 @@ type: architecture
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-15
+updated: 2026-08-16
 summary: |
   Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote TUI, and observer; normalized state is atomically persisted and projected through one policy into Ghostty titles and the `agents` board.
 decisions:
@@ -22,7 +22,7 @@ decisions:
 
 # Architecture: Agent Board
 
-*Last updated: 2026-08-15*
+*Last updated: 2026-08-16*
 
 > How the system is built. For product intent, see [Vision](VISION.md),
 > [Specification](SPEC.md), and [Principles](PRINCIPLES.md). Runtime decisions
@@ -80,8 +80,10 @@ One `agent-codex` process owns one supervised tab's runtime:
 3. Start app-server on an ephemeral loopback WebSocket endpoint and wait for its
    advertised readiness with a bounded timeout.
 4. Connect the Board observer and complete protocol initialization.
-5. Start the remote Codex TUI with inherited stdin/stdout/stderr and
-   `tui.terminal_title=null`; the Ghostty adapter owns the registered title.
+5. Start the remote Codex TUI with inherited stdin/stdout/stderr and the exact
+   override `-c tui.terminal_title=[]`; Codex requires this setting to be a
+   sequence, and the empty sequence disables its title components so the
+   Ghostty adapter owns the registered title.
 6. Normalize observed thread and turn events, update the store, and render the
    tab title after each meaningful transition.
 7. Poll focused Ghostty identity only while unread completion exists. Reliable
