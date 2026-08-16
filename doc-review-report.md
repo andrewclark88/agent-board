@@ -2,17 +2,17 @@
 
 **Project:** Agent Board
 **Date:** 2026-08-16
-**Documents reviewed:** 6 current system planning documents (6 system + 0 module), plus 1 superseded historical document, 10 indexed research records, `AGENTS.md`, `README.md`, examples, code, tests, and current `.work/` evidence
-**Passes run:** 1 full system-level pass; 0 module passes (no module planning corpus exists)
-**Issues found:** Critical **0** · High **0** · Medium **1** · Low **1** · Info **2**
+**Documents reviewed:** 6 current system planning documents (6 system + 0 module), plus 1 superseded historical document, 10 indexed research records, `AGENTS.md`, `README.md`, operator examples, implementation, tests, and current `.work/` evidence
+**Passes run:** 1 fresh full system-level pass; 0 module passes (no module planning corpus exists)
+**Issues found:** Critical **0** · High **0** · Medium **1** · Low **0** · Info **2**
 
 ## Exit Gate
 
 **Clean:** Critical = **0** and High = **0**.
 
-This was the required fresh full audit after the relaunch-binding planning-doc
-edits. The first complete pass returned zero Critical and zero High findings,
-so no Critical/High auto-fix iteration or follow-up re-audit was required.
+The required fresh full cascading audit returned zero Critical and zero High
+findings. The mechanical exit gate is therefore satisfied. No Critical/High
+auto-fix iteration or additional re-audit is required.
 
 ## Phase 1: Discovery
 
@@ -29,10 +29,10 @@ so no Critical/High auto-fix iteration or follow-up re-audit was required.
   non-empty `description`, supported project `type`, `kind`, `status`, and
   `updated` value. Decision-bearing research declares `/research` or `/scout`
   provenance where required.
-- All local Markdown links in the reviewed planning/operator corpus resolve.
-  Both blocking runtime briefs, the prior-art parent, configuration examples,
-  and the managed-runtime attestation exist on disk. All five archive-stub
-  `git_ref` values resolve to commits.
+- All local Markdown links in the reviewed planning, operator, and active-work
+  corpus resolve. Both blocking runtime briefs, the prior-art parent,
+  configuration examples, and the managed-runtime attestation exist on disk.
+  All five archive-stub `git_ref` values resolve to commits.
 
 ## Pass 1: System-Level
 
@@ -46,46 +46,38 @@ None.
 
 ### Medium (1)
 
-#### Generated knowledge indexes predate the relaunch-binding decisions
-
-**Files:** `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`,
-`docs/knowledge-index-detail.yaml` versus `docs/SPEC.md` and
-`docs/ARCHITECTURE.md`
-
-**What:** The current source frontmatter updates `docs/SPEC.md` to 2026-08-16
-and adds the stable-session/runtime-binding decision to both `SPEC` and
-`ARCHITECTURE`. The full and navigator indexes still report the specification
-as updated on 2026-08-15. The detail index omits the new relaunch decision from
-both documents' generated `decisions` lists. This is derived-navigation drift,
-not a defect in the source planning documents.
-
-**Fix:** Regenerate all three knowledge-index layers from current frontmatter
-with the project's knowledge-index workflow. Do not hand-edit generated YAML.
-
-### Low (1)
-
-#### Completed launcher feature notes omit the new launch-claim step
+#### Older completed features retain unchecked acceptance criteria
 
 **Files:**
-`.work/active/features/epic-managed-codex-observation-supervised-launcher.md`
-versus `.work/active/stories/story-fix-managed-relaunch-thread-binding.md`,
-`docs/ARCHITECTURE.md`, and `src/application/launch-managed-codex.ts`
+`.work/active/features/epic-trustworthy-session-core-domain-contract.md`,
+`.work/active/features/epic-trustworthy-session-core-atomic-store.md`,
+`.work/active/features/epic-trustworthy-session-core-transition-projection.md`,
+`.work/active/features/epic-ghostty-project-surface-applescript-adapter.md`,
+`.work/active/features/epic-ghostty-project-surface-registration-naming.md`,
+`.work/active/features/epic-ghostty-project-surface-title-reconciliation.md`, and
+`.work/active/features/epic-managed-codex-observation-app-server-client.md`
 
-**What:** The completed feature's Unit 3 implementation sequence still moves
-directly from app-server startup to client connection/observer initialization.
-The repaired implementation now inserts a session claim that records the
-current launcher PID and removes the prior `nativeThreadId` before connecting
-the observer. The active repair story accurately records the correction, so
-the stale feature prose does not obscure current product truth or acceptance.
+**What:** These seven features are at `stage: done`, include implementation and
+review evidence, and have their claimed production and test outputs on disk,
+but all 83 acceptance-criteria checkboxes in them remain unchecked. Newer done
+features use checked criteria, so the older boxes are stale completion metadata
+rather than evidence of missing output. They can nevertheless mislead a reader
+who inspects the feature body instead of relying only on its stage and review.
 
-**Fix:** When normal delivery bookkeeping next touches the completed feature,
-add the launch-claim step or a short pointer to the relaunch repair story.
+**Fix:** In a normal substrate-hygiene pass, verify each criterion against the
+existing implementation/review evidence and mark the satisfied boxes checked.
+Do not reopen or redesign the completed features merely to normalize their
+checkboxes.
+
+### Low (0)
+
+None.
 
 ### Info (2)
 
 #### No separate roadmap document
 
-**Files:** `docs/research-plan.md`, `.work/`,
+**Files:** `docs/research-plan.md`, `.work/`, and
 `.work/backlog/roadmap-deferred-product-horizon.md`
 
 **What:** Delivery status is intentionally owned by `.work/`; the research plan
@@ -98,7 +90,7 @@ phase roadmap exists.
 #### Terminal-mode restoration remains explicitly outside the relaunch repair
 
 **Files:** `docs/ARCHITECTURE.md`, `docs/SPEC.md`,
-`.work/active/stories/story-fix-managed-relaunch-thread-binding.md`,
+`.work/active/stories/story-fix-managed-relaunch-thread-binding.md`, and
 `.work/backlog/idea-terminal-mode-restoration.md`
 
 **What:** The relaunch contract covers persistent Board/Ghostty/project
@@ -113,25 +105,31 @@ remote TUI. The observed Control-C/terminal-mode symptom and immediate
 
 | Contract | Evidence inspected | Result |
 | --- | --- | --- |
-| Board session, Ghostty binding, and project label persist across sequential `agent-codex` launches in the same registered tab. | `docs/SPEC.md`; `docs/ARCHITECTURE.md`; `registerSession`; launch mutation; relaunch regression test. | Consistent. Registration reuses terminal identity and the claim mutation spreads the current record without changing `sessionId`, `identity`, or `terminal`. |
-| Every launch owns a short-lived launcher and private app-server/native thread. | Architecture process topology; `launchManagedCodex`; `CodexProcessHost`; active repair story. | Consistent. App-server startup is per invocation, and the native thread is rebound for that managed runtime. |
-| The launch claim records the current launcher PID and clears a previous native thread before observer binding. | `src/application/launch-managed-codex.ts`; `src/application/observe-managed-codex.ts`; `tests/application/launch-managed-codex.test.ts`. | Consistent. The store mutation writes `launcherPid: process.pid` and removes `nativeThreadId` before `connectClient`, initialization, and `observeManagedCodex`; the regression test fails without this order and now binds `root` over `previous-thread`. |
-| Relaunch does not promise general TTY recovery. | `docs/SPEC.md`; `docs/ARCHITECTURE.md`; terminal-mode backlog item. | Consistent. No planning contract claims shell-mode restoration; that separate observed risk remains deferred. |
+| All generated index layers reflect the current specification date. | `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`, and `docs/knowledge-index-detail.yaml` | Consistent. Full and navigator layers report `docs/SPEC.md` updated 2026-08-16; all layers share generation time `2026-08-16T18:35:22Z`. |
+| Both new relaunch decisions appear in generated detailed knowledge. | `docs/ARCHITECTURE.md`, `docs/SPEC.md`, and `docs/knowledge-index-detail.yaml` | Consistent. The detail index includes both the architecture decision that runtime metadata is replaced and the specification decision that native thread ownership is per launcher/app-server lifetime. |
+| Board session, Ghostty binding, and project label persist across sequential `agent-codex` launches in the same registered tab. | Specification and architecture identity sections; `registerSession`; launch claim mutation; relaunch regression test | Consistent. Registration reuses terminal identity, and the launch claim spreads the current record without changing `sessionId`, `identity`, or `terminal`. |
+| Every launch owns a short-lived launcher and private app-server/native thread. | Architecture process topology; `launchManagedCodex`; `CodexProcessHost`; active repair story | Consistent. App-server startup is per invocation, while launcher PID and native thread are runtime-owned metadata. |
+| The launch claim records the current launcher PID and clears a previous native thread before observer binding. | Launcher feature Unit 3; `src/application/launch-managed-codex.ts`; `src/application/observe-managed-codex.ts`; `tests/application/launch-managed-codex.test.ts` | Consistent. Unit 3 now names the claim explicitly. Production mutation removes `nativeThreadId` and records `process.pid` before client connection, initialization, and observation; the regression test proves the new root replaces `previous-thread`. |
+| Relaunch does not promise general TTY recovery. | `docs/SPEC.md`; `docs/ARCHITECTURE.md`; README recovery guidance; terminal-mode backlog item | Consistent. No current planning or operator contract claims shell-mode restoration; the separate observed risk remains deferred. |
 
-Focused executable verification also passed:
-
-- `npm run typecheck`
-- `npx tsx --test --test-concurrency=1 tests/application/launch-managed-codex.test.ts`
-  (6/6 passing)
+No tests were run during this audit. The audit relied on the focused regression
+and full-suite evidence already recorded in
+`story-fix-managed-relaunch-thread-binding` (focused launch/observer 9/9,
+typecheck passing, full suite 172 passing with 2 opt-in skips) and inspected the
+corresponding test and production code directly.
 
 ## Clean Areas
 
 - Vision, principles, specification, and architecture retain clear ownership:
   product outcome and guardrails are separate from behavioral and process
-  contracts, with no duplicated state machine.
-- The relaunch additions agree across `SPEC` and `ARCHITECTURE`: persistent
-  Board/Ghostty/project identity is distinct from launcher-owned PID and native
-  thread metadata.
+  contracts, with no duplicated renderer state machine.
+- The relaunch additions agree across `SPEC`, `ARCHITECTURE`, the supervised
+  launcher feature, the repair story, production source, and regression test.
+  Stable Board/Ghostty/project identity is distinct from launcher-owned PID and
+  native Codex thread metadata.
+- The three generated knowledge-index files are current: `SPEC` is dated
+  2026-08-16, both relaunch decisions appear in the detail layer, and navigator
+  substrate counts reflect the current active/backlog/archive trees.
 - The new contract is narrower than terminal recovery, retroactive attachment,
   daemon supervision, or concurrent multi-agent control; none of those are
   implied.
@@ -144,8 +142,9 @@ Focused executable verification also passed:
 - The four binaries named in architecture and operator docs match
   `package.json`, `src/cli/`, and composition roots.
 - README/configuration instructions and copyable examples agree on Ghostty
-  title ownership and the typed `tui.terminal_title=[]` override.
-- All completed V1 delivery arcs have their expected implementation and test
+  title ownership, macOS Services rename setup, and the typed
+  `tui.terminal_title=[]` override.
+- Every completed V1 delivery arc has its expected implementation and test
   surfaces on disk. The current relaunch repair story is correctly at review
   with focused and full-suite verification recorded.
 
@@ -170,7 +169,7 @@ architecture remains grounded by these on-disk artifacts.
 | Swarm attention board | Done | Board application, CLI renderer, acknowledgement/unregister, and tests | Present |
 | Operational readiness | Done | Doctor, packed artifact harness, golden/failure/chaos tests, and opt-in probes | Present |
 | Companion terminal configuration | Done | Ghostty/Codex fragments, configuration guide, README routing, and validation record | Present |
-| Managed relaunch repair | Review | Stale binding cleared on launcher claim; focused regression and full-suite evidence recorded | Present and consistent |
+| Managed relaunch repair | Review | Launch claim clears the stale binding before observer startup; focused regression and full-suite evidence recorded | Present and consistent |
 
 ## Provenance Summary
 
@@ -185,14 +184,12 @@ candidates.
 
 ## Audit Boundary and Provenance
 
-This fresh Phase 1–3 cascading audit inspected all current system planning
-documents discovered from `docs/knowledge-index.yaml`, the superseded
-historical checkpoint for conflict only, current operator docs and examples,
-implementation and focused tests, active/done/backlog/archive substrate state,
-blocking research briefs, and derived-index consistency. No module planning
-corpus was discovered, so no module pass applied.
+This fresh Phase 1–3 cascading audit inspected every current system planning
+document discovered from `docs/knowledge-index.yaml`, the superseded historical
+checkpoint for conflict only, current operator docs and examples,
+implementation and focused tests, active/done/review/backlog/archive substrate
+state, blocking research briefs, and derived-index consistency. No module
+planning corpus was discovered, so no module pass applied.
 
-The audit used the inherited reviewer capability because the requested
-Sonnet-named override was unavailable. It did not modify source planning docs,
-generated indexes, code, work items, package files, commits, or remote state;
-only this report was replaced.
+The audit did not modify source planning docs, generated indexes, code, work
+items, package files, commits, or remote state; only this report was replaced.
