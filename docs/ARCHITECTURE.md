@@ -15,7 +15,7 @@ decisions:
   - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external boundaries.
   - One versioned session record is the source of truth and is updated atomically under a per-session lock.
   - The domain stores orthogonal identity, activity, attention, health, adapter evidence, and terminal presence; visible statuses are derived centrally.
-  - Managed working projection uses positive launcher process existence; the 60-second freshness threshold remains only as a fallback for working records without a valid managed launcher binding.
+  - Managed working projection uses an ephemeral, reconciliation-verified launcher process existence check matched to the persisted launcher binding; the 60-second freshness threshold remains a fallback whenever that proof is unavailable.
   - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
   - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably focused, with an explicit acknowledgement command as fallback.
   - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than being reclassified as native state.
@@ -324,8 +324,8 @@ agent mode ordinary                            -> ? diagnostic
 agent health error                             -> × error
 attention input_required                       -> ! needs input
 attention completion_unread                    -> ✓ finished / unread
-managed/live working with live launcher        -> ● working
-working without launcher binding and fresh     -> ● working
+managed/live working with verified PID match   -> ● working
+working without verified launcher proof and fresh -> ● working
 visible managed tab with live idle evidence    -> ○ idle
 ```
 
@@ -376,13 +376,16 @@ reconciliation remains diagnostic, and an invalid or unavailable snapshot maps
 sessions to `unknown` without deleting anything.
 
 Before shared projection, reconciliation probes the persisted managed launcher
-PID with local signal-zero process existence. A live probe leaves native agent
+PID with local signal-zero process existence and carries that verified PID only
+for the current title/board projection. A live probe leaves native agent
 evidence unchanged and does not refresh it periodically. A missing or
 unprobeable launcher atomically records stale health with corroborated local
-launcher-liveness diagnostic evidence, retaining the PID for runtime context.
-Working records without a valid managed launcher binding retain the configured
-freshness fallback. Because V1 has no resident daemon, hard launcher death is
-discovered when `agents` or another state reconciliation runs.
+launcher-liveness diagnostic evidence, retaining the PID as runtime binding
+context. A persisted PID without a matching current probe is not sufficient to
+bypass freshness, including on direct title-render paths. Working records
+without verified launcher proof retain the configured freshness fallback.
+Because V1 has no resident daemon, hard launcher death is discovered when
+`agents` or another state reconciliation runs.
 
 Setup diagnostics require:
 

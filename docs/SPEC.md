@@ -16,7 +16,7 @@ decisions:
   - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation evidence.
   - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
   - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary mode remains a registered-but-unmanaged diagnostic state until managed observation attaches.
-  - Managed working evidence remains working while its launcher is positively alive; the existing freshness threshold is a conservative fallback for unbound working evidence, and a missing launcher becomes stale diagnostic evidence during reconciliation.
+  - Managed working evidence remains working only when reconciliation has positively verified that the persisted launcher binding is alive; the existing freshness threshold is a conservative fallback for unverified or unbound working evidence, and a missing launcher becomes stale diagnostic evidence during reconciliation.
   - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
   - The first release is observation-only and exposes no semantic agent actions.
 ---
@@ -157,14 +157,16 @@ must be caused by an explicit or reliably observed operator interaction, not by
 elapsed time alone. Implementation validation must prove reliable Ghostty-focus
 acknowledgement and retain explicit `agent-board ack` as the fallback.
 
-A managed `working` record with a positively live launcher remains working
-regardless of lifecycle-event age, so a quiet turn may run for hours without
-falling into a diagnostic state. A working record without that managed launcher
-binding remains subject to the configured freshness fallback. During `agents`
-reconciliation, a missing or unprobeable launcher is recorded as stale,
-corroborated diagnostic evidence rather than inferred idle, completion, or
-error. Hard launcher death is discovered when reconciliation runs; V1 has no
-resident daemon.
+A managed `working` record remains working regardless of lifecycle-event age
+only when the current projection operation carries a positive launcher-process
+probe that matches its persisted launcher binding, so a quiet turn may run for
+hours without falling into a diagnostic state. The persisted `launcher_pid` is
+runtime binding context, not proof by itself; direct title/board projections
+without a matching verification retain the configured freshness fallback.
+During `agents` reconciliation, a missing or unprobeable launcher is recorded
+as stale, corroborated diagnostic evidence rather than inferred idle,
+completion, or error. Hard launcher death is discovered when reconciliation
+runs; V1 has no resident daemon.
 
 The board reconciles registered Ghostty identities during reads and state writes.
 During an `agents` read, one successfully validated application-wide Ghostty
@@ -222,8 +224,8 @@ mode=ordinary                           -> ? diagnostic
 health=error                           -> × error
 attention=input_required               -> ! needs input
 attention=completion_unread             -> ✓ finished / unread
-managed + live + working + launcher alive -> ● working
-working without launcher binding and observation fresh -> ● working
+managed + live + working + verified launcher PID matches binding -> ● working
+working without verified launcher binding and observation fresh -> ● working
 activity=idle and health=live           -> ○ idle
 stale/ambiguous                         -> diagnostic/expiry policy, not a false glyph
 ```
