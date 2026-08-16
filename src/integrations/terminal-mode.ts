@@ -3,6 +3,9 @@ import { spawnSync as nodeSpawnSync } from "node:child_process";
 import { AgentBoardError } from "../domain/errors.js";
 
 const MAX_SNAPSHOT_BYTES = 4 * 1024;
+// Mirrors Codex's exit cleanup: pop one keyboard-enhancement level, reset any
+// remaining levels, then disable xterm modifyOtherKeys reporting.
+const KEYBOARD_REPORTING_RESET = "\x1b[<u\x1b[<u\x1b[>4;0m";
 
 export interface TerminalModePort {
   capture(): string | undefined;
@@ -14,6 +17,7 @@ export interface SttyTerminalModeOptions {
   readonly inputFd?: number;
   readonly isTerminal?: () => boolean;
   readonly spawn?: typeof nodeSpawnSync;
+  readonly write?: (value: string) => unknown;
 }
 
 /** Preserves the exact controlling-terminal mode without imposing defaults. */
@@ -22,12 +26,14 @@ export class SttyTerminalMode implements TerminalModePort {
   private readonly inputFd: number;
   private readonly isTerminal: () => boolean;
   private readonly spawnProcess: typeof nodeSpawnSync;
+  private readonly writeTerminal: (value: string) => unknown;
 
   constructor(options: SttyTerminalModeOptions = {}) {
     this.command = options.command ?? "/bin/stty";
     this.inputFd = options.inputFd ?? 0;
     this.isTerminal = options.isTerminal ?? (() => process.stdin.isTTY === true);
     this.spawnProcess = options.spawn ?? nodeSpawnSync;
+    this.writeTerminal = options.write ?? ((value) => process.stdout.write(value));
   }
 
   capture(): string | undefined {
@@ -58,6 +64,13 @@ export class SttyTerminalMode implements TerminalModePort {
     if (result.error !== undefined || result.status !== 0) {
       throw new AgentBoardError("ADAPTER_FAILURE", "Unable to restore the pre-launch terminal mode", {
         cause: result.error ?? result.stderr,
+      });
+    }
+    try {
+      this.writeTerminal(KEYBOARD_REPORTING_RESET);
+    } catch (error) {
+      throw new AgentBoardError("ADAPTER_FAILURE", "Unable to restore terminal keyboard reporting", {
+        cause: error,
       });
     }
   }
