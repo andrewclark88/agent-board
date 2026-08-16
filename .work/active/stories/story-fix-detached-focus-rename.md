@@ -1,7 +1,7 @@
 ---
 id: story-fix-detached-focus-rename
 kind: story
-stage: review
+stage: implementing
 tags: [bug, cli, integration]
 parent: null
 depends_on: []
@@ -21,48 +21,63 @@ registered and renamed a different Ghostty tab that happened to be frontmost.
 
 ## Root cause
 
-`agent-name <label>` always resolves its target from current Ghostty focus but
-does not verify that the command itself is attached to an interactive terminal.
-Agent-tool execution therefore looks equivalent to an intentional shell command
-even though it has no reliable originating tab.
+`agent-name <label>` originally resolved every target from current Ghostty focus
+and did not carry the managed session's stable identity into Codex descendants.
+Agent-tool execution therefore targeted whichever tab happened to be frontmost.
+The first TTY-only safeguard was incomplete because Codex `!` also runs without
+a TTY, despite being a legitimate descendant of the intended managed session.
 
 ## Fix approach
 
-Require interactive stdin for the one-label form before invoking registration.
-Keep the no-argument native rename prompt available to the noninteractive macOS
-Shortcut, and keep ordinary shell plus Codex `! agent-name ...` usage unchanged.
+Give both the Codex app-server and remote TUI launched by `agent-codex` their
+originating Agent Board session ID through `AGENT_BOARD_SESSION_ID`. A one-label
+command inheriting that ID—whether through Codex `!` or agent tool execution—
+renames the exact session and never consults focus. Require interactive stdin
+only for the fallback focus-based form used outside a managed session. Keep the
+no-argument native rename prompt available to the noninteractive macOS Shortcut.
 
 ## Regression test
 
-`tests/cli/agent-name.test.ts` supplies non-TTY stdin with one label and requires
-a stable conflict message, exit 1, and zero registration calls. The test first
-reproduced the unintended registration call and now passes with the guard.
+`tests/cli/agent-name.test.ts` supplies non-TTY stdin with one label. Without a
+managed session id it requires a stable conflict, exit 1, and zero registration
+calls. With a managed session id it requires an explicit-target rename that
+does not depend on a TTY or Ghostty focus.
 
 ## Implementation and documentation notes
 
-- The CLI now rejects a non-TTY one-label invocation before calling the
-  registration use case or resolving Ghostty focus. The stable failure is:
+- `agent-codex` passes the stable Board session ID into both owned Codex process
+  environments. The CLI forwards an inherited ID to registration as an
+  explicit target, which renames only that record and renders its stored
+  terminal without querying current focus.
+- Without a bound ID, the CLI rejects a non-TTY one-label invocation before
+  calling registration or resolving Ghostty focus. The stable failure is:
 
   ```text
   CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
   ```
 
-- Interactive shell and Codex `! agent-name <label>` usage remains supported.
-  The no-argument path intentionally remains noninteractive so the macOS
-  Shortcut can capture the focused registered session before showing its
+- Direct interactive shell usage outside managed Codex remains supported by the
+  focus-based fallback. Codex `!` and agent tool usage work because they inherit
+  exact managed session identity, not because either supplies a TTY.
+- The no-argument path intentionally remains noninteractive so the macOS
+  Shortcut can capture the focused registered session once before showing its
   native prompt.
+- Already-running managed Codex sessions must exit and restart through
+  `agent-codex` once to inherit the new environment binding.
 - The operator guide, configuration guide, specification, and architecture now
   distinguish these two invocation contracts. Regenerate the knowledge index
   and run the documentation review after the implementation verification pass.
 
 ## Verification
 
-- The focused CLI regression proves a detached one-label invocation returns
-  exit 1 without calling registration, while the noninteractive no-argument
-  Shortcut path remains available.
-- The packed-install journey proves the shipped binary refuses a detached
-  rename and still registers normally when the harness explicitly supplies an
-  interactive terminal boundary.
+- Focused CLI regressions prove an unbound detached one-label invocation returns
+  exit 1 without calling registration, while a non-TTY command with a managed
+  session ID passes that explicit target and the no-argument Shortcut path
+  remains available.
+- Process integration coverage proves both the app-server and remote TUI receive
+  `AGENT_BOARD_SESSION_ID`. The packed-install journey proves the shipped binary
+  refuses an unbound detached rename, supports the interactive focus fallback,
+  and accepts an explicit managed-session target without a TTY.
 - `npm run typecheck` passes.
 - `npm test` passes all 181 tests, with the two real-environment probes remaining
   opt-in and skipped by default.

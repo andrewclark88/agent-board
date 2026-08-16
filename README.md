@@ -102,9 +102,8 @@ agent-board doctor --json
    agent-name agent-board
    ```
 
-   Run this directly at that tab's shell prompt. From inside Codex, use the
-   `! agent-name agent-board` shell escape; do not ask an agent to run the
-   command through a detached tool process.
+   Before the managed launcher is running, use the target tab's normal shell
+   prompt so Agent Board can safely resolve that focused terminal.
 
 3. Start Codex through the managed launcher.
 
@@ -116,6 +115,14 @@ agent-board doctor --json
 TUI. It forwards supported extra Codex arguments unchanged; Agent Board reserves
 the remote transport and terminal-title override, so arguments that set
 `--remote` or `tui.terminal_title` are rejected.
+
+The launcher gives both owned Codex processes the exact registered session
+identity through `AGENT_BOARD_SESSION_ID`. Commands descended from either
+process—including Codex `! agent-name data-platform` and an agent's tool
+execution—rename that stored session without consulting current Ghostty focus.
+If a managed Codex session was already running when this capability was
+installed, exit it and start it once more with `agent-codex` to inherit the
+session identity.
 
 `agent-name` only registers and names the tab. Until `agent-codex` establishes
 managed observation, the session remains ordinary and the board reports `?`
@@ -167,16 +174,21 @@ guessing.
 
 ## Rename, acknowledge, and unregister
 
-Focus a registered Ghostty tab, then rename it:
+Rename the current managed Codex session with:
 
 ```bash
 agent-name data-platform
 ```
 
-Run the one-label form directly in the target terminal, either from its normal
-shell prompt or through Codex's `!` shell escape. It requires interactive stdin
-because Ghostty focus determines the target. A detached or non-TTY one-label
-invocation fails before focus resolution with:
+Inside a session started by the current `agent-codex`, both Codex `!` and agent
+tool execution inherit its exact `AGENT_BOARD_SESSION_ID`. The one-label command
+therefore renames only that stored session and never uses the currently focused
+Ghostty tab as its target.
+
+Outside a managed session, the same command falls back to focus-based targeting
+and must run interactively at the target tab's normal shell prompt. A detached
+or non-TTY one-label invocation without a bound session ID fails before focus
+resolution with:
 
 ```text
 CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt

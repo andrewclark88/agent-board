@@ -81,17 +81,21 @@ machine-rendered `<status> <project>` title. Leave that Ghostty chord unbound so
 the macOS Shortcut can receive it; Ghostty app keybinds would intercept the
 keystroke first.
 
-For a direct rename, pass one label from a shell prompt:
+For a direct rename, pass one label:
 
 ```bash
 agent-name data-platform
 ```
 
-Run the one-label form directly in the target terminal. A normal shell prompt
-or Codex's `! agent-name data-platform` shell escape supplies the required
-interactive stdin. Do not ask an agent to invoke it through a detached tool
-process: Agent Board refuses detached and non-TTY one-label calls before
-resolving Ghostty focus, with:
+Inside a current session launched by `agent-codex`, the launcher supplies the
+exact `AGENT_BOARD_SESSION_ID` to both the Codex app-server and remote TUI.
+Codex `! agent-name data-platform` and agent tool execution inherit that ID,
+rename only the bound session, and never use current Ghostty focus for targeting.
+
+Outside a managed session, run the one-label form interactively from the target
+tab's normal shell prompt. This fallback resolves Ghostty focus. Agent Board
+refuses a detached or non-TTY one-label call without a bound session ID before
+focus resolution, with:
 
 ```text
 CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
@@ -141,8 +145,14 @@ separate macOS Automation permission prompt; grant it to let the
 Shortcut-launched command inspect and retitle Ghostty.
 
 The direct shell command remains available when the Shortcut is inconvenient;
-run it from the target terminal or Codex `!` shell escape. Agent Board then
-retains the label while status changes update only the leading glyph.
+outside a managed session, run it interactively from the focused target tab.
+Within managed Codex, `!` and agent tool calls use the launcher's exact session
+identity. Agent Board then retains the label while status changes update only
+the leading glyph.
+
+After installing an update that adds managed session targeting, exit every
+already-running managed Codex session and restart it once with `agent-codex`.
+Only newly launched Codex processes inherit `AGENT_BOARD_SESSION_ID`.
 
 ### Required integration values
 

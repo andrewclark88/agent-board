@@ -81,15 +81,19 @@ One `agent-codex` process owns one supervised tab's runtime:
 1. Resolve the currently focused Ghostty window, tab, and terminal IDs.
 2. Find the existing Board session for that terminal or register one using the
    repository directory name as an editable initial label.
-3. Start app-server on an ephemeral loopback WebSocket endpoint and wait for its
-   advertised readiness with a bounded timeout.
+3. Start app-server on an ephemeral loopback WebSocket endpoint with the stable
+   Board session ID in `AGENT_BOARD_SESSION_ID`, then wait for its advertised
+   readiness with a bounded timeout. Agent-tool descendants inherit this exact
+   targeting context.
 4. Claim that stable session for this launcher by recording its process ID and
    clearing any native thread binding left by the prior managed runtime.
 5. Connect the Board observer and complete protocol initialization.
-6. Start the remote Codex TUI with inherited stdin/stdout/stderr and the exact
-   override `-c tui.terminal_title=[]`; Codex requires this setting to be a
-   sequence, and the empty sequence disables its title components so the
-   Ghostty adapter owns the registered title.
+6. Start the remote Codex TUI with inherited stdin/stdout/stderr, the same
+   `AGENT_BOARD_SESSION_ID`, and the exact override
+   `-c tui.terminal_title=[]`; Codex requires this setting to be a sequence,
+   and the empty sequence disables its title components so the Ghostty adapter
+   owns the registered title. Codex `!` descendants inherit the exact targeting
+   context.
 7. Normalize observed thread and turn events, update the store, and render the
    tab title after each meaningful transition.
 8. Poll focused Ghostty identity only while unread completion exists. Reliable
@@ -112,15 +116,16 @@ service.
 
 ### Independent CLI invocations
 
-- `agent-name [label]` registers or renames the focused Ghostty tab, then
-  re-renders from the latest complete session record. The one-label path
-  requires interactive stdin and fails before Ghostty focus resolution when
-  invoked from a detached or non-TTY process. This confines focus-derived
-  mutation to a normal target-terminal shell prompt or Codex `!` shell escape.
-  Its stable error is shown below. With no label, the command remains callable
-  noninteractively by the macOS Shortcut: it captures the focused registered
-  session before opening the native rename prompt; Cancel is a successful no-op
-  and Rename changes only the project label/title.
+- `agent-name [label]` has two one-label target paths. When
+  `AGENT_BOARD_SESSION_ID` is present, it passes that exact ID to registration,
+  renames only the stored session, and never resolves Ghostty focus; managed
+  Codex `!` and agent-tool descendants use this path. Without a bound ID, it
+  requires interactive stdin and uses the focused Ghostty tab; a detached or
+  non-TTY process fails before focus resolution. Its stable error is shown
+  below. With no label, the command remains callable noninteractively by the
+  macOS Shortcut: it captures the focused registered session once before
+  opening the native rename prompt; Cancel is a successful no-op and Rename
+  changes only the project label/title.
 
   ```text
   CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
@@ -128,6 +133,10 @@ service.
 
   Registration without `agent-codex` leaves the session in ordinary mode, so
   projection stays diagnostic until managed observation attaches.
+
+  Running managed Codex processes do not receive a newly added environment
+  binding retroactively. Sessions launched before this contract must exit and
+  restart through `agent-codex` once.
 - `agents` reconciles Ghostty presence, renders every registered session, and
   repairs stale title projection where safe. One successfully validated
   application-wide snapshot is also the authority for closed-session cleanup:

@@ -39,15 +39,21 @@ An ergonomic command such as:
 agent-name data-platform
 ```
 
-registers or renames the supervised agent in the currently focused Ghostty tab.
-Registration records a stable Agent Board session ID, the human label, repository
-context when available, adapter identity, and Ghostty window/tab/terminal IDs.
+registers or renames a supervised agent. Registration records a stable Agent
+Board session ID, the human label, repository context when available, adapter
+identity, and Ghostty window/tab/terminal IDs.
 
-The one-label form requires interactive stdin and must run in the target
-terminal, either at its normal shell prompt or through Codex's `!` shell escape.
-This requirement is checked before Ghostty focus resolution because a detached
-tool process has no trustworthy originating tab. A detached or non-TTY
-one-label invocation exits nonzero with the stable conflict:
+`agent-codex` injects that stable ID as `AGENT_BOARD_SESSION_ID` into both its
+owned Codex app-server and remote TUI. A descendant one-label invocation,
+including Codex `!` or agent tool execution, passes the exact ID to registration
+and renames only that stored session. It never resolves current Ghostty focus
+for targeting.
+
+Without a managed session ID, the one-label form uses focus-based targeting and
+requires interactive stdin in the target terminal's normal shell. This
+requirement is checked before Ghostty focus resolution because a detached tool
+process has no trustworthy originating tab. A detached or non-TTY one-label
+invocation without a bound ID exits nonzero with the stable conflict:
 
 ```text
 CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
@@ -62,6 +68,11 @@ opening the native macOS rename prompt. Cancel is a silent successful no-op.
 Confirming a label changes only `identity.projectLabel` and the canonical title
 projection; it preserves session identity, agent state, and terminal binding.
 More than one label returns `Usage: agent-name [label]`.
+
+A managed Codex process started before this targeting contract was installed
+does not gain the environment binding retroactively. It must exit and restart
+through `agent-codex` once before its descendant rename commands use exact
+session targeting.
 
 ### Observe Codex state
 
