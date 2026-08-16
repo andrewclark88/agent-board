@@ -1,7 +1,7 @@
 ---
 id: story-fix-hotkey-rename-routing
 kind: story
-stage: review
+stage: done
 tags: [bug, cli, integration]
 parent: null
 depends_on: []
@@ -78,3 +78,18 @@ unbind `cmd+shift+r` and must not bind that chord to `prompt_tab_title`.
 - `npm run typecheck` passes.
 - Full `npm test`: 193 passed, 2 opt-in integration probes skipped, 0 failed.
 - `git diff --check` passes.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Bounded inline review for a standalone story; no independent,
+fresh-context, or cross-model reviewer ran. The change addresses the proven
+menu-binding root cause at the integration boundary, the regression fails on
+the old shipped artifact, the migration is explicit, and no application,
+security, schema, or process-lifecycle behavior changed.
