@@ -1,7 +1,7 @@
 ---
 id: feature-managed-working-liveness
 kind: feature
-stage: review
+stage: done
 created: 2026-08-16
 updated: 2026-08-16
 tags: [state, integration]
@@ -246,3 +246,31 @@ export interface ReconcileDependencies {
 - Current operator, specification, and architecture docs now describe positive
   managed-launcher liveness, conservative unbound freshness fallback, and the
   no-daemon reconciliation boundary (`14c1510`).
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none unresolved. The single standard-pass reviewer found that a
+persisted launcher PID was being treated as positive liveness by direct
+title-render paths. The receiver confirmed the issue and fixed it in `8240cc6`:
+projection now requires an ephemeral PID established by the current
+reconciliation and matching the latest durable launcher binding. Direct rename
+and registration paths receive no such proof and retain the freshness fallback.
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Effective review weight was the project default `standard`. One
+same-harness, same-lineage fresh-context GPT-5.6 Sol pass reviewed the integrated
+Luna implementation; this was independent context, not cross-model evidence.
+The blocker fix added projection, board, reconciliation, and direct prompt-rename
+regressions; documentation was clarified in `bfa2dd9`. Fix verification passed
+`npm run typecheck`, 26 focused tests, and the full suite (193 total, 191 passed,
+2 opt-in live probes skipped, 0 failed). No second independent pass was run,
+as required by the standard closure policy. Accepted limitations remain PID
+reuse, signal-zero's process-existence-only semantics, the small post-probe exit
+race, and hard-death detection on reconciliation rather than through a daemon.
