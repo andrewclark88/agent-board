@@ -1,7 +1,7 @@
 ---
 id: story-fix-terminal-keyboard-mode-restoration
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -66,3 +66,24 @@ fails with an empty actual value.
 - Regression coverage proves exact output, non-terminal silence, and cleanup
   failure semantics. Typecheck, build, focused CLI/adapter tests, and the full
   hermetic suite pass (192 passed, 2 opt-in probes skipped).
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review; no independent or cross-model
+code reviewer ran. The review checked cleanup ordering, normal and forced exit
+paths, non-terminal behavior, output/error semantics, command-injection risk,
+and parity with Codex's current keyboard cleanup. The fixed sequence is
+terminal control output rather than shell input, follows exact opaque `stty`
+restoration, and is idempotent after a normal Codex exit. Focused regressions,
+the full hermetic suite, current operator/architecture docs, and a fresh corpus
+audit with 0 Critical and 0 High findings support closure.
