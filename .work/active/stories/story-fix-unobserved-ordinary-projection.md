@@ -1,7 +1,7 @@
 ---
 id: story-fix-unobserved-ordinary-projection
 kind: story
-stage: review
+stage: done
 tags: [bug, state, ui]
 parent: null
 depends_on: []
@@ -67,3 +67,25 @@ the current `○ idle` projection.
   Medium was the now-corrected ownership note.
 - Adjacent issues parked separately: `idea-refuse-detached-focus-rename` and
   `idea-fix-hotkey-rename-routing`.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review. Correctness follows the
+normalized mode boundary: an ordinary registration has no observer and cannot
+truthfully project health, attention, or activity, while managed sessions retain
+the existing five-state precedence. The regression matches the live record,
+shared projection still drives both title and board, the packaged journey proves
+ordinary-to-managed promotion, and the full suite plus live reconciliation are
+green. No security-sensitive boundary or public schema changed. Documentation
+and the fresh full-corpus audit align. No independent or cross-model review was
+used, per the standalone-story review contract.
