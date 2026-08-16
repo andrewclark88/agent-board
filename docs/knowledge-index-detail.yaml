@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-16T19:11:06Z'
+generated_at: '2026-08-16T19:55:18Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -12,8 +12,8 @@ documents:
 
       '
     decisions:
-    - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary Codex remains
-      an explicit degraded-confidence fallback.
+    - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary mode remains
+      a registration-only diagnostic state until a managed observer attaches.
     - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group;
       there is no global resident daemon.
     - The stable Board session, Ghostty binding, and project identity outlive a managed runtime; each
@@ -64,8 +64,8 @@ documents:
     - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation
       evidence.
     - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
-    - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary-TUI observation remains
-      an explicitly degraded-confidence fallback.
+    - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary mode remains a registered-but-unmanaged
+      diagnostic state until managed observation attaches.
     - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
     - The first release is observation-only and exposes no semantic agent actions.
   docs/VISION.md:
