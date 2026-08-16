@@ -8,7 +8,7 @@ depends_on: []
 release_binding: null
 gate_origin: null
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-16
 ---
 
 # Swarm Board Command
@@ -21,8 +21,10 @@ title repair, projects each latest canonical record through the existing shared
 policy, and returns stable row data for compact human and versioned JSON output.
 
 The board must make uncertainty inspectable without bloating tab titles. It
-surfaces terminal presence, evidence confidence/mode, stale observations, and a
-visible-but-unsynchronized title as row diagnostics; one Ghostty target failure
+preserves canonical projection diagnostics for terminal presence, unmanaged
+ordinary mode, stale observations, inferred evidence, and adapter detail, then
+adds a visible-but-unsynchronized title or corroborated-evidence note only when
+the board layer owns that distinction; one Ghostty target failure
 must not erase unrelated rows. It does not mutate attention, remove records,
 launch agents, add a daemon, or navigate to a tab.
 
@@ -71,9 +73,12 @@ launch agents, add a daemon, or navigate to a tab.
   colliding labels receive a bracketed, shortest-unique session-ID prefix (at
   least eight characters) for visual disambiguation; JSON always carries the
   full ID.
-- **Confidence detail**: human rows annotate ordinary mode and every confidence
-  below authoritative. Titles continue to use only the canonical compact glyph
-  plus label.
+- **Confidence detail**: `projectSession` owns canonical projection
+  diagnostics, including unmanaged ordinary mode and inferred evidence. Board
+  rows preserve those diagnostics verbatim and add only
+  `evidence is corroborated`; titles continue to use only the canonical compact
+  glyph plus label. `agentMode` and `confidence` remain explicit row/JSON
+  fields.
 - **Empty state**: a valid empty store renders the board heading plus `No
   registered agents.` and does not require a Ghostty snapshot.
 
@@ -91,8 +96,9 @@ materialized board snapshot would create a second source of truth and require a
 daemon or invalidation policy the first proof has not earned.
 
 The trickiest unit is row construction: it must preserve fail-fast canonical
-validation, retain per-record repair evidence, add board-only confidence/mode
-detail, disambiguate duplicate labels, and sort independently of changing state.
+validation, retain per-record repair evidence, preserve shared projection
+diagnostics, add only the board-owned title-sync/corroborated annotations,
+disambiguate duplicate labels, and sort independently of changing state.
 
 ## Implementation Units
 
@@ -136,9 +142,12 @@ export function listSessions(
 - Add `title is not synchronized` only when presence is visible and
   `titleRendered` is false. Hidden/missing/unknown already carry their truthful
   terminal diagnostic.
-- Add ordinary-mode and non-authoritative-confidence annotations without
-  duplicating a projection diagnostic. Keep adapter detail bounded by the
-  already-validated record.
+- Preserve `projectSession` diagnostics exactly, including `session is not
+  managed`, inferred evidence, terminal presence, stale/future evidence,
+  unknown activity, stale health, and adapter detail. Add only the board-owned
+  `title is not synchronized` note; add `evidence is corroborated` only when
+  it is not already present. Keep `agentMode` and `confidence` as row/JSON
+  fields.
 - Group exact labels, compute a shortest unique session-ID prefix of at least
   eight characters for collisions, then sort by raw label, `createdAt`, and full
   session ID. State/glyph changes never affect position.
@@ -148,8 +157,8 @@ export function listSessions(
 
 - [x] Every row's glyph/status derives from the same `projectSession` policy used
   by tab titles.
-- [x] Visible title-repair failure, terminal absence, ordinary mode, and
-  non-authoritative evidence remain distinguishable.
+- [x] Visible title-repair failure, canonical projection diagnostics, and
+  corroborated evidence remain distinguishable.
 - [x] Duplicate labels are visually distinct; unique-label rows remain uncluttered.
 - [x] Ordering is stable across state transitions, and an empty store performs no
   terminal call.
@@ -267,8 +276,9 @@ small read model and fit one implementation stride.
 ### Unit tests: `tests/application/list-sessions.test.ts`
 
 - Use canonical records and `ReconcileResult` fixtures to test projection parity,
-  title-sync diagnostics, ordinary/corroborated/inferred annotations, duplicate
-  prefix extension, frozen results, and stable label/creation/ID ordering.
+  title-sync diagnostics, preserved projection diagnostics, corroborated
+  annotation, duplicate prefix extension, frozen results, and stable
+  label/creation/ID ordering.
 - Exercise `listSessions` with fake store/terminal ports to prove one snapshot for
   many records and per-record degradation. Extend reconciliation tests to prove
   no snapshot for empty state.
@@ -309,9 +319,15 @@ small read model and fit one implementation stride.
 - Execution capability: GPT-5.6 Luna high, selected for the cross-module query, rendering, CLI, and composition boundary.
 - Review weight: standard, from `.work/CONVENTIONS.md`; implementation stops at `stage: review` for the parent orchestrator.
 - Files changed: `src/application/list-sessions.ts`, `src/application/reconcile-session.ts`, `src/cli/output.ts`, `src/cli/agents.ts`, `src/composition/create-agents.ts`, `package.json`, `tests/application/list-sessions.test.ts`, `tests/cli/output.test.ts`, and `tests/cli/agents.test.ts`.
-- Tests added/removed: Added hermetic projection/reconciliation, renderer, and CLI contract tests covering shared projection precedence, title synchronization diagnostics, confidence/mode annotations, duplicate-label prefixes, frozen rows, empty-store no-snapshot behavior, escaping, grammar, stream separation, typed failures, and exit codes; none removed.
+- Tests added/removed: Added hermetic projection/reconciliation, renderer, and CLI contract tests covering shared projection precedence, title synchronization diagnostics, preserved projection diagnostics, corroborated-evidence annotation, duplicate-label prefixes, frozen rows, empty-store no-snapshot behavior, escaping, grammar, stream separation, typed failures, and exit codes; none removed.
 - Simplification: Added the empty-store fast path to `reconcileSessions`, avoiding a Ghostty snapshot when there are no canonical records and keeping one reconciliation snapshot for non-empty boards.
 - Discrepancies from design: None.
+- Addendum (2026-08-16): The shipped board-layer contract was narrower than this
+  feature originally described. `projectSession` is the sole owner of
+  unmanaged ordinary-mode, inferred-evidence, terminal-presence, stale/future,
+  unknown-activity, stale-health, and adapter-detail diagnostics. The board row
+  layer preserves those diagnostics and adds only `title is not synchronized`
+  for visible repair failure plus `evidence is corroborated`.
 - Adjacent issues parked: none.
 - Verification: `npm run typecheck` passed; `npm run build` passed and produced `dist/cli/agents.js`; full serialized `npm test` passed.
 
