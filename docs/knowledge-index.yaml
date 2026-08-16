@@ -6,7 +6,7 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 2
-generated_at: 2026-08-15T20:12:50Z
+generated_at: 2026-08-16T18:04:44Z
 generated_from: frontmatter
 total_docs: 17
 
@@ -25,7 +25,7 @@ documents:
     title: Companion terminal configuration
     type: design
     kind: planning
-    updated: 2026-08-15
+    updated: 2026-08-16
     status: locked
     consumer_hint: Read this when configuring Ghostty tabs and the Codex status line for the recommended Agent Board workflow.
 

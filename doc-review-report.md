@@ -1,15 +1,22 @@
 # Doc Review Report
 
 **Project:** Agent Board
-**Date:** 2026-08-15
-**Documents reviewed:** 6 system planning documents, 0 module planning documents
-**Passes run:** 1 (system-level; no module planning corpus exists)
-**Supporting evidence inspected:** `AGENTS.md`, `.agents/rules/agile-workflow.md`, `README.md`, current `.work/` state, the two locked runtime briefs, the prior-art parent, the implementation, and its application/packaged tests.
-**Issues found:** Critical **0** · High **0** · Medium **0** · Low **0** · Info **0**
+**Date:** 2026-08-16
+**Documents reviewed:** 17 indexable documents (7 system/historical planning + 10 research records), plus `AGENTS.md`, `README.md`, examples, current `.work/` state, implementation, tests, and recent fix commits
+**Passes run:** 1 system-level pass; 0 module passes (no module planning corpus exists)
+**Issues found:** Critical **0** · High **0** · Medium **0** · Low **0** · Info **2**
 
 ## Exit Gate
 
 **Clean:** Critical = **0** and High = **0**.
+
+## Phase 1: Discovery
+
+- `docs/knowledge-index.yaml` is present, schema-enforced (`schema_version: 2`), and lists 17 existing paths.
+- System planning corpus: `VISION.md`, `PRINCIPLES.md`, `SPEC.md`, `ARCHITECTURE.md`, `configuration.md`, `research-plan.md`, and the explicitly superseded historical `project-brief.md`.
+- All 7 planning/historical documents have non-empty `description`, `type`, and `updated` frontmatter. The two decision briefs declare `research_method: /research`; the prior-art campaign parent declares `/scout`.
+- No module north stars, `docs/*/architecture/` module trees, or `modules/` planning directories were found. A module pass would have no subject.
+- All local Markdown links in `README.md`, `AGENTS.md`, and `docs/*.md` resolve. All index entries resolve to files.
 
 ## Pass 1: System-Level
 
@@ -29,101 +36,76 @@ None.
 
 None.
 
-### Info (0)
+### Info (2)
 
-None.
+#### No separate roadmap document
 
-## Automatic Missing-Session Cleanup Verification
+**Files:** `docs/research-plan.md`, `.work/backlog/roadmap-deferred-product-horizon.md`
+**What:** Delivery status is correctly owned by `.work/`; the research plan owns completed/deferred research and the backlog preserves non-binding future product options. No current planning document claims a separate phase roadmap exists.
+**Disposition:** Informational, not drift and not a missing blocker.
 
-The new cleanup contract is consistent at every reviewed boundary.
+#### Generated knowledge-index refresh is intentionally uncommitted
 
-| Contract | Documentation | Implementation and tests | Result |
-| --- | --- | --- | --- |
-| A valid, application-wide Ghostty snapshot is the sole cleanup authority. | `docs/SPEC.md:137-147`; `docs/ARCHITECTURE.md:106-112,327-334` | `src/application/reconcile-session.ts:235-250` validates one snapshot before per-record processing. | Consistent |
-| Only `missing` is pruned and omitted from the same `agents` response. | `docs/SPEC.md:138-141`; `docs/ARCHITECTURE.md:108-110`; `README.md:151-156` | `src/application/reconcile-session.ts:251-255`; `tests/application/list-sessions.test.ts:123-142`; `tests/e2e/packaged-golden.test.ts:84-93`. | Consistent |
-| `hidden`/undoable and `unknown` records are retained. | `docs/SPEC.md:141-146`; `docs/ARCHITECTURE.md:110-112,327-334`; `README.md:153-156` | `tests/application/reconcile-session.test.ts:104-124,143-154`. | Consistent |
-| A failed removal leaves the diagnostic row and allows a later retry. | `docs/SPEC.md:144-147`; `docs/ARCHITECTURE.md:111-112` | `src/application/reconcile-session.ts:256-263`; `tests/application/reconcile-session.test.ts:127-141`. | Consistent |
-| Direct single-session reconciliation remains non-destructive. | `docs/SPEC.md:146-147`; `docs/ARCHITECTURE.md:331-334` | `src/application/reconcile-session.ts:208-224`; `tests/application/reconcile-session.test.ts:90-102`. | Consistent |
-| Unregister is exceptional: release an open/hidden tab, troubleshoot, or uninstall; it is not normal `⌘W` cleanup. | `README.md:151-156,202-210,281-294`; `docs/configuration.md:194-204` | `src/application/unregister-session.ts` retains explicit release behavior; cleanup is separately exercised through the board path. | Consistent |
+**Files:** `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`, `docs/knowledge-index-detail.yaml`
+**What:** The working tree contains only the expected derived refresh: generation timestamp, `configuration.md`'s 2026-08-16 date, and substrate counts updated to six backlog items and four archived items. The derived index agrees with current source frontmatter.
+**Disposition:** Informational. This audit made no change to those user-owned working-tree updates.
 
-The current feature explicitly keeps refresh cadence out of V1 while preserving
-the future refreshing-board direction in its risk note; the existing deferred
-horizon separately preserves a daemon, notifications, menu-bar, and
-always-on-top dashboard behind evidence-based entry conditions. This is aligned
-with `docs/SPEC.md`, `docs/VISION.md`, and
-`.work/backlog/roadmap-deferred-product-horizon.md`.
+## Latest Ghostty Integration Verification
+
+The live Ghostty 1.3.1 repair record, code, tests, and operator documentation are aligned.
+
+| Contract | Evidence inspected | Result |
+| --- | --- | --- |
+| Contiguous trailing AppleScript terminators are accepted, while blank/malformed interior rows remain invalid. | `.work/archive/story-fix-ghostty-trailing-newlines.md` resolves to `e0e2f89`; `src/integrations/ghostty/protocol.ts`; `tests/integrations/ghostty/protocol.test.ts`. | Consistent. `withoutTrailingLineBreaks` is applied to structured protocol payloads; the test accepts `\n\n` only at the boundary and still rejects an interior blank row. |
+| Title set and clear use Ghostty's declared targeted-action parameter. | `.work/archive/story-fix-ghostty-title-action-parameter.md` resolves to `36042ce`; `src/integrations/ghostty/scripts.ts`; `tests/integrations/ghostty/client.test.ts`. | Consistent. Both scripts issue `perform action … on term`, not the invalid historical `against term` syntax. |
+| A disposable live integration covers the same grammar without borrowing a user tab. | `tests/integration/disposable-ghostty.test.ts` and archived story acceptance evidence. | Consistent. The opt-in probe creates a separate window, sets and clears the tab title with `on probeTerminal`, then closes it. |
+| Doctor's deliberately non-destructive title-action limitation is not represented as shipped capability. | `.work/backlog/idea-doctor-title-action-probe.md`; `src/integrations/ghostty/diagnostics.ts`; `README.md`. | Consistent. Doctor checks version/config/Automation/current context but does not claim to execute a targeted `set_tab_title` readiness probe. The backlog item remains future hardening. |
+
+## Services Rename Setup Verification
+
+`README.md`, `docs/configuration.md`, and `examples/ghostty/agent-board.conf` agree with the proved macOS workflow:
+
+- `agent-name` with no label is the focused-session native rename prompt; `agent-name <label>` remains the direct shell path.
+- The Shortcut uses **Run Shell Script**, `/bin/zsh`, an explicit Homebrew PATH, `exec /opt/homebrew/bin/agent-name`, and **Run as Administrator** remains off.
+- **Services Menu** is enabled in Shortcut Details; `⌘⇧R` is assigned through **System Settings → Keyboard → Keyboard Shortcuts → Services**.
+- Ghostty leaves `cmd+shift+r` unbound so `prompt_tab_title` cannot intercept the shortcut.
+- Only Shortcuts **Allow Running Scripts** is required; the separately prompted macOS Automation grant is accurately described.
+
+The configuration guide is the detailed source of truth and the README links to it without duplicating obsolete setup instructions. The example fragment likewise leaves the chord unbound and does not mutate an operator's full Ghostty configuration.
 
 ## Clean Areas
 
-- The six current system planning documents have the required non-empty
-  frontmatter fields (`description`, `type`, and `updated`), and their
-  frontmatter matches `docs/knowledge-index.yaml`. The historical
-  `docs/project-brief.md` is explicitly superseded by `docs/VISION.md` and is
-  not presented as current product truth.
-- No module planning documents were discovered in the knowledge index,
-  `docs/`, or a `modules/` tree. A system-only pass is therefore the complete
-  cascading review for this repository.
-- Product scope is aligned: local-first attention routing, one Ghostty tab per
-  Codex session, no tmux, no resident daemon, no semantic agent actions, and
-  deferred GUI/remote/hardware surfaces agree across the vision, principles,
-  specification, architecture, README, and backlog.
-- The four packaged binaries described by the architecture and README are
-  present in `package.json` and implemented under `src/cli/`.
-- The state and projection contracts agree: versioned atomic JSON session
-  records, separate terminal presence and agent state, and a shared board/title
-  projection are represented in `docs/ARCHITECTURE.md` and the domain and
-  application modules.
-- The Ghostty brief's close/undo finding is preserved faithfully: enumerable
-  out-of-hierarchy terminals are hidden rather than missing. The Codex brief's
-  managed remote-TUI decision, experimental-boundary caution, and ordinary-mode
-  degradation remain accurately represented in the current architecture.
-- Cross-document Markdown targets in the README, configuration guide, and
-  architecture resolve to current files. Example Ghostty and Codex fragments
-  exist at the documented paths.
-- `docs/knowledge-index.yaml`, `docs/knowledge-index-nav.yaml`, and
-  `docs/knowledge-index-detail.yaml` were freshly regenerated at
-  `2026-08-15T20:04:11Z`; their only current working-tree delta is the derived
-  timestamp and active-feature count for this new feature.
+- Product truth is consistent across vision, principles, specification, architecture, README, and backlog: local-first attention routing; one Codex session per Ghostty tab; no tmux, resident daemon, semantic actions, GUI, remote service, or hardware requirement in V1.
+- The settled managed app-server plus remote-TUI default and ordinary-mode degraded-confidence boundary agree across `AGENTS.md`, `docs/research-plan.md`, `docs/SPEC.md`, `docs/ARCHITECTURE.md`, code, and package commands.
+- The four documented binaries—`agent-codex`, `agent-name`, `agents`, and `agent-board`—match `package.json`, `src/cli/`, and composition roots.
+- The Ghostty ownership, ID-targeting, title-clear, hierarchy-aware liveness, and non-destructive uncertainty contracts remain consistent with the locked Ghostty brief and implementation.
+- The five-state board/title projection, acknowledgement fallback, local atomic store, and error/degradation rules agree between the foundation documents and their domain/application surfaces.
+- All five epics, 15 features, six stories, and the standalone lock-contention story currently shown by `work-view` are `done` with their expected source/test surfaces present. The four archive stubs have resolving `git_ref` provenance.
+- The archived 2026-08-16 Ghostty fixes are accurately represented as completed history. The only related unfinished item is explicitly the **backlog** doctor-title-action probe; it is not treated as implemented.
 
 ## Blocking Briefs Status
 
-There is no separate roadmap phase document. The research plan identifies the
-two completed, decision-bearing runtime engagements; both remain on disk and
-match the locked architecture.
+There is no NEXT delivery phase that names a missing blocking brief. The current architecture is grounded by the following on-disk, locked artifacts.
 
-| Brief | Supports / blocks | Exists on disk? | Status |
+| Brief | Supports | Exists on disk? | Status |
 | --- | --- | --- | --- |
-| `.research/analysis/briefs/codex-detector-topology.md` | Managed Codex observation and launcher | Yes | Locked; `/research` complete |
-| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity, title ownership, liveness, and cleanup | Yes | Locked; `/research` complete |
+| `.research/analysis/briefs/codex-detector-topology.md` | Managed Codex observation and launcher topology | Yes | Locked; `/research` complete |
+| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity, title, liveness, and cleanup | Yes | Locked; `/research` complete |
 | `.research/analysis/campaigns/agent-board-prior-art/parent.md` | Foundational V1 scope and deferred horizon | Yes | Locked; `/scout` complete |
-
-The automatic-cleanup feature introduces no consequential unresolved external
-question: it applies the already-validated Ghostty `visible | hidden | missing |
-unknown` liveness contract. No missing blocker exists for the current review
-stage.
 
 ## DONE Verification
 
-The following delivery arcs are marked `done` in `.work/` and their described
-runtime and test surfaces exist. This audit inspected existence and contract
-alignment; it did not rerun the test suite because this was a read-only audit.
+This read-only audit verified expected files and recorded evidence; it did not rerun tests.
 
-| Arc | Status | Expected output verified on disk | Result |
+| Delivery arc | Status | Expected output verified on disk | Result |
 | --- | --- | --- | --- |
-| Trustworthy session core | Done | `src/domain/`, `src/infrastructure/`, and domain/infrastructure tests | Present |
-| Ghostty project surface | Done | `src/integrations/ghostty/`, registration/reconciliation/unregister application modules and tests | Present |
-| Managed Codex observation | Done | `src/integrations/codex/`, managed launcher/observer modules and tests | Present |
-| Swarm attention board | Done | `src/application/list-sessions.ts`, `src/cli/agents.ts`, composition, and CLI/application tests | Present |
-| Operational readiness | Done | doctor command, package harness, packed golden/failure/chaos tests, and opt-in integration probes | Present |
-| Automatic missing-session cleanup | **Review** (not claimed done) | batch cleanup code, application tests, and packed golden close/re-read journey | Present and aligned |
-
-## Work-State Consistency
-
-`.work/bin/work-view --stage review` and `--ready` both identify only
-`feature-automatic-missing-session-cleanup`. Its `stage: review` accurately
-matches its implementation and verification notes; it has not been incorrectly
-described as completed. The future refreshing board remains a preserved option,
-not an untracked V1 promise.
+| Trustworthy session core | Done | Domain, storage, lock, and transition/projection tests | Present |
+| Ghostty project surface | Done | AppleScript client/protocol/diagnostics, registration, reconciliation, and title tests | Present |
+| Managed Codex observation | Done | App-server client, lifecycle/thread binding, launcher, and integration tests | Present |
+| Swarm attention board | Done | Board application, CLI renderer, acknowledgement/unregister, and tests | Present |
+| Operational readiness | Done | Doctor, packed artifact harness, golden/failure/chaos tests, and opt-in live probes | Present |
+| Companion terminal configuration | Done | Ghostty/Codex fragments, configuration guide, README routing, and recorded validation | Present |
+| Latest Ghostty repairs | Done and archived | Terminator regression test, `on term` request assertions, and disposable live probe | Present |
 
 ## Provenance Summary
 
@@ -132,15 +114,8 @@ not an untracked V1 promise.
 | `/research` | 2 | 2026-08-14 |
 | `/scout` | 1 | 2026-08-14 |
 
-The remaining campaign working artifacts are supporting Agentic Research
-records rather than independent decision briefs. The corpus's highest applicable
-brief tier is `/research`; there are no lower-tier decision briefs updated
-before a newer higher-tier brief, so there are no refresh candidates.
+The highest applicable brief tier is `/research`; there are no lower-tier decision briefs older than a newer higher-tier run, so there are no refresh candidates. Remaining indexed campaign records and attestations are supporting research artifacts, not duplicate current planning truth.
 
 ## Audit Boundary
 
-This report is an independent documentation and artifact-consistency audit. It
-does not replace the feature's required code review or its recorded test
-verification; it confirms that the current documentation truth is aligned with
-the implemented cleanup behavior and with the settled Ghostty research
-contract.
+This is a Phase 1–3 documentation and artifact-consistency audit. It intentionally does not flag unimplemented future options, absent test coverage, or the preserved doctor-title-action probe as documentation drift. No source documentation, code, work item, index, package file, commit, or remote state was changed; only this report was overwritten.
