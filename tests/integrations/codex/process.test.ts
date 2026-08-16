@@ -28,6 +28,13 @@ test("process host uses split stream readiness and exact remote argv", async () 
   const started = await host.startAppServer(new AbortController().signal, "session-1");
   assert.equal(started.endpoint.websocketUrl.port, "45");
   await host.startRemoteTui(started.endpoint, ["--full-auto"], "session-1");
+  assert.deepEqual(requests[0]?.args, [
+    "app-server",
+    "--listen",
+    "ws://127.0.0.1:0",
+    "-c",
+    'shell_environment_policy.set.AGENT_BOARD_SESSION_ID="session-1"',
+  ]);
   assert.deepEqual(requests[1]?.args, ["--full-auto", "--remote", "ws://127.0.0.1:45/", "-c", "tui.terminal_title=[]"]);
   assert.deepEqual(requests[1]?.options, {
     shell: false,

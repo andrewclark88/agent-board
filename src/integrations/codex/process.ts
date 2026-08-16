@@ -148,9 +148,12 @@ export class CodexProcessHost {
 
   async startAppServer(signal: AbortSignal, sessionId?: string): Promise<StartedAppServer> {
     if (signal.aborted) throw abortError();
+    const config = sessionId === undefined
+      ? []
+      : ["-c", `shell_environment_policy.set.AGENT_BOARD_SESSION_ID=${JSON.stringify(sessionId)}`];
     let child: StreamChild;
     try {
-      child = this.spawnProcess(this.command, ["app-server", "--listen", "ws://127.0.0.1:0"], {
+      child = this.spawnProcess(this.command, ["app-server", "--listen", "ws://127.0.0.1:0", ...config], {
         shell: false,
         detached: true,
         stdio: ["ignore", "pipe", "pipe"],
