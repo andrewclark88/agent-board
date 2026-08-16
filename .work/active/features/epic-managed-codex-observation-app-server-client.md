@@ -8,7 +8,7 @@ depends_on: []
 release_binding: null
 gate_origin: null
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-16
 ---
 
 # Codex App-Server Client
@@ -207,6 +207,12 @@ boundary best owned and reviewed together.
   correlation, timeout, abort, ordered notifications, disconnect, and bounded
   message handling. The test command now explicitly discovers nested test
   files.
+- Production message bound: the default `maxMessageBytes` is now 8 MiB after a
+  disposable installed Codex 0.147.0 app-server + remote-TUI probe measured
+  legitimate ignored `app/list/updated` notifications at 3,692,503–3,700,435
+  bytes. The limit remains bounded; caller-supplied lower limits and rejection
+  behavior remain intact. The regression sends a 4 MiB unknown notification,
+  then proves the following request completes.
 - Simplification: kept a generic JSON-RPC envelope and a narrow set of
   method-specific schemas rather than introducing generated protocol bindings
   or a second transport abstraction.
