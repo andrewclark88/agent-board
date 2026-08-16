@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-16T18:14:32Z'
+generated_at: '2026-08-16T18:39:55Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -16,6 +16,8 @@ documents:
       an explicit degraded-confidence fallback.
     - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group;
       there is no global resident daemon.
+    - The stable Board session, Ghostty binding, and project identity outlive a managed runtime; each
+      relaunch replaces the prior launcher metadata and native Codex thread binding.
     - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external
       boundaries.
     - One versioned session record is the source of truth and is updated atomically under a per-session
@@ -55,6 +57,8 @@ documents:
     decisions:
     - One supervised agent per Ghostty tab is the first-release operating constraint.
     - Project labels are human-controlled presentation and never session identity.
+    - Stable Board and Ghostty identity survives managed relaunch; native Codex thread binding is scoped
+      to one launcher and app-server lifetime.
     - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical
       truth.
     - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation

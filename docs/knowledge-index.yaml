@@ -6,7 +6,7 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 2
-generated_at: 2026-08-16T18:14:32Z
+generated_at: 2026-08-16T18:39:55Z
 generated_from: frontmatter
 total_docs: 17
 
@@ -57,7 +57,7 @@ documents:
     title: Agent Board specification
     type: spec
     kind: planning
-    updated: 2026-08-15
+    updated: 2026-08-16
     status: draft
     consumer_hint: Read this to understand the first product contract, normalized domain model, behavior, constraints, and acceptance boundary.
 

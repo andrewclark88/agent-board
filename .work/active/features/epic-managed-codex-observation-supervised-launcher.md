@@ -246,9 +246,11 @@ export function launchManagedCodex(
 
 **Implementation notes**:
 
-- Register with no explicit label first. Version-gate, start app-server, connect
-  and initialize the observer client, invoke `observeManagedCodex`, then start
-  the TUI. The observer callback best-effort calls `reconcileSession`; terminal
+- Register with no explicit label first. Version-gate, start app-server, then
+  claim the stable session for this launcher by recording its PID and clearing
+  any native thread binding from the prior managed runtime. Connect and
+  initialize the observer client, invoke `observeManagedCodex`, then start the
+  TUI. The observer callback best-effort calls `reconcileSession`; terminal
   errors are already persisted as presence diagnostics and do not stop Codex.
 - Start the completion-focus watcher for the registered session and route its
   committed acknowledgement through the same reconciliation callback.
@@ -266,6 +268,8 @@ export function launchManagedCodex(
 **Acceptance criteria**:
 
 - [x] Invocation order proves observer subscription begins before TUI spawn.
+- [x] A sequential relaunch preserves the Board/Ghostty session while replacing
+  the prior runtime's native Codex thread binding.
 - [x] Clean exit leaves the visible registered tab idle; abnormal outcomes are
   visible error; deliberate HUP/TERM is interrupted/idle.
 - [x] App-server, observer, focus watcher, and TUI are cleaned exactly once for
