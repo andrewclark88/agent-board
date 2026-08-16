@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-terminal-title-override
 kind: story
-stage: review
+stage: done
 tags: [bug]
 parent: null
 depends_on: []
@@ -57,3 +57,18 @@ argv contains `-c tui.terminal_title=[]`.
   the full suite passes (171 passed, 2 opt-in skipped); and the installed Codex
   compatibility probe passes.
 - Adjacent issues parked: none.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review; no independent or cross-model
+reviewer ran. Correctness, regression coverage, process/argument safety,
+compatibility impact, and foundation-doc alignment were inspected. The change
+replaces only the invalid TOML value, preserves shell-free argv transport, and
+is confirmed by both the exact spawn contract and the installed Codex parser.
