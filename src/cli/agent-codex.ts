@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { AgentBoardError } from "../domain/errors.js";
-import { createAgentCodexCommand, type AgentCodexCommand } from "../composition/create-agent-codex.js";
+import { createAgentCodexCommand } from "../composition/create-agent-codex.js";
 import { SttyTerminalMode, type TerminalModePort } from "../integrations/terminal-mode.js";
 import { isMain } from "./is-main.js";
 
