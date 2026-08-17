@@ -1,7 +1,7 @@
 ---
 id: feature-adjudicate-acceptance-format-findings
 kind: feature
-stage: review
+stage: done
 tags: [prose]
 parent: null
 depends_on: []
@@ -77,3 +77,18 @@ prose lane.
 - The changed-path comparison contains only the 42 child findings and this
   feature; every referenced current record and archived historical record is
   untouched.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Standard review weight; exactly one same-harness fresh-context pass.
+The reviewer independently confirmed all 42 child dispositions, the 28 current
+/ 14 archived classification, the 13-body / 150-checkbox evidence, and zero
+source or history rewrites. Runtime, security, and code-test lenses were
+inapplicable to this prose-only substrate adjudication.
