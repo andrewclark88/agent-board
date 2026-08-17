@@ -1,7 +1,7 @@
 ---
 id: gate-tests-launcher-post-server-startup-cleanup
 kind: story
-stage: implementing
+stage: done
 tags: [testing]
 parent: null
 depends_on: []
@@ -36,3 +36,20 @@ test("managed launch cleans post-server startup failures exactly once", async ()
 ## Test location (suggested)
 
 `tests/application/launch-managed-codex.test.ts`
+
+## Implementation notes
+
+Added a table-driven lifecycle regression covering connect, initialize,
+observer-start, and remote-TUI-start failures after the app-server is up. Each
+case asserts the exact child stop order/count, client close count, final
+launcher-binding removal, and bounded launcher failure evidence. The observer
+case uses the existing client seam and lets the real observer path fail rather
+than bypassing cleanup with a direct mock.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/application/launch-managed-codex.test.ts`
+- `npm run typecheck`
+- Bounded inline review: all four failure points execute the production
+  lifecycle/finalization path; no production source or cleanup behavior was
+  changed.

@@ -14,7 +14,6 @@ import {
   type TerminalIdentity,
   type TerminalObservation,
 } from "../domain/session.js";
-import { projectSession } from "../domain/projection.js";
 import { renderSessionTitle } from "./render-title.js";
 
 export interface ReconcileDependencies {

@@ -109,6 +109,97 @@ function dependencies(
   };
 }
 
+type LaunchFixture = ReturnType<typeof dependencies>;
+
+const postServerStartupFailures: readonly {
+  readonly name: string;
+  readonly configure: (fixture: LaunchFixture) => void;
+  readonly stopped: readonly number[];
+  readonly clientCloses: number;
+  readonly detail: string;
+}[] = [
+  {
+    name: "connect",
+    configure: (fixture) => {
+      fixture.dependencies = {
+        ...fixture.dependencies,
+        connectClient: async () => { throw new Error("connect failed"); },
+      };
+    },
+    stopped: [10],
+    clientCloses: 0,
+    detail: "connect failed",
+  },
+  {
+    name: "initialize",
+    configure: (fixture) => {
+      const connect = fixture.dependencies.connectClient;
+      fixture.dependencies = {
+        ...fixture.dependencies,
+        connectClient: async (endpoint: Parameters<typeof connect>[0]) => {
+        const connected = await connect(endpoint);
+        return {
+          ...connected,
+          initialize: async () => { fixture.events.push("initialize"); throw new Error("initialize failed"); },
+        };
+        },
+      };
+    },
+    stopped: [10],
+    clientCloses: 1,
+    detail: "initialize failed",
+  },
+  {
+    name: "observer start",
+    configure: (fixture) => {
+      const connect = fixture.dependencies.connectClient;
+      fixture.dependencies = {
+        ...fixture.dependencies,
+        connectClient: async (endpoint: Parameters<typeof connect>[0]) => {
+        const connected = await connect(endpoint);
+        return {
+          ...connected,
+          loadedThreads: async () => { fixture.events.push("list"); throw new Error("observer start failed"); },
+        };
+        },
+      };
+    },
+    stopped: [11, 10],
+    clientCloses: 1,
+    detail: "Codex root-thread binding failed",
+  },
+  {
+    name: "TUI start",
+    configure: (fixture) => {
+      fixture.dependencies.processes.startRemoteTui = async () => {
+        fixture.events.push("start-tui");
+        throw new Error("TUI start failed");
+      };
+    },
+    stopped: [10],
+    clientCloses: 1,
+    detail: "TUI start failed",
+  },
+];
+
+for (const scenario of postServerStartupFailures) {
+  test(`managed launch cleans ${scenario.name} failure exactly once`, async () => {
+    const never = deferred<ProcessExit>();
+    const fixture = dependencies(never.promise, never.promise, { exitCode: null, signal: "SIGTERM" });
+    scenario.configure(fixture);
+
+    const result = await launchManagedCodex(fixture.dependencies, [], new AbortController().signal);
+
+    assert.deepEqual(result, { sessionId: "session-1", outcome: "failed", exitCode: 1 });
+    assert.deepEqual(fixture.stopped, scenario.stopped);
+    assert.equal(fixture.events.filter((event) => event === "close-client").length, scenario.clientCloses);
+    assert.equal(fixture.current().agent.launcherPid, undefined);
+    assert.equal(fixture.current().agent.health, "error");
+    assert.equal(fixture.current().agent.evidenceKind, "codex.launcher.failure");
+    assert.match(fixture.current().agent.detail ?? "", new RegExp(scenario.detail));
+  });
+}
+
 test("managed launch subscribes before TUI spawn and records a clean TUI exit", async () => {
   const serverExit = deferred<ProcessExit>();
   const tuiExit = deferred<ProcessExit>();
