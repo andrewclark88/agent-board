@@ -1,7 +1,7 @@
 ---
 id: gate-patterns-inconsistency-codex-process-override
 kind: story
-stage: implementing
+stage: done
 tags: [refactor]
 parent: feature-align-shared-port-composition-overrides
 depends_on: [gate-patterns-inconsistency-codex-terminal-override]
@@ -38,3 +38,14 @@ narrow port. This preserves every invoked method and the production default.
 
 Low risk. Revert the type-only composition change if the narrow capability does
 not cover a consumed method.
+
+## Implementation notes
+
+Typed the Codex process override from the managed-launch capability, retaining
+`CodexProcessHost` solely as the production default constructor.
+
+## Verification
+
+- `npm run typecheck`
+- Bounded inline review confirmed the indexed capability includes every
+  process method consumed by managed launch and no runtime wiring changed.

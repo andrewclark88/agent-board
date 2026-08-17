@@ -18,7 +18,7 @@ export interface AgentCodexCompositionOptions {
   store?: RegistrationStore & SessionStore;
   terminal?: RegistrationTerminalPort & ReconciliationTerminalPort & FocusedTerminalPort;
   repositories?: RepositoryContextPort;
-  processes?: CodexProcessHost;
+  processes?: ManagedLaunchDependencies["processes"];
   workingFreshForMs?: number;
   bindTimeoutMs?: number;
   focusPollIntervalMs?: number;
