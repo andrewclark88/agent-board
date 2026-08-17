@@ -1,7 +1,7 @@
 ---
 id: gate-tests-codex-thread-read-fail-closed
 kind: story
-stage: implementing
+stage: done
 tags: [testing]
 parent: null
 depends_on: []
@@ -36,3 +36,19 @@ test("loadedThreads fails closed on malformed and mismatched thread/read", async
 ## Test location (suggested)
 
 `tests/integrations/codex/client.test.ts`
+
+## Implementation notes
+
+Added loopback app-server contract coverage for both loaded-thread repair
+failure modes: malformed `thread/loaded/list` metadata is rejected at the
+method boundary, and a `thread/read` response with a different ID is rejected
+before any hydrated result is returned. Both cases assert the typed
+`ADAPTER_FAILURE` and close the client in fixture teardown.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/integrations/codex/client.test.ts`
+- `npm run typecheck`
+- Bounded inline review: the test uses the existing in-process WebSocket seam,
+  asserts method-specific failure evidence, and does not weaken production
+  validation or add a dependency.

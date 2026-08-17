@@ -79,6 +79,59 @@ test("correlates concurrent requests and delivers ordered notifications", async 
   });
 });
 
+test("loadedThreads fails closed for malformed list and mismatched thread/read responses", async () => {
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+      else if (request.method === "thread/loaded/list") {
+        // The loaded-list contract contains thread IDs, not hydrated thread objects.
+        socket.send(JSON.stringify({ id: request.id, result: { data: [{ id: "thread-1" }] } }));
+      }
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory });
+    try {
+      await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+      await assert.rejects(
+        client.loadedThreads(),
+        (error: unknown) => error instanceof AgentBoardError &&
+          error.code === "ADAPTER_FAILURE" &&
+          /response failed schema validation: thread\/loaded\/list/.test(error.message),
+      );
+    } finally {
+      await client.close();
+    }
+  });
+
+  await withServer((socket) => {
+    socket.on("message", (raw) => {
+      const request = JSON.parse(raw.toString()) as { id: number; method: string };
+      if (request.method === "initialize") socket.send(JSON.stringify({ id: request.id, result: {} }));
+      else if (request.method === "thread/loaded/list") socket.send(JSON.stringify({ id: request.id, result: { data: ["thread-1"] } }));
+      else if (request.method === "thread/read") {
+        socket.send(JSON.stringify({
+          id: request.id,
+          result: { thread: { id: "thread-other", status: { type: "idle" }, cwd: "/repo", parentThreadId: null } },
+        }));
+      }
+    });
+  }, async (port) => {
+    const client = await AppServerClient.connect(endpoint(port), { webSocketFactory: defaultFactory });
+    try {
+      await client.initialize({ name: "agent-board-test", version: "0.1.0" });
+      await assert.rejects(
+        client.loadedThreads(),
+        (error: unknown) => error instanceof AgentBoardError &&
+          error.code === "ADAPTER_FAILURE" &&
+          /thread\/read returned unexpected thread id thread-other/.test(error.message),
+      );
+    } finally {
+      await client.close();
+    }
+  });
+});
+
 test("times out and aborts requests independently", async () => {
   await withServer((socket) => {
     socket.on("message", (raw) => {
