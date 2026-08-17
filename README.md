@@ -39,7 +39,8 @@ macos-applescript = true
 ```
 
 Remove any global `title` setting. If `bell-features` includes `title`, add
-`no-title`. Restart Ghostty after a configuration change.
+`no-title`. Reload Ghostty's configuration after a change; restart Ghostty if
+the new settings do not take effect immediately.
 
 Agent Board owns the complete title of each registered tab. Do not use Ghostty's
 manual title override for those tabs.
@@ -314,6 +315,8 @@ npm test
 
 The suite builds and installs a packed artifact in temporary directories. It
 uses private executable substitutes and does not touch live Ghostty tabs.
+The current suite contains 202 tests: 200 pass by default and the two live
+compatibility probes below remain skipped until explicitly enabled.
 
 Two live compatibility probes are opt-in. The Codex probe reads generated
 protocol schemas, including the `thread/loaded/list` ID response and the
