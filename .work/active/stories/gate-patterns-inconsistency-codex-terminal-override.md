@@ -1,7 +1,7 @@
 ---
 id: gate-patterns-inconsistency-codex-terminal-override
 kind: story
-stage: implementing
+stage: done
 tags: [refactor]
 parent: feature-align-shared-port-composition-overrides
 depends_on: [gate-patterns-inconsistency-launcher-focused-terminal-port]
@@ -39,3 +39,14 @@ The production default and every runtime method call remain unchanged.
 
 Low risk. Revert the type-only composition change if an actual consumed
 capability is missing.
+
+## Implementation notes
+
+Narrowed the Codex composition terminal override to the three shared ports it
+consumes: registration, reconciliation, and focused-terminal capabilities.
+`GhosttyClient` remains the production default implementation.
+
+## Verification
+
+- `npm run typecheck`
+- Bounded inline review confirmed no runtime construction or method calls changed.

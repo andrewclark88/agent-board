@@ -6,7 +6,7 @@ import { CodexProcessHost } from "../integrations/codex/process.js";
 import { GitRepositoryContext } from "../integrations/git/repository-context.js";
 import { GhosttyClient } from "../integrations/ghostty/client.js";
 import { JsonSessionStore } from "../infrastructure/json-session-store.js";
-import type { LauncherLivenessPort, RegistrationStore, RegistrationTerminalPort, RepositoryContextPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { FocusedTerminalPort, LauncherLivenessPort, RegistrationStore, RegistrationTerminalPort, RepositoryContextPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import { configuredCommand } from "../integrations/command-config.js";
 import { NodeLauncherLiveness } from "../integrations/launcher-liveness.js";
 
@@ -16,7 +16,7 @@ export interface AgentCodexCommand {
 
 export interface AgentCodexCompositionOptions {
   store?: RegistrationStore & SessionStore;
-  terminal?: GhosttyClient & RegistrationTerminalPort & ReconciliationTerminalPort;
+  terminal?: RegistrationTerminalPort & ReconciliationTerminalPort & FocusedTerminalPort;
   repositories?: RepositoryContextPort;
   processes?: CodexProcessHost;
   workingFreshForMs?: number;
