@@ -1,7 +1,7 @@
 ---
 id: feature-adjudicate-acceptance-format-findings
 kind: feature
-stage: implementing
+stage: review
 tags: [prose]
 parent: null
 depends_on: []
@@ -18,9 +18,8 @@ updated: 2026-08-16
 Consolidate the 42 Medium test-gate findings produced because historical and
 current work records use acceptance prose that the gate's narrow Markdown
 parser does not recognize. Treat this as substrate hygiene, not as 42 product
-defects: preserve immutable archived history, normalize current records only
-where doing so adds durable value, and disposition every child finding with
-explicit evidence.
+defects: preserve both completed current records and immutable archived history,
+and disposition every child finding with explicit evidence.
 
 ## Child findings
 
@@ -36,14 +35,14 @@ duplicate acceptance evidence already present in completed item bodies.
 
 ## Acceptance Criteria
 
-- [ ] Every child finding is classified as a current-record normalization or
-      an immutable historical-format false positive.
-- [ ] Current records are edited only when canonical headings improve future
-      machine readability without falsifying completed work.
-- [ ] Archived historical bodies remain unchanged; their findings record why
+- [x] Every child finding is classified as a current completed record or an
+      archived historical record.
+- [x] Completed current records remain unchanged; the findings explain why no
+      post-hoc criteria are appropriate.
+- [x] Archived historical bodies remain unchanged; their findings record why
       Git history is authoritative and no rewrite is appropriate.
-- [ ] All 42 child findings reach `done` with a concise disposition.
-- [ ] The feature records totals by disposition and reaches review with a clean
+- [x] All 42 child findings reach `done` with a concise disposition.
+- [x] The feature records totals by disposition and reaches review with a clean
       substrate query.
 
 ## Authoring plan
@@ -58,3 +57,23 @@ duplicate acceptance evidence already present in completed item bodies.
 The brief is a sufficient specification. This feature has no runtime code,
 interface, or architectural decision. It therefore uses the no-coordination
 prose lane.
+
+## Adjudication summary
+
+- Result: all 42 findings are retroactive parser-format false positives, not
+  product defects.
+- Source classes: 28 current completed records and 14 archived historical
+  records.
+- Existing evidence: 13 bodies already contain 150 checkboxes under unsupported
+  bold labels; the remaining records likewise carry completed delivery and
+  verification evidence in formats introduced before the stricter grammar.
+- Action: 0 source or history rewrites and no post-hoc acceptance criteria.
+
+## Verification
+
+- All 42 direct child stories are `done`; none remains at `drafting`.
+- Each child records its source class, existing delivery/verification evidence,
+  later parser-grammar timing, and the no-rewrite disposition.
+- The changed-path comparison contains only the 42 child findings and this
+  feature; every referenced current record and archived historical record is
+  untouched.
