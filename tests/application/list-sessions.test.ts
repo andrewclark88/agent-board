@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { buildBoardRows, listSessions } from "../../src/application/list-sessions.js";
 import type { ReconcileResult } from "../../src/application/reconcile-session.js";
 import type { ReconciliationTerminalPort, SessionStore, TerminalSnapshot } from "../../src/domain/ports.js";
-import { SCHEMA_VERSION, type SessionRecord, type TerminalIdentity } from "../../src/domain/session.js";
+import { SCHEMA_VERSION, type SessionRecord } from "../../src/domain/session.js";
 import type { ProjectionOptions } from "../../src/domain/projection.js";
 
 const at = "2026-08-14T23:00:00.000Z";

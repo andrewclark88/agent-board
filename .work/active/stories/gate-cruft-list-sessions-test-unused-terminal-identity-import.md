@@ -1,7 +1,7 @@
 ---
 id: gate-cruft-list-sessions-test-unused-terminal-identity-import
 kind: story
-stage: implementing
+stage: done
 tags: [cleanup]
 parent: null
 depends_on: []
@@ -36,3 +36,22 @@ TypeScript reports TS6133 because `TerminalIdentity` has no use beyond this impo
 ## Removal
 
 Remove the `TerminalIdentity` type specifier while retaining `SCHEMA_VERSION` and `SessionRecord`.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Sol inherited implementation worker; direct-read mechanical cleanup with no behavior risk.
+- Review weight: standard, from the caller and project conventions; bounded inline standalone-story review.
+- Files changed: `tests/application/list-sessions.test.ts` and this item.
+- Tests added/removed: none; the existing list-sessions suite remains the focused behavioral check.
+- Simplification: removed the unused `TerminalIdentity` type import.
+- Discrepancies from design: none.
+- Adjacent issues parked: none.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/application/list-sessions.test.ts` passes.
+
+## Bounded inline review
+
+The diff removes only the unreferenced type specifier while retaining the
+schema-version value and record type used by the fixtures. No blocker found.
