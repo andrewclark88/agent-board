@@ -13,7 +13,6 @@ import {
 import {
   AgentObservationSchema,
   ObservationSchema,
-  ProjectLabelSchema,
   SCHEMA_VERSION,
   SessionRecordSchema,
   parseProjectLabel,
