@@ -1,7 +1,7 @@
 ---
 id: gate-tests-epic-operational-readiness-packaged-e2e-missing-acceptance-criteria
 kind: story
-stage: drafting
+stage: done
 tags: [testing, research-pipeline-extension]
 parent: feature-adjudicate-acceptance-format-findings
 depends_on: []
@@ -34,3 +34,10 @@ Add `## Acceptance Criteria` and express the acceptance invariants as checkboxes
 ## Test location (suggested)
 
 `.work/active/features/epic-operational-readiness-packaged-e2e.md:105`
+
+## Adjudication
+
+- Result: false positive from a retroactive parser-format rule, not a product defect.
+- Source: current completed record.
+- Evidence: delivery and verification already existed in the referenced record before the stricter parser grammar was introduced.
+- Action: no source or history rewrite.
