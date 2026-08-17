@@ -1,7 +1,7 @@
 ---
 id: gate-patterns-inconsistency-launcher-focused-terminal-port
 kind: story
-stage: implementing
+stage: done
 tags: [refactor]
 parent: feature-align-shared-port-composition-overrides
 depends_on: []
@@ -39,3 +39,15 @@ unchanged.
 
 Low risk. Revert the single import/declaration commit if type ownership does not
 remain equivalent.
+
+## Implementation notes
+
+Reused the canonical `FocusedTerminalPort` from `domain/ports.ts` and removed
+the identical managed-launch-local declaration. Runtime dependencies and calls
+are unchanged.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/application/launch-managed-codex.test.ts`
+- `npm run typecheck`
+- Bounded inline review confirmed the diff is limited to type ownership.

@@ -3,7 +3,7 @@ import { observeManagedCodex } from "./observe-managed-codex.js";
 import { reconcileSession } from "./reconcile-session.js";
 import { watchCompletionFocus } from "./watch-completion-focus.js";
 import type { RegisterSessionResult } from "./register-session.js";
-import type { Clock, LauncherLivenessPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+import type { Clock, FocusedTerminalPort, LauncherLivenessPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
 import type { CodexProcessHost, ManagedChild, ProcessExit, StartedAppServer } from "../integrations/codex/process.js";
 import type { ThreadBindingClient } from "../integrations/codex/thread-binding.js";
 import { AgentBoardError } from "../domain/errors.js";
@@ -19,10 +19,6 @@ export interface ManagedLaunchDependencies {
   readonly workingFreshForMs: number;
   readonly bindTimeoutMs: number;
   readonly focusPollIntervalMs: number;
-}
-
-export interface FocusedTerminalPort {
-  focused(): Promise<import("../domain/session.js").TerminalIdentity | null>;
 }
 
 export interface ManagedClient extends ThreadBindingClient {
