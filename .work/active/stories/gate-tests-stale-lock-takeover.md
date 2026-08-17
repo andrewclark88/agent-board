@@ -1,7 +1,7 @@
 ---
 id: gate-tests-stale-lock-takeover
 kind: story
-stage: implementing
+stage: done
 tags: [testing]
 parent: null
 depends_on: []
@@ -36,3 +36,20 @@ test("stale abandoned lock is recovered while fresh lock still times out", async
 ## Test location (suggested)
 
 `tests/infrastructure/file-lock.test.ts`
+
+## Implementation notes
+
+Added real-filesystem coverage for both sides of the stale-lock contract. A
+live `proper-lockfile` heartbeat remains protected and returns the existing
+bounded `LOCK_TIMEOUT`; a separate child process is then killed without
+release, and the abandoned lock is taken over after the documented two-second
+minimum stale interval. The child is shell-free, bounded, and removed during
+fixture cleanup.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/infrastructure/file-lock.test.ts`
+- `npm run typecheck`
+- Bounded inline review: the test uses the real proper-lockfile directory and
+  process boundary, does not mutate production lock behavior, and cleans the
+  temporary state root even on failure.
