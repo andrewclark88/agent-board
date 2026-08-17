@@ -1,7 +1,7 @@
 ---
 id: gate-patterns-inconsistency-launcher-focused-terminal-port
 kind: story
-stage: drafting
+stage: implementing
 tags: [refactor]
 parent: feature-align-shared-port-composition-overrides
 depends_on: []
@@ -28,3 +28,14 @@ updated: 2026-08-16
 Import the shared type and remove the local declaration. This changes only the
 compile-time ownership of the interface; runtime construction and calls remain
 unchanged.
+
+## Acceptance Criteria
+
+- [ ] Import `FocusedTerminalPort` from `src/domain/ports.ts`.
+- [ ] Delete the identical local declaration.
+- [ ] Typecheck and managed-launch tests pass without behavioral changes.
+
+## Risk and rollback
+
+Low risk. Revert the single import/declaration commit if type ownership does not
+remain equivalent.

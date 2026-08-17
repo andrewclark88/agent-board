@@ -1,10 +1,10 @@
 ---
 id: gate-patterns-inconsistency-codex-terminal-override
 kind: story
-stage: drafting
+stage: implementing
 tags: [refactor]
 parent: feature-align-shared-port-composition-overrides
-depends_on: []
+depends_on: [gate-patterns-inconsistency-launcher-focused-terminal-port]
 release_binding: null
 gate_origin: patterns
 created: 2026-08-16
@@ -27,3 +27,15 @@ reconciliation, and focus capabilities it actually consumes.
 
 Replace the concrete constraint with the required shared-port intersection.
 The production default and every runtime method call remain unchanged.
+
+## Acceptance Criteria
+
+- [ ] The terminal override is the intersection of registration,
+      reconciliation, and focused-terminal ports.
+- [ ] `GhosttyClient` remains only the production default implementation.
+- [ ] Typecheck and composition tests pass without behavioral changes.
+
+## Risk and rollback
+
+Low risk. Revert the type-only composition change if an actual consumed
+capability is missing.

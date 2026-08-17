@@ -1,10 +1,10 @@
 ---
 id: gate-patterns-inconsistency-codex-process-override
 kind: story
-stage: drafting
+stage: implementing
 tags: [refactor]
 parent: feature-align-shared-port-composition-overrides
-depends_on: []
+depends_on: [gate-patterns-inconsistency-codex-terminal-override]
 release_binding: null
 gate_origin: patterns
 created: 2026-08-16
@@ -27,3 +27,14 @@ typed override seams.
 
 Type the override as `ManagedLaunchDependencies["processes"]` or an equivalent
 narrow port. This preserves every invoked method and the production default.
+
+## Acceptance Criteria
+
+- [ ] The process override is typed from the managed-launch process capability.
+- [ ] `CodexProcessHost` remains only the production default implementation.
+- [ ] Typecheck, composition tests, build, and the full suite pass.
+
+## Risk and rollback
+
+Low risk. Revert the type-only composition change if the narrow capability does
+not cover a consumed method.

@@ -1,7 +1,7 @@
 ---
 id: feature-align-shared-port-composition-overrides
 kind: feature
-stage: drafting
+stage: implementing
 tags: [refactor]
 parent: null
 depends_on: []
@@ -38,3 +38,136 @@ must remain unchanged.
 - [ ] Codex process and terminal overrides are expressed as narrow ports.
 - [ ] Existing composition and managed-launch behavior remains unchanged.
 - [ ] Typecheck, focused tests, build, and the full suite pass.
+
+## Refactor Overview
+
+The runtime already follows narrow capability boundaries, but two compile-time
+seams depend on concrete adapters and managed launch duplicates a shared port.
+The three edits are intentionally ordered so the canonical port exists at every
+step and each commit remains independently typecheckable and reversible.
+
+The bounded direct scan found no larger abstraction worth introducing. The
+highest-value move is elimination: delete the duplicate interface, then narrow
+the two override types using capabilities that already exist.
+
+## Refactor Steps
+
+### Step 1: Reuse the canonical focused-terminal port
+
+**Priority**: High  
+**Risk**: Low  
+**Source Lens**: pattern drift / elimination  
+**Files**: `src/application/launch-managed-codex.ts`  
+**Story**: `gate-patterns-inconsistency-launcher-focused-terminal-port`
+
+**Current State**:
+
+```ts
+import type { Clock, LauncherLivenessPort, ReconciliationTerminalPort, SessionStore } from "../domain/ports.js";
+
+export interface FocusedTerminalPort {
+  focused(): Promise<import("../domain/session.js").TerminalIdentity | null>;
+}
+```
+
+**Target State**:
+
+```ts
+import type {
+  Clock,
+  FocusedTerminalPort,
+  LauncherLivenessPort,
+  ReconciliationTerminalPort,
+  SessionStore,
+} from "../domain/ports.js";
+```
+
+**Implementation Notes**:
+
+- Remove only the local interface and import the existing shared capability.
+- Do not alter `ManagedLaunchDependencies` or runtime calls.
+
+**Acceptance Criteria**:
+
+- [ ] No local `FocusedTerminalPort` declaration remains.
+- [ ] Managed-launch tests and typecheck pass unchanged.
+
+**Rollback**: Revert the single import/declaration commit.
+
+### Step 2: Narrow the terminal override to consumed ports
+
+**Priority**: Medium  
+**Risk**: Low  
+**Source Lens**: pattern drift  
+**Files**: `src/composition/create-agent-codex.ts`  
+**Story**: `gate-patterns-inconsistency-codex-terminal-override`
+
+**Current State**:
+
+```ts
+terminal?: GhosttyClient & RegistrationTerminalPort & ReconciliationTerminalPort;
+```
+
+**Target State**:
+
+```ts
+terminal?: RegistrationTerminalPort & ReconciliationTerminalPort & FocusedTerminalPort;
+```
+
+**Implementation Notes**:
+
+- Keep `GhosttyClient` as the production default value, not as the override
+  contract.
+- Reuse the canonical `FocusedTerminalPort` established in Step 1.
+
+**Acceptance Criteria**:
+
+- [ ] A port-only terminal fake satisfies the composition option.
+- [ ] Existing `agent-codex` composition behavior and tests are unchanged.
+
+**Rollback**: Revert the type-only composition change.
+
+### Step 3: Narrow the process override to managed-launch capability
+
+**Priority**: Medium  
+**Risk**: Low  
+**Source Lens**: pattern drift  
+**Files**: `src/composition/create-agent-codex.ts`  
+**Story**: `gate-patterns-inconsistency-codex-process-override`
+
+**Current State**:
+
+```ts
+processes?: CodexProcessHost;
+```
+
+**Target State**:
+
+```ts
+processes?: ManagedLaunchDependencies["processes"];
+```
+
+**Implementation Notes**:
+
+- Retain `CodexProcessHost` as the default constructor.
+- Do not introduce a second process-port declaration.
+
+**Acceptance Criteria**:
+
+- [ ] The override exposes exactly the process methods managed launch consumes.
+- [ ] Typecheck, composition tests, build, and the full suite pass.
+
+**Rollback**: Revert the type-only composition change.
+
+## Implementation Order
+
+1. `gate-patterns-inconsistency-launcher-focused-terminal-port`
+2. `gate-patterns-inconsistency-codex-terminal-override`
+3. `gate-patterns-inconsistency-codex-process-override`
+
+## Design decisions
+
+- **Fanout**: direct-read design only; the bounded two-file surface leaves no
+  distinct exploratory unknown worth delegating.
+- **Compatibility**: no public or runtime contract changes. Each step changes
+  TypeScript ownership only and uses existing capability shapes.
