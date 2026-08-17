@@ -8,7 +8,7 @@ depends_on: [epic-operational-readiness-doctor-command]
 release_binding: null
 gate_origin: null
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-16
 ---
 
 # Packaged Vertical-Slice Proof
@@ -107,7 +107,7 @@ product process.
 ### Unit 1: Package harness and executable services
 
 **Files**: `tests/e2e/support/package-harness.ts`,
-`tests/e2e/support/scenario.ts`, `tests/e2e/fixtures/fake-codex.mjs`,
+`tests/e2e/support/board.ts`, `tests/e2e/fixtures/fake-codex.mjs`,
 `tests/e2e/fixtures/fake-osascript.mjs`,
 `tests/e2e/fixtures/fake-ghostty.mjs`, plus the small production command-config
 seam.
@@ -124,6 +124,13 @@ owned child process groups before removing only the recorded temp root. It
 records the installed prefix, bin paths, state root, mock service paths, and
 scenario file. It must verify every resolved destructive cleanup target is a
 child of its fresh temp directory.
+
+The planned scenario responsibility is consolidated in
+`tests/e2e/support/package-harness.ts`: that file owns the `Scenario` type,
+default scenario creation, the private scenario path, reads, and atomic
+temp-file-to-rename writes. `tests/e2e/support/board.ts` owns strict board JSON
+reads and bounded row convergence. There is no separate scenario-support
+artifact.
 
 ### Unit 2: Packaged golden journeys
 

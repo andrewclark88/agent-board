@@ -160,8 +160,9 @@ acknowledgement and retain explicit `agent-board ack` as the fallback.
 A managed `working` record remains working regardless of lifecycle-event age
 only when the current projection operation carries a positive launcher-process
 probe that matches its persisted launcher binding, so a quiet turn may run for
-hours without falling into a diagnostic state. The persisted `launcher_pid` is
-runtime binding context, not proof by itself; direct title/board projections
+hours without falling into a diagnostic state. The persisted launcher PID
+(`launcherPid` in the session record) is runtime binding context, not proof by
+itself; direct title/board projections
 without a matching verification retain the configured freshness fallback.
 During `agents` reconciliation, a missing or unprobeable launcher is recorded
 as stale, corroborated diagnostic evidence rather than inferred idle,
@@ -182,19 +183,21 @@ than deleting state.
 
 ## Domain model
 
+The following sections name product concepts and their allowed meanings. They
+are not JSON examples or a second serialized field-name contract. The exact
+persisted camelCase shape is owned by the session-record contract in
+`docs/ARCHITECTURE.md`, derived from `src/domain/session.ts`.
+
 ### Session identity
 
-```text
-board_session_id          stable Agent Board identity
-project_label             user-controlled presentation
-repo_path?                discovered context
-git_branch?               discovered context
-adapter                    codex initially
-native_thread_id?         managed-runtime binding
-ghostty_window_id
-ghostty_tab_id
-ghostty_terminal_id
-```
+| Concept | Meaning |
+| --- | --- |
+| Board session identity | Stable Agent Board identity |
+| Project label | User-controlled presentation |
+| Repository path and Git branch | Optional discovered context |
+| Agent adapter | Codex initially |
+| Native thread binding | Optional managed-runtime binding |
+| Ghostty window, tab, and terminal binding | Stable terminal-adapter context |
 
 Project label, repo path, branch, and terminal position are not identity keys.
 The Board session and Ghostty binding persist when `agent-codex` is run again in
@@ -204,17 +207,14 @@ the stable session or project identity.
 
 ### Normalized observed state
 
-```text
-activity:    unknown | idle | working
-attention:   none | completion_unread | input_required
-completion_observed_at?: required while attention=completion_unread
-health:      live | stale | error
-observation:
-  observed_at
-  evidence_kind
-  confidence: authoritative | corroborated | inferred
-  adapter_detail?
-```
+| Concept | Allowed meaning |
+| --- | --- |
+| Activity | `unknown`, `idle`, or `working` |
+| Attention | `none`, `completion_unread`, or `input_required` |
+| Completion observation time | Required while completion attention is unread |
+| Health | `live`, `stale`, or `error` |
+| Observation evidence | Observation time, evidence kind, confidence, and optional adapter detail |
+| Confidence | `authoritative`, `corroborated`, or `inferred` |
 
 ### Projection precedence
 

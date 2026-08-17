@@ -242,35 +242,35 @@ functions do not receive ceremonial interfaces.
 Each file under the state directory is one validated record:
 
 ```text
-schema_version
+schemaVersion
 revision
-session_id
+sessionId
 
 identity:
-  project_label
-  repo_path?
-  git_branch?
-  created_at
+  projectLabel
+  repoPath?
+  gitBranch?
+  createdAt
 
 terminal:
   adapter = ghostty
-  window_id
-  tab_id
-  terminal_id
+  windowId
+  tabId
+  terminalId
   presence = visible | hidden | missing | unknown
-  observed_at
+  observedAt
 
 agent:
   adapter = codex
   mode = managed | ordinary
-  native_thread_id?
-  launcher_pid?
+  nativeThreadId?
+  launcherPid?
   activity = unknown | idle | working
   attention = none | completion_unread | input_required
-  completion_observed_at?  # required while completion is unread
+  completionObservedAt?  # required while completion is unread
   health = live | stale | error
-  observed_at
-  evidence_kind
+  observedAt
+  evidenceKind
   confidence = authoritative | corroborated | inferred
   detail?
 ```
@@ -312,7 +312,7 @@ heuristically.
 
 ### Identity and idempotency
 
-`session_id` is Board-owned UUID identity. Ghostty IDs are adapter binding, not
+`sessionId` is Board-owned UUID identity. Ghostty IDs are adapter binding, not
 the primary key. Registration under the registry lock scans for the current
 terminal ID and updates that record rather than duplicating it. Repository path,
 label, branch, and tab index are never identity keys.
