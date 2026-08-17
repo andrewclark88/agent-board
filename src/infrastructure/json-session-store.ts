@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm } from "node:fs/promises";
+import { readdir, rm } from "node:fs/promises";
 
 import { AgentBoardError } from "../domain/errors.js";
 import { parseSessionRecord, type SessionRecord } from "../domain/session.js";
