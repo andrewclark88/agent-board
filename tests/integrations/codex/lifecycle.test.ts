@@ -3,7 +3,6 @@ import { test } from "node:test";
 
 import { AgentBoardError } from "../../../src/domain/errors.js";
 import { mapCodexNotification, mapInitialCodexStatus } from "../../../src/integrations/codex/lifecycle.js";
-import type { CodexNotification } from "../../../src/integrations/codex/protocol.js";
 
 const at = "2026-08-14T18:00:00Z";
 const context = { threadId: "root", waiting: false, previousStatus: "active" as const };

@@ -1,7 +1,7 @@
 ---
 id: gate-cruft-codex-lifecycle-test-unused-notification-type-import
 kind: story
-stage: implementing
+stage: done
 tags: [cleanup]
 parent: null
 depends_on: []
@@ -36,3 +36,22 @@ TypeScript reports TS6133 because `CodexNotification` has no use beyond this imp
 ## Removal
 
 Delete the unused type-import line. No callers, tests, or surrounding imports need adjustment.
+
+## Implementation notes
+
+- Execution capability: GPT-5.6 Sol inherited implementation worker; direct-read mechanical cleanup with no behavior risk.
+- Review weight: standard, from the caller and project conventions; bounded inline standalone-story review.
+- Files changed: `tests/integrations/codex/lifecycle.test.ts` and this item.
+- Tests added/removed: none; the existing lifecycle test file remains the focused behavioral check.
+- Simplification: removed the unused `CodexNotification` type import.
+- Discrepancies from design: none.
+- Adjacent issues parked: none.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/integrations/codex/lifecycle.test.ts` passes.
+
+## Bounded inline review
+
+The diff deletes only an unreferenced type import. Lifecycle fixtures,
+assertions, and production code are unchanged. No blocker found.
