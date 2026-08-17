@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createPackageHarness } from "./support/package-harness.js";
+import { createPackageHarness, waitForScenario } from "./support/package-harness.js";
 import { readBoardRows, waitForBoardRow } from "./support/board.js";
 
 test("packed failure journeys preserve actionable errors and retryable records", async () => {
@@ -46,6 +46,8 @@ test("packed failure journeys preserve actionable errors and retryable records",
     await harness.writeScenario((value) => ({ ...value, ghostty: { ...value.ghostty, snapshotAvailable: true, focusedTerminalId: "term-one" } }));
     launcher = harness.start("agent-codex");
     await waitForBoardRow(harness, (row) => row.label === "reporting" && row.status === "error");
+    const errorScenario = await waitForScenario(harness, (candidate) => candidate.ghostty.terminals["term-one"]?.title === "× reporting", 900);
+    assert.equal(errorScenario.ghostty.terminals["term-one"]?.title, "× reporting");
     launcher.child.kill("SIGTERM");
     await launcher.exit;
   } finally {

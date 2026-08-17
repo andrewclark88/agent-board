@@ -1,7 +1,7 @@
 ---
 id: gate-tests-packaged-idle-error-title-parity
 kind: story
-stage: implementing
+stage: done
 tags: [testing]
 parent: null
 depends_on: []
@@ -36,3 +36,18 @@ test("packed lifecycle keeps idle and error titles in parity with board rows", a
 ## Test location (suggested)
 
 `tests/e2e/packaged-golden.test.ts and tests/e2e/packaged-failure.test.ts`
+
+## Implementation notes
+
+Extended the existing packaged golden lifecycle to assert the clean managed
+idle title (`○ label`) alongside its board row, and the packaged failure
+journey to assert the managed error title (`× label`) alongside the error row.
+Both assertions use the harness scenario convergence helper and keep the
+existing process cleanup path.
+
+## Verification
+
+- `npx tsx --test --test-concurrency=1 tests/e2e/packaged-golden.test.ts tests/e2e/packaged-failure.test.ts`
+- `npm run typecheck`
+- Bounded inline review: assertions exercise installed binaries and the fake
+  Ghostty title boundary; no source imports or fixed sleeps were introduced.
