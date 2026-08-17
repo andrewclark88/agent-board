@@ -1,7 +1,7 @@
 ---
 id: feature-align-shared-port-composition-overrides
 kind: feature
-stage: review
+stage: done
 tags: [refactor]
 parent: null
 depends_on: []
@@ -89,8 +89,8 @@ import type {
 
 **Acceptance Criteria**:
 
-- [ ] No local `FocusedTerminalPort` declaration remains.
-- [ ] Managed-launch tests and typecheck pass unchanged.
+- [x] No local `FocusedTerminalPort` declaration remains.
+- [x] Managed-launch tests and typecheck pass unchanged.
 
 **Rollback**: Revert the single import/declaration commit.
 
@@ -122,8 +122,8 @@ terminal?: RegistrationTerminalPort & ReconciliationTerminalPort & FocusedTermin
 
 **Acceptance Criteria**:
 
-- [ ] A port-only terminal fake satisfies the composition option.
-- [ ] Existing `agent-codex` composition behavior and tests are unchanged.
+- [x] A port-only terminal fake satisfies the composition option.
+- [x] Existing `agent-codex` composition behavior and tests are unchanged.
 
 **Rollback**: Revert the type-only composition change.
 
@@ -154,8 +154,8 @@ processes?: ManagedLaunchDependencies["processes"];
 
 **Acceptance Criteria**:
 
-- [ ] The override exposes exactly the process methods managed launch consumes.
-- [ ] Typecheck, composition tests, build, and the full suite pass.
+- [x] The override exposes exactly the process methods managed launch consumes.
+- [x] Typecheck, composition tests, build, and the full suite pass.
 
 **Rollback**: Revert the type-only composition change.
 
@@ -196,3 +196,19 @@ The changes are behavior-preserving and landed as the three child commits:
 - `npm run typecheck` passed.
 - `npm run build` passed.
 - `npm test` passed.
+
+## Review (2026-08-16)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Standard review weight; exactly one same-harness fresh-context pass.
+The reviewer confirmed canonical shared-port reuse, narrow terminal/process
+override contracts, unchanged production defaults, no runtime or supported CLI
+behavior change, and no foundation assertion drift. Verification was green:
+10/10 focused managed-launch tests and 202 full-suite tests (200 passed, 2
+intentional skips).
