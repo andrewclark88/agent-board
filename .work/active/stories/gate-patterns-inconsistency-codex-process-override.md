@@ -3,7 +3,7 @@ id: gate-patterns-inconsistency-codex-process-override
 kind: story
 stage: drafting
 tags: [refactor]
-parent: null
+parent: feature-align-shared-port-composition-overrides
 depends_on: []
 release_binding: null
 gate_origin: patterns
