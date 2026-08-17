@@ -13,7 +13,7 @@ import type {
   RegistrationTerminalPort,
   RepositoryContextPort,
 } from "../../src/domain/ports.js";
-import { SCHEMA_VERSION, type SessionRecord, type TerminalIdentity } from "../../src/domain/session.js";
+import type { TerminalIdentity } from "../../src/domain/session.js";
 import { JsonSessionStore } from "../../src/infrastructure/json-session-store.js";
 import type { StatePaths } from "../../src/infrastructure/state-paths.js";
 
