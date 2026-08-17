@@ -1,7 +1,7 @@
 ---
 id: feature-align-shared-port-composition-overrides
 kind: feature
-stage: implementing
+stage: review
 tags: [refactor]
 parent: null
 depends_on: []
@@ -34,10 +34,10 @@ must remain unchanged.
 
 ## Acceptance Criteria
 
-- [ ] Managed launch imports the canonical focused-terminal capability.
-- [ ] Codex process and terminal overrides are expressed as narrow ports.
-- [ ] Existing composition and managed-launch behavior remains unchanged.
-- [ ] Typecheck, focused tests, build, and the full suite pass.
+- [x] Managed launch imports the canonical focused-terminal capability.
+- [x] Codex process and terminal overrides are expressed as narrow ports.
+- [x] Existing composition and managed-launch behavior remains unchanged.
+- [x] Typecheck, focused tests, build, and the full suite pass.
 
 ## Refactor Overview
 
@@ -171,3 +171,28 @@ processes?: ManagedLaunchDependencies["processes"];
   distinct exploratory unknown worth delegating.
 - **Compatibility**: no public or runtime contract changes. Each step changes
   TypeScript ownership only and uses existing capability shapes.
+
+## Implementation notes
+
+Implemented the three ordered type-boundary reconciliations:
+
+1. Managed launch now imports `FocusedTerminalPort` from `domain/ports.ts` and
+   no longer redeclares it locally.
+2. `createAgentCodexCommand` accepts the narrow registration, reconciliation,
+   and focused-terminal port intersection while retaining `GhosttyClient` as
+   its production default.
+3. Its process override is now `ManagedLaunchDependencies["processes"]`, while
+   `CodexProcessHost` remains the production default.
+
+The changes are behavior-preserving and landed as the three child commits:
+
+- `dec2b0e` — `gate-patterns-inconsistency-launcher-focused-terminal-port`
+- `db76145` — `gate-patterns-inconsistency-codex-terminal-override`
+- `64acace` — `gate-patterns-inconsistency-codex-process-override`
+
+## Verification
+
+- Managed-launch focused tests: 10 passed.
+- `npm run typecheck` passed.
+- `npm run build` passed.
+- `npm test` passed.
