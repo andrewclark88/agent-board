@@ -45,6 +45,9 @@ Delete the unused import line. No callers, tests, or surrounding imports need ad
 - Tests added/removed: none; the existing reconciliation suite remains the focused behavioral check.
 - Simplification: removed the unused `projectSession` import.
 - Discrepancies from design: none.
+- Delivery deviation: the source removal and initial item transition were
+  consumed by concurrent commit `b6d1f06`; this item-only commit records the
+  required story closure without rewriting shared history.
 - Adjacent issues parked: none.
 
 ## Verification
