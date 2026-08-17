@@ -1,7 +1,7 @@
 ---
 id: gate-tests-story-fix-terminal-keyboard-mode-restoration-missing-acceptance-criteria
 kind: story
-stage: drafting
+stage: done
 tags: [testing, research-pipeline-extension]
 parent: feature-adjudicate-acceptance-format-findings
 depends_on: []
@@ -34,3 +34,10 @@ When the item body is restored for amendment, convert the acceptance bullets to 
 ## Test location (suggested)
 
 `af155e6:.work/active/stories/story-fix-terminal-keyboard-mode-restoration.md:49`
+
+## Adjudication
+
+- Result: false positive from a retroactive parser-format rule, not a product defect.
+- Source: archived historical record (`git_ref` is authoritative).
+- Evidence: delivery and verification already existed in the referenced record before the stricter parser grammar was introduced.
+- Action: no source or history rewrite.
