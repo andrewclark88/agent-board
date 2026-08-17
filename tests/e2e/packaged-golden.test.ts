@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createPackageHarness, waitForScenario, type PackageHarness } from "./support/package-harness.js";
+import { createPackageHarness, waitForScenario } from "./support/package-harness.js";
 import { readBoardRows, waitForBoardRow } from "./support/board.js";
 
 test("packed golden journeys preserve board/title parity and independent session identity", async () => {

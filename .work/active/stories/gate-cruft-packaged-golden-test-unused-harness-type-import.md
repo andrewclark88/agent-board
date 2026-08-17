@@ -1,7 +1,7 @@
 ---
 id: gate-cruft-packaged-golden-test-unused-harness-type-import
 kind: story
-stage: implementing
+stage: done
 tags: [cleanup]
 parent: null
 depends_on: []
@@ -36,3 +36,14 @@ TypeScript reports TS6133 because `PackageHarness` has no use beyond this import
 ## Removal
 
 Remove the `PackageHarness` type specifier while retaining the two runtime imports.
+
+## Implementation notes
+
+Removed the unused `PackageHarness` type-only import from the packaged golden
+test. No runtime behavior or harness boundary changed.
+
+## Verification
+
+- `npm run typecheck` (green; confirms TS6133 is absent)
+- Bounded inline review: the diff removes only the unused type specifier and
+  preserves both runtime imports.
