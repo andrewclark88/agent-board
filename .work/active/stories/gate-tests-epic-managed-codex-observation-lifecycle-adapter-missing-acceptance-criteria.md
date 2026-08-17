@@ -3,7 +3,7 @@ id: gate-tests-epic-managed-codex-observation-lifecycle-adapter-missing-acceptan
 kind: story
 stage: drafting
 tags: [testing, research-pipeline-extension]
-parent: null
+parent: feature-adjudicate-acceptance-format-findings
 depends_on: []
 release_binding: null
 gate_origin: tests
