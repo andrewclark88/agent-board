@@ -1,7 +1,7 @@
 ---
 id: feature-adjudicate-acceptance-format-findings
 kind: feature
-stage: drafting
+stage: implementing
 tags: [prose]
 parent: null
 depends_on: []
@@ -45,3 +45,16 @@ duplicate acceptance evidence already present in completed item bodies.
 - [ ] All 42 child findings reach `done` with a concise disposition.
 - [ ] The feature records totals by disposition and reaches review with a clean
       substrate query.
+
+## Authoring plan
+
+1. Read each source item from the current tree or its archived `git_ref`.
+2. Classify the finding by source-record state and existing evidence.
+3. Preserve archived history and record those findings as false positives.
+4. Normalize a current record only when the edit improves durable parsing.
+5. Close each child with its classification and evidence.
+6. Record the totals and verify that no child remains active.
+
+The brief is a sufficient specification. This feature has no runtime code,
+interface, or architectural decision. It therefore uses the no-coordination
+prose lane.
