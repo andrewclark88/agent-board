@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-20T15:49:03Z'
+generated_at: '2026-08-20T16:30:43Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -132,6 +132,26 @@ documents:
       liveness required for undo-close.
     - Managed app-server plus remote TUI is the V1 default; ordinary Codex remains a degraded-confidence
       fallback.
+  .research/analysis/briefs/claude-code-adapter-feasibility.md:
+    summary: '{inferred: feasibility from documented primitives and current repository boundaries} A hook-based
+      Claude Code adapter is feasible and should be materially smaller than the Codex managed-app-server
+      adapter while preserving Claude''s ordinary terminal UI. Native hooks cover session identity, permission
+      and MCP input waits, normal completion, and API failures; prompt-start and user-interrupt edges
+      require explicitly lower confidence until a live probe establishes a safe reconciliation rule.[claude-code-hooks]{3}
+      [claude-code-hooks]{4} [claude-code-hooks]{5} [claude-code-hooks]{6} [claude-code-hooks]{7} [claude-code-hooks]{8}
+
+      '
+    key_findings:
+    - '{inferred: recommended topology} Load a bundled hook plugin per managed Claude launch instead of
+      modifying user settings.[claude-code-cli-reference]{3} [claude-code-hooks]{1}'
+    - PermissionRequest, Elicitation, Stop, and StopFailure provide native attention-relevant evidence.[claude-code-hooks]{5}
+      [claude-code-hooks]{6} [claude-code-hooks]{7}
+    - '{inferred: Board state mapping} Treat UserPromptSubmit as corroborated working evidence, not an
+      authoritative processing-start event.[claude-code-hooks]{4}'
+    - A user interrupt does not fire Stop, so stale-working recovery must remain visibly inferred.[claude-code-hooks]{8}
+    - '{inferred: topology consequence} The Agent SDK offers richer control but would no longer supervise
+      the existing interactive Claude TUI, and normally requires API-key authentication for a third-party
+      product.[claude-agent-sdk-streaming]{1} [claude-agent-sdk-overview]{2}'
   .research/analysis/briefs/codex-detector-topology.md:
     summary: 'Managed app-server plus a remote Codex TUI preserves the recognizable terminal workflow
       and supplies exact active/idle state to a concurrent observer, but it changes launch topology and
