@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-2
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1]
@@ -98,3 +98,15 @@ favor of per-run plugin scope.
 
 No child stories are needed; the adapter is cohesive under one provider-owned
 boundary and one shared mutation path.
+
+## Implementation notes
+
+- Added the installed `agent-claude` composition/CLI and a shell-free inherited
+  TTY process boundary with per-run plugin injection.
+- Added an npm-packed observation-only plugin and private fail-open hook entry
+  point covering session, prompt, permission, tool, elicitation, stop/failure,
+  background-work, and session-end evidence without retaining native contents.
+- Native Claude session binding and transitions occur under one store mutation;
+  title writes flow through reconciliation and latest durable projection.
+- Claude 2.1.226 validates the plugin cleanly; typecheck/build and 14 focused
+  adapter, launcher, hook, process, and CLI tests pass.

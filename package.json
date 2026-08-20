@@ -7,11 +7,13 @@
     "node": ">=22"
   },
   "files": [
-    "dist"
+    "dist",
+    "assets/claude-plugin"
   ],
   "bin": {
     "agent-name": "dist/cli/agent-name.js",
     "agent-codex": "dist/cli/agent-codex.js",
+    "agent-claude": "dist/cli/agent-claude.js",
     "agents": "dist/cli/agents.js",
     "agent-board": "dist/cli/agent-board.js"
   },
