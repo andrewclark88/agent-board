@@ -75,6 +75,17 @@ test("healthy managed launcher authorizes hours-old working evidence", () => {
   assert.deepEqual(unverified.diagnostics, ["working evidence is stale"]);
 });
 
+test("Claude launcher liveness cannot keep hook-derived working evidence fresh", () => {
+  const value = record({ adapter: "claude", activity: "working", launcherPid: 1234, observedAt });
+  const projection = projectSession(value, {
+    now: new Date("2026-08-15T18:00:00Z"),
+    workingFreshForMs: 60_000,
+    verifiedLauncherPid: 1234,
+  });
+  assert.equal(projection.glyph, "?");
+  assert.deepEqual(projection.diagnostics, ["working evidence is stale"]);
+});
+
 test("ordinary registrations remain visibly unobserved instead of claiming idle", () => {
   const projection = projectSession(record({
     mode: "ordinary",

@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-1
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: []
@@ -83,3 +83,14 @@ binding evidence.
   vocabulary is introduced.
 
 No child stories are needed; this is one small shared-contract change.
+
+## Implementation notes
+
+- Added the closed adapter/capability registry and provider-specific native
+  binding validation without changing schema version or invalidating existing
+  Codex records.
+- Registration now owns an explicit adapter identity and rejects cross-provider
+  terminal claims under the registration lock.
+- Projection keeps one glyph policy while allowing only Codex's authoritative
+  stream topology to extend working evidence through launcher liveness.
+- Focused build and 23 domain/registration tests pass.

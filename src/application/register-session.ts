@@ -1,6 +1,7 @@
 import { basename } from "node:path";
 
 import { AgentBoardError } from "../domain/errors.js";
+import type { AgentAdapter } from "../domain/registries.js";
 import type {
   Clock,
   IdGenerator,
@@ -22,6 +23,7 @@ export interface RegisterSessionResult {
 }
 
 export interface RegisterSessionDependencies {
+  readonly adapter: AgentAdapter;
   readonly store: RegistrationStore;
   readonly terminal: RegistrationTerminalPort;
   readonly repositories: RepositoryContextPort;
@@ -106,6 +108,9 @@ export async function registerSession(
 
     const existing = matches[0];
     if (existing !== undefined) {
+      if (existing.agent.adapter !== dependencies.adapter) {
+        throw new AgentBoardError("CONFLICT", `Terminal ${focused.terminalId} is already registered to ${existing.agent.adapter}`);
+      }
       if (explicitLabel === undefined) return { record: existing, created: false };
       const record = await dependencies.store.mutate(existing.sessionId, (current) => ({
         ...current,
@@ -133,7 +138,7 @@ export async function registerSession(
         observedAt,
       },
       agent: {
-        adapter: "codex",
+        adapter: dependencies.adapter,
         mode: "ordinary",
         activity: "idle",
         attention: "none",

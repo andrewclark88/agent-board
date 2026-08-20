@@ -68,7 +68,7 @@ function deps(
   clock = new FixedClock(),
   ids: IdGenerator = { sessionId: () => "session-1" },
 ) {
-  return { store, terminal, repositories, clock, ids, workingFreshForMs: 60_000 };
+  return { adapter: "codex" as const, store, terminal, repositories, clock, ids, workingFreshForMs: 60_000 };
 }
 
 test("registration creates an ordinary inferred session and canonical title", async () => {
@@ -182,6 +182,22 @@ test("concurrent registrations for one terminal converge on one session", async 
     const results = await Promise.all([first, second]);
     assert.equal(new Set(results.map((result) => result.record.sessionId)).size, 1);
     assert.equal((await storeA.list()).length, 1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("registration preserves provider ownership for a terminal", async () => {
+  const root = await mkdtemp(join(tmpdir(), "agent-board-registration-"));
+  try {
+    const store = new JsonSessionStore({ paths: paths(join(root, "v1")) });
+    const terminal = new FakeTerminal({ adapter: "ghostty", windowId: "w", tabId: "t", terminalId: "term" });
+    const repositories = new FakeRepositories({});
+    await registerSession(deps(store, terminal, repositories), {});
+    await assert.rejects(
+      registerSession({ ...deps(store, terminal, repositories), adapter: "claude" }, {}),
+      (error: unknown) => error instanceof AgentBoardError && error.code === "CONFLICT",
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

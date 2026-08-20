@@ -115,6 +115,25 @@ test("clean process exit is evidence, not an agent health value", () => {
   assert.equal(AgentObservationSchema.safeParse({ ...record.agent, health: "exited" }).success, false);
 });
 
+test("keeps provider-native bindings distinct", () => {
+  const agent = validRecord().agent;
+  assert.equal(AgentObservationSchema.safeParse({
+    ...agent,
+    adapter: "claude",
+    nativeThreadId: undefined,
+    nativeSessionId: "claude-session",
+  }).success, true);
+  assert.equal(AgentObservationSchema.safeParse({
+    ...agent,
+    adapter: "claude",
+    nativeThreadId: "codex-thread",
+  }).success, false);
+  assert.equal(AgentObservationSchema.safeParse({
+    ...agent,
+    nativeSessionId: "claude-session",
+  }).success, false);
+});
+
 test("rejects unknown fields at every canonical record boundary", () => {
   const record = validRecord();
   assert.equal(SessionRecordSchema.safeParse({ ...record, extra: true }).success, false);
