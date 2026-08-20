@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-20T16:30:43Z'
+generated_at: '2026-08-20T19:01:41Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -204,3 +204,63 @@ documents:
       proactive notifications, or multiple live consumers.
     - Deferred daemon, adapters, focus, software surfaces, simulator, hardware, and remote aggregation
       should be preserved with evidence-based entry conditions.
+  .research/analysis/campaigns/codex-claude-symmetric-support/dispatch.md:
+    summary: 'Completed full-rigor research confirms that Agent Board can use one common glyph and operator
+      contract for Codex and Claude while keeping provider-specific evidence confidence and capabilities
+      visible.
+
+      '
+    key_findings:
+    - Outcome symmetry is feasible without identical provider lifecycle signals.
+    - The smallest honest Claude topology preserves the ordinary interactive CLI and adds observation-first
+      hooks.
+    - Herdr corroborates common vocabulary over provider-specific evidence rather than equal native lifecycle
+      authority.
+    - The synthesis passed citation lint, repeated adversarial review, isolated evaluation, and lead spot-check.
+  .research/analysis/campaigns/codex-claude-symmetric-support/parent.md:
+    summary: '{inferred: cross-provider synthesis} Agent Board can offer the same five primary glyphs,
+      board behavior, naming, acknowledgement, and attention-routing workflow for Codex and Claude without
+      requiring identical provider signals. Codex supplies authoritative lifecycle state through app-server;
+      Claude''s ordinary TUI supplies native hook evidence for input waits, normal completion, API failure,
+      and session lifecycle, while working-start and user-interrupt recovery require lower confidence
+      until live validation closes the gaps.
+
+      '
+    key_findings:
+    - '{inferred: product contract} Symmetry should mean invariant glyph semantics and operator workflow,
+      not identical provider topology or evidence authority.'
+    - Codex app-server exposes native active/idle, approval/input waits, completion, interruption, and
+      failure.[symmetry-codex-app-server]{6} [symmetry-codex-app-server]{9} [symmetry-codex-app-server]{11}
+      [symmetry-codex-app-server]{12}
+    - Claude hooks expose permission and MCP input waits, normal completion, API failure, and session
+      end, but Stop does not fire on user interruption.[symmetry-claude-hooks]{2} [symmetry-claude-hooks]{3}
+      [symmetry-claude-hooks]{4} [symmetry-claude-hooks]{5} [symmetry-claude-hooks]{6}
+    - Completion-unread remains Board-owned for both providers; the inspected Codex schema has no unread
+      field, and Claude Stop is a completion event rather than an acknowledgement model.[symmetry-codex-local-schema-0-148-0]{12}
+      [symmetry-claude-hooks]{3}
+    - Herdr demonstrates honest terminal-level symmetry by sharing state vocabulary while exposing provider-specific
+      manifests and keeping Claude/Codex lifecycle authority screen-derived.[herdr-agents-docs]{2} [herdr-agents-docs]{3}
+      [herdr-source-repo]{5} [herdr-source-repo]{6}
+    - '{inferred: implementation comparison} The existing Agent Board glyph projection and normalized
+      transitions can remain common; the material new work is a Claude launcher/plugin/translator, provider
+      capability diagnostics, and a cross-provider runtime matrix.'
+  .research/analysis/positions/codex-claude-common-glyph-contract.md:
+    summary: '{inferred: locked provider-neutral product position} Agent Board will define Codex and Claude
+      symmetry at the outcome boundary: the same five primary glyph meanings, acknowledgement behavior,
+      and attention-routing workflow, with provider-specific evidence authority, confidence, capability,
+      and diagnostics kept visible.
+
+      '
+    key_findings:
+    - '{extends: shared glyph contract} Both adapters project `○` idle, `●` working, `✓` completion-unread,
+      `!` needs input, and `×` error; `?` is the diagnostic fallback when evidence is insufficient.'
+    - Codex app-server exposes native active/idle, approval waits, completion, interruption, and failure.[symmetry-codex-app-server]{6}
+      [symmetry-codex-app-server]{9} [symmetry-codex-app-server]{11} [symmetry-codex-app-server]{12}
+    - Claude hooks expose prompt submission, permission and MCP input waits, normal completion, API failure,
+      and session end, but user interruption does not fire `Stop`.[symmetry-claude-hooks]{1} [symmetry-claude-hooks]{2}
+      [symmetry-claude-hooks]{3} [symmetry-claude-hooks]{4} [symmetry-claude-hooks]{5} [symmetry-claude-hooks]{6}
+    - '{inferred: Board-owned projection} Completion-unread is Board state for both providers, not a provider-native
+      lifecycle field.[symmetry-codex-local-schema-0-148-0]{12} [symmetry-claude-hooks]{3}'
+    - '{inferred: prior-art convergence} Herdr supports common supervision vocabulary with provider-specific
+      state manifests, while its Claude and Codex hooks remain session-only.[herdr-agents-docs]{2} [herdr-agents-docs]{3}
+      [herdr-source-repo]{5} [herdr-source-repo]{6} [herdr-source-repo]{7} [herdr-source-repo]{8}'

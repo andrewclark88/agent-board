@@ -6,9 +6,9 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 2
-generated_at: 2026-08-20T16:30:43Z
+generated_at: 2026-08-20T19:01:41Z
 generated_from: frontmatter
-total_docs: 18
+total_docs: 25
 
 documents:
   # ── planning ──────────────────────────────────────────────────────────────
@@ -141,11 +141,65 @@ documents:
     updated: 2026-08-14
     consumer_hint: "Agentic Research campaign: Adversarial verification checklist"
 
+  - path: .research/analysis/campaigns/codex-claude-symmetric-support/acquisitions.md
+    title: Acquisition candidates
+    type: campaign
+    kind: research
+    updated: 2026-08-20
+    consumer_hint: "Agentic Research campaign: Acquisition candidates"
+
+  - path: .research/analysis/campaigns/codex-claude-symmetric-support/dispatch.md
+    title: Codex–Claude symmetric-support research dispatch
+    type: campaign
+    kind: research
+    updated: 2026-08-20
+    status: locked
+    consumer_hint: Registration for the research campaign defining trustworthy symmetric Codex and Claude support in Agent Board.
+
+  - path: .research/analysis/campaigns/codex-claude-symmetric-support/parent.md
+    title: Symmetric Codex and Claude support
+    type: campaign
+    kind: research
+    updated: 2026-08-20
+    status: locked
+    research_method: /research
+    consumer_hint: Read this before designing or implementing symmetric Codex and Claude support in Agent Board.
+
+  - path: .research/analysis/campaigns/codex-claude-symmetric-support/specialists/claude-current-surface.md
+    title: Claude Code current lifecycle and control surface
+    type: campaign
+    kind: research
+    updated: 2026-08-20
+    consumer_hint: "Agentic Research campaign: Claude Code current lifecycle and control surface"
+
+  - path: .research/analysis/campaigns/codex-claude-symmetric-support/specialists/codex-current-surface.md
+    title: Codex current lifecycle and control surface
+    type: campaign
+    kind: research
+    updated: 2026-08-20
+    consumer_hint: "Agentic Research campaign: Codex current lifecycle and control surface"
+
+  - path: .research/analysis/campaigns/codex-claude-symmetric-support/specialists/herdr-prior-art.md
+    title: "Herdr prior art: terminal-level symmetry, inference-bound provider state"
+    type: campaign
+    kind: research
+    updated: 2026-08-20
+    consumer_hint: "Agentic Research campaign: Herdr prior art: terminal-level symmetry, inference-bound provider state"
+
   - path: .research/analysis/campaigns/agent-board-prior-art/dispatch.md
     title: Agent Board prior-art landscape
     type: landscape-brief
     kind: research
     consumer_hint: "Agentic Research landscape-brief: Agent Board prior-art landscape"
+
+  - path: .research/analysis/positions/codex-claude-common-glyph-contract.md
+    title: Codex–Claude common-glyph contract
+    type: position
+    kind: research
+    updated: 2026-08-20
+    status: locked
+    research_method: /research
+    consumer_hint: Read this before designing, implementing, or reviewing provider-neutral Codex and Claude status projection in Agent Board.
 
   # ── historical ──────────────────────────────────────────────────────────────
 
