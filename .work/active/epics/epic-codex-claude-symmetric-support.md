@@ -1,7 +1,7 @@
 ---
 id: epic-codex-claude-symmetric-support
 kind: epic
-stage: drafting
+stage: implementing
 tags: [integration, cli, state]
 parent: null
 depends_on: []
@@ -40,7 +40,14 @@ evidence projects `?` rather than a false primary state.
 - **UI alignment**: reuse the existing tab-title and `agents` board vocabulary.
   No new UI surface or mockup is required.
 
-## Feature arc
+## Decomposition
+
+Decomposition pre-existed from the operator-confirmed research handoff: four
+child features split by delivered capability rather than technical layer. The
+contract lands first, then the Claude runtime, then diagnostics, then the
+cross-provider acceptance matrix.
+
+### Child features
 
 1. `research-handoff-codex-claude-symmetric-support-1` — provider-neutral
    adapter identity and capability contract.
@@ -50,6 +57,16 @@ evidence projects `?` rather than a false primary state.
    and doctor coverage.
 4. `research-handoff-codex-claude-symmetric-support-4` — mixed-provider glyph
    and packaged-runtime validation.
+
+### Decomposition risks
+
+- Claude user interruption has no terminal `Stop` hook; the runtime feature
+  must keep recovery diagnostic until a validated subsequent signal resolves it.
+- The persisted session shape has real local data implications; feature design
+  must prefer an additive provider binding unless an explicit migration is
+  approved.
+- Hook packaging must work from the installed npm artifact, not only a source
+  checkout.
 
 ## Simplification opportunity
 
