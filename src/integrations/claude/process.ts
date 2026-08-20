@@ -1,6 +1,8 @@
 import { spawn, type ChildProcess } from "node:child_process";
 
 import { AgentBoardError } from "../../domain/errors.js";
+import { NodeProcessRunner, type ProcessRunner } from "../process-runner.js";
+import { checkClaudeCompatibility, type ClaudeCompatibility } from "./compatibility.js";
 
 export interface ClaudeProcessExit {
   readonly exitCode: number | null;
@@ -16,6 +18,8 @@ export interface ClaudeChild {
 export interface ClaudeProcessHostOptions {
   readonly command?: string;
   readonly spawnProcess?: typeof spawn;
+  readonly runner?: ProcessRunner;
+  readonly diagnosticTimeoutMs?: number;
 }
 
 const DISALLOWED_INTERACTIVE_ARGS = new Set(["-p", "--print", "--bare", "--background"]);
@@ -23,10 +27,25 @@ const DISALLOWED_INTERACTIVE_ARGS = new Set(["-p", "--print", "--bare", "--backg
 export class ClaudeProcessHost {
   private readonly command: string;
   private readonly spawnProcess: typeof spawn;
+  private readonly runner: ProcessRunner;
+  private readonly diagnosticTimeoutMs: number;
 
   constructor(options: ClaudeProcessHostOptions = {}) {
     this.command = options.command ?? "claude";
     this.spawnProcess = options.spawnProcess ?? spawn;
+    this.runner = options.runner ?? new NodeProcessRunner();
+    this.diagnosticTimeoutMs = options.diagnosticTimeoutMs ?? 5_000;
+  }
+
+  async compatibility(): Promise<ClaudeCompatibility> {
+    const result = await this.runner.run({ command: this.command, args: ["--version"], timeoutMs: this.diagnosticTimeoutMs, maxOutputBytes: 16 * 1024 });
+    if (result.exitCode !== 0) throw new AgentBoardError("ADAPTER_FAILURE", "Claude version check failed");
+    return checkClaudeCompatibility(result.stdout);
+  }
+
+  async validatePlugin(pluginRoot: string): Promise<void> {
+    const result = await this.runner.run({ command: this.command, args: ["plugin", "validate", pluginRoot], timeoutMs: this.diagnosticTimeoutMs, maxOutputBytes: 64 * 1024 });
+    if (result.exitCode !== 0) throw new AgentBoardError("ADAPTER_FAILURE", "Claude rejected the Agent Board hook plugin");
   }
 
   start(pluginRoot: string, forwardedArgs: readonly string[], sessionId: string): ClaudeChild {

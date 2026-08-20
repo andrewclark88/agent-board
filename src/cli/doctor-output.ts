@@ -4,6 +4,7 @@ const COMPONENT_LABELS: Readonly<Record<DoctorComponent, string>> = {
   runtime: "Runtime",
   state: "State",
   codex: "Codex",
+  claude: "Claude",
   ghostty: "Ghostty",
 };
 const STATUS_LABELS = {

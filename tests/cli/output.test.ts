@@ -14,6 +14,9 @@ function row(overrides: Partial<BoardRow> = {}): BoardRow {
     diagnostics: [],
     confidence: "authoritative",
     agentMode: "managed",
+    adapter: "codex",
+    evidenceKind: "codex.thread.status",
+    adapterCapabilities: { workingWhileLauncherAlive: true, observation: "native-stream", semanticControl: "none" },
     observedAt: "2026-08-14T23:00:00.000Z",
     titleRendered: true,
     ...overrides,
@@ -29,7 +32,7 @@ test("renderBoard renders the exact five-state board and appends diagnostics", (
       row({ sessionId: "session-4", label: "legacy-engine", displayLabel: "legacy-engine", glyph: "○", status: "idle" }),
       row({ sessionId: "session-5", label: "reporting", displayLabel: "reporting", glyph: "×", status: "error", diagnostics: ["agent mode is ordinary"] }),
     ]),
-    "AGENT BOARD\n\n● data-platform        working\n! acquisition          needs input\n✓ agent-board          finished\n○ legacy-engine        idle\n× reporting            error [agent mode is ordinary]\n",
+    "AGENT BOARD\n\n● data-platform        working (codex)\n! acquisition          needs input (codex)\n✓ agent-board          finished (codex)\n○ legacy-engine        idle (codex)\n× reporting            error (codex) [agent mode is ordinary]\n",
   );
 });
 

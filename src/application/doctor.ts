@@ -4,8 +4,9 @@ import type {
   IntegrationDiagnostic,
 } from "../integrations/ghostty/diagnostics.js";
 import { SUPPORTED_CODEX_FAMILY, type CodexCompatibility } from "../integrations/codex/compatibility.js";
+import { SUPPORTED_CLAUDE_FAMILY, type ClaudeCompatibility } from "../integrations/claude/compatibility.js";
 
-export type DoctorComponent = "runtime" | "state" | "codex" | "ghostty";
+export type DoctorComponent = "runtime" | "state" | "codex" | "claude" | "ghostty";
 export type DoctorSeverity = "info" | "warning" | "error";
 
 export interface DoctorCheck {
@@ -31,15 +32,21 @@ export interface CodexCompatibilityPort {
   compatibility(): Promise<CodexCompatibility>;
 }
 
+export interface ClaudeDiagnosticsPort {
+  compatibility(): Promise<ClaudeCompatibility>;
+  validatePlugin(): Promise<void>;
+}
+
 export interface DoctorDependencies {
   readonly clock: Clock;
   readonly nodeVersion: string;
   readonly state: StateProbePort;
   readonly codex: CodexCompatibilityPort;
+  readonly claude: ClaudeDiagnosticsPort;
   readonly ghostty: () => Promise<GhosttyDiagnosticReport>;
 }
 
-const COMPONENT_ORDER: readonly DoctorComponent[] = ["runtime", "state", "codex", "ghostty"];
+const COMPONENT_ORDER: readonly DoctorComponent[] = ["runtime", "state", "codex", "claude", "ghostty"];
 const SEVERITIES = new Set<DoctorSeverity>(["info", "warning", "error"]);
 const SAFE_TEXT_LIMIT = 512;
 
@@ -126,6 +133,34 @@ async function codexChecks(dependencies: DoctorDependencies): Promise<DoctorChec
   throw new TypeError("Codex compatibility report has an invalid shape");
 }
 
+async function claudeChecks(dependencies: DoctorDependencies): Promise<DoctorCheck[]> {
+  let result: ClaudeCompatibility;
+  try { result = await dependencies.claude.compatibility(); }
+  catch {
+    return [failureCheck("claude", "CLAUDE_UNAVAILABLE", "Claude Code could not be started for a compatibility check", `Install Claude Code ${SUPPORTED_CLAUDE_FAMILY} and ensure the claude executable is on PATH.`)];
+  }
+  if (!result.compatible) {
+    return [failureCheck(
+      "claude",
+      result.reasonCode === "unsupported" ? "CLAUDE_VERSION_UNSUPPORTED" : "CLAUDE_VERSION_UNKNOWN",
+      result.reasonCode === "unsupported" ? "Installed Claude Code is incompatible with managed hook observation" : "Claude Code did not report a recognizable version",
+      `Install the tested Claude Code ${SUPPORTED_CLAUDE_FAMILY} release.`,
+    )];
+  }
+  assertText(result.version, "Claude version");
+  try { await dependencies.claude.validatePlugin(); }
+  catch {
+    return [
+      check("claude", "CLAUDE_COMPATIBLE", "info", `Claude Code ${result.version} supports managed hook observation`),
+      failureCheck("claude", "CLAUDE_PLUGIN_UNAVAILABLE", "Claude Code rejected or could not load the packaged Agent Board hook plugin", "Reinstall Agent Board and check managed Claude Code hook/plugin policy."),
+    ];
+  }
+  return [
+    check("claude", "CLAUDE_COMPATIBLE", "info", `Claude Code ${result.version} supports managed hook observation`),
+    check("claude", "CLAUDE_PLUGIN_VALID", "info", "The packaged Agent Board Claude hook plugin is valid"),
+  ];
+}
+
 async function ghosttyChecks(dependencies: DoctorDependencies): Promise<DoctorCheck[]> {
   let value: unknown;
   try {
@@ -174,6 +209,7 @@ export async function diagnoseSystem(dependencies: DoctorDependencies): Promise<
     ...runtimeChecks(dependencies.nodeVersion),
     ...(await stateChecks(dependencies)),
     ...(await codexChecks(dependencies)),
+    ...(await claudeChecks(dependencies)),
     ...(await ghosttyChecks(dependencies)),
   ];
   checks.sort((left, right) => {

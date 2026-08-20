@@ -11,6 +11,7 @@ const report: DoctorReport = Object.freeze({
   checks: Object.freeze([
     Object.freeze({ component: "runtime", code: "RUNTIME_SUPPORTED", severity: "info", message: "Node.js 22.12.0 is supported" }),
     Object.freeze({ component: "state", code: "STATE_DIRECTORY_UNAVAILABLE", severity: "error", message: "State is unavailable", remediation: "Check permissions." }),
+    Object.freeze({ component: "claude", code: "CLAUDE_COMPATIBLE", severity: "info", message: "Claude Code 2.1.226 is compatible" }),
     Object.freeze({ component: "ghostty", code: "GHOSTTY_TITLE_BELL", severity: "warning", message: "Title bell is enabled" }),
   ]),
 });

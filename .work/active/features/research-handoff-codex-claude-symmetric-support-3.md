@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-3
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2]
@@ -76,3 +76,16 @@ heuristic version promises are rejected as drift-prone.
   diagnostics without presenting unsupported control capabilities.
 
 No child stories are needed; this is one additive diagnostic/report contract.
+
+## Implementation notes
+
+- Doctor now checks Claude Code 2.1.226+ within the tested 2.1 family and asks
+  Claude itself to validate the exact npm-packed hook plugin.
+- The canonical report distinguishes unavailable, unrecognized/unsupported,
+  blocked/invalid plugin, compatible, and valid-plugin evidence; all existing
+  components still run independently.
+- Board rows now expose adapter identity, evidence kind, confidence, and static
+  observation/control capabilities; human output names the provider beside the
+  unchanged shared status label.
+- Typecheck/build and 19 focused doctor, board, output, and compatibility tests
+  pass.

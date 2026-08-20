@@ -8,6 +8,8 @@ export interface PackagedBoardRow {
   readonly glyph: string;
   readonly status: string;
   readonly agentMode: string;
+  readonly adapter: string;
+  readonly evidenceKind: string;
   readonly titleRendered: boolean;
   readonly diagnostics: readonly string[];
 }

@@ -27,7 +27,7 @@ export interface AgentClaudeCompositionOptions {
   readonly focusPollIntervalMs?: number;
 }
 
-function productionPluginRoot(): string {
+export function agentClaudePluginRoot(): string {
   return fileURLToPath(new URL("../../assets/claude-plugin", import.meta.url));
 }
 
@@ -55,7 +55,7 @@ export function createAgentClaudeCommand(options: AgentClaudeCompositionOptions 
   const launchDependencies: ManagedClaudeLaunchDependencies = {
     register: () => registerSession(registerDependencies),
     processes: options.processes ?? new ClaudeProcessHost({ command: configuredCommand("AGENT_BOARD_CLAUDE_COMMAND", "claude") }),
-    pluginRoot: options.pluginRoot ?? productionPluginRoot(),
+    pluginRoot: options.pluginRoot ?? agentClaudePluginRoot(),
     ...dependencies,
     focusPollIntervalMs: options.focusPollIntervalMs ?? 1_000,
   };

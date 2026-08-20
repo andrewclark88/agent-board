@@ -16,6 +16,7 @@ function dependencies(overrides: Partial<DoctorDependencies> = {}): DoctorDepend
     nodeVersion: "22.12.0",
     state: { probe: async () => "/private/state" },
     codex: { compatibility: async () => ({ compatible: true, version: "0.147.2" }) },
+    claude: { compatibility: async () => ({ compatible: true, version: "2.1.226" }), validatePlugin: async () => undefined },
     ghostty: async () => cleanGhostty,
     ...overrides,
   };
@@ -31,11 +32,13 @@ test("diagnoseSystem runs every component, orders evidence, and freezes the repo
 
   assert.deepEqual(calls, ["state", "codex", "ghostty"]);
   assert.equal(report.ready, false);
-  assert.deepEqual(report.checks.map((item) => item.component), ["runtime", "state", "codex", "ghostty", "ghostty"]);
+  assert.deepEqual(report.checks.map((item) => item.component), ["runtime", "state", "codex", "claude", "claude", "ghostty", "ghostty"]);
   assert.deepEqual(report.checks.map((item) => item.code), [
     "RUNTIME_SUPPORTED",
     "STATE_DIRECTORY_UNAVAILABLE",
     "CODEX_UNAVAILABLE",
+    "CLAUDE_COMPATIBLE",
+    "CLAUDE_PLUGIN_VALID",
     "GHOSTTY_AUTOMATION_READY",
     "GHOSTTY_VERSION_SUPPORTED",
   ]);
@@ -91,6 +94,19 @@ test("diagnoseSystem maps runtime and typed Codex compatibility branches", async
     codex: { compatibility: async () => ({ compatible: false, reasonCode: "unrecognized" }) },
   }));
   assert.equal(unrecognized.checks.find((item) => item.component === "codex")?.code, "CODEX_VERSION_UNKNOWN");
+});
+
+test("diagnoseSystem reports Claude compatibility and packaged-plugin failures", async () => {
+  const unsupported = await diagnoseSystem(dependencies({
+    claude: { compatibility: async () => ({ compatible: false, version: "2.1.100", reasonCode: "unsupported" }), validatePlugin: async () => undefined },
+  }));
+  assert.equal(unsupported.checks.find((item) => item.component === "claude")?.code, "CLAUDE_VERSION_UNSUPPORTED");
+
+  const invalidPlugin = await diagnoseSystem(dependencies({
+    claude: { compatibility: async () => ({ compatible: true, version: "2.1.226" }), validatePlugin: async () => { throw new Error("blocked"); } },
+  }));
+  assert.equal(invalidPlugin.ready, false);
+  assert.deepEqual(invalidPlugin.checks.filter((item) => item.component === "claude").map((item) => item.code), ["CLAUDE_COMPATIBLE", "CLAUDE_PLUGIN_UNAVAILABLE"]);
 });
 
 test("Ghostty config errors do not fabricate an Automation failure", async () => {
