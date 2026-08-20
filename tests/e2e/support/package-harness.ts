@@ -41,6 +41,13 @@ export interface Scenario {
     readonly status?: "idle" | "working" | "input" | "error";
     readonly killServer?: boolean;
   };
+  readonly claude: {
+    readonly version?: string;
+    readonly versionExitCode?: number;
+    readonly pluginValid?: boolean;
+    readonly exitCode?: number;
+    readonly hook?: { readonly sequence: number; readonly event: string; readonly fields?: Record<string, unknown> };
+  };
 }
 
 export interface RunningProcess {
@@ -55,11 +62,11 @@ export interface PackageHarness {
   readonly scenarioPath: string;
   readonly prefix: string;
   readonly env: NodeJS.ProcessEnv;
-  bin(name: "agent-name" | "agent-codex" | "agents" | "agent-board"): string;
+  bin(name: "agent-name" | "agent-codex" | "agent-claude" | "agents" | "agent-board"): string;
   readScenario(): Promise<Scenario>;
   writeScenario(mutator: (current: Scenario) => Scenario): Promise<void>;
-  run(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[], options?: { timeoutMs?: number; stdinIsTTY?: boolean; env?: NodeJS.ProcessEnv }): Promise<{ code: number; stdout: string; stderr: string }>;
-  start(name: "agent-name" | "agent-codex" | "agents" | "agent-board", args?: readonly string[]): RunningProcess;
+  run(name: "agent-name" | "agent-codex" | "agent-claude" | "agents" | "agent-board", args?: readonly string[], options?: { timeoutMs?: number; stdinIsTTY?: boolean; env?: NodeJS.ProcessEnv }): Promise<{ code: number; stdout: string; stderr: string }>;
+  start(name: "agent-name" | "agent-codex" | "agent-claude" | "agents" | "agent-board", args?: readonly string[]): RunningProcess;
   close(): Promise<void>;
 }
 
@@ -118,6 +125,7 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
       },
     },
     codex: { status: "idle", ...(initial?.codex ?? {}) },
+    claude: { ...(initial?.claude ?? {}) },
   };
     await writeFile(scenarioPath, `${JSON.stringify(scenario)}\n`, "utf8");
     const pack = await execFileAsync("npm", ["pack", "--ignore-scripts", "--json"], { cwd: projectRoot, maxBuffer: 2 ** 20 });
@@ -133,6 +141,7 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
     AGENT_BOARD_STATE_DIR: state,
     AGENT_BOARD_E2E_SCENARIO: scenarioPath,
     AGENT_BOARD_CODEX_COMMAND: join(fixtures, "fake-codex.mjs"),
+    AGENT_BOARD_CLAUDE_COMMAND: join(fixtures, "fake-claude.mjs"),
     AGENT_BOARD_GHOSTTY_COMMAND: join(fixtures, "fake-ghostty.mjs"),
     AGENT_BOARD_OSASCRIPT_COMMAND: join(fixtures, "fake-osascript.mjs"),
   };
@@ -184,6 +193,7 @@ export async function createPackageHarness(initial?: Partial<Scenario>): Promise
     },
     };
     await chmod(join(fixtures, "fake-codex.mjs"), 0o755);
+    await chmod(join(fixtures, "fake-claude.mjs"), 0o755);
     await chmod(join(fixtures, "fake-ghostty.mjs"), 0o755);
     await chmod(join(fixtures, "fake-osascript.mjs"), 0o755);
     return harness;

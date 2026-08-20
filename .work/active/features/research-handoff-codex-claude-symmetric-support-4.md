@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-4
 kind: feature
-stage: implementing
+stage: review
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2, research-handoff-codex-claude-symmetric-support-3]
@@ -76,3 +76,16 @@ real proprietary TUI.
 
 No child stories are needed; the harness and matrix form one release-evidence
 boundary.
+
+## Implementation notes
+
+- Added a fake Claude executable that validates the real packed plugin, runs
+  the real private hook handler, and drives native hook events without bypassing
+  the production adapter boundary.
+- The package harness now installs and configures both fake providers and
+  exposes `agent-claude` as a first-class packed binary.
+- Mixed-provider tests run simultaneous Codex and Claude launchers in distinct
+  Ghostty tabs, prove shared idle/working/input/completion glyphs, explicit
+  acknowledgement, provider/session/title isolation, and dual-provider doctor.
+- The complete suite passes after updating the intentional package-layout
+  assertion for the new `assets/` directory.
