@@ -28,7 +28,7 @@ export function renderBoard(rows: readonly BoardRow[]): string {
       : "";
     // Keep a generous, stable gutter between the label and status so the
     // board remains scannable when diagnostics are appended.
-    return `${row.glyph} ${row.displayLabel.padEnd(longestLabel + 8)}${STATUS_LABELS[row.status]}${diagnostic}`;
+    return `${row.glyph} ${row.displayLabel.padEnd(longestLabel + 8)}${STATUS_LABELS[row.status]} (${row.adapter})${diagnostic}`;
   });
   return `AGENT BOARD\n\n${lines.join("\n")}\n`;
 }

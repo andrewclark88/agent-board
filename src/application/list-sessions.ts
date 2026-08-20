@@ -1,5 +1,5 @@
 import { projectSession, type ProjectionOptions, type ProjectionStatus, type ProjectionGlyph } from "../domain/projection.js";
-import type { AgentMode, ConfidenceLevel } from "../domain/registries.js";
+import { AGENT_ADAPTER_CAPABILITIES, type AgentAdapter, type AgentAdapterCapabilities, type AgentMode, type ConfidenceLevel } from "../domain/registries.js";
 import type { SessionRecord } from "../domain/session.js";
 import {
   reconcileSessions,
@@ -16,6 +16,9 @@ export interface BoardRow {
   readonly diagnostics: readonly string[];
   readonly confidence: ConfidenceLevel;
   readonly agentMode: AgentMode;
+  readonly adapter: AgentAdapter;
+  readonly evidenceKind: string;
+  readonly adapterCapabilities: AgentAdapterCapabilities;
   readonly observedAt: string;
   readonly titleRendered: boolean;
 }
@@ -106,6 +109,9 @@ export function buildBoardRows(
       diagnostics: boardDiagnostics(result, projection.diagnostics),
       confidence: projection.confidence,
       agentMode: result.record.agent.mode,
+      adapter: result.record.agent.adapter,
+      evidenceKind: result.record.agent.evidenceKind,
+      adapterCapabilities: AGENT_ADAPTER_CAPABILITIES[result.record.agent.adapter],
       observedAt: projection.observedAt,
       titleRendered: result.titleRendered,
     });

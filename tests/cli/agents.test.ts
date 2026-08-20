@@ -23,6 +23,9 @@ const rows: readonly BoardRow[] = [{
   diagnostics: [],
   confidence: "authoritative",
   agentMode: "managed",
+  adapter: "codex",
+  evidenceKind: "codex.thread.status",
+  adapterCapabilities: { workingWhileLauncherAlive: true, observation: "native-stream", semanticControl: "none" },
   observedAt: "2026-08-14T23:00:00.000Z",
   titleRendered: true,
 }];

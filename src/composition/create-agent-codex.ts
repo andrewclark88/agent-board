@@ -31,6 +31,7 @@ export function createAgentCodexCommand(options: AgentCodexCompositionOptions = 
   const repositories = options.repositories ?? new GitRepositoryContext();
   const processes = options.processes ?? new CodexProcessHost({ command: configuredCommand("AGENT_BOARD_CODEX_COMMAND", "codex") });
   const registerDependencies: RegisterSessionDependencies = {
+    adapter: "codex",
     store,
     terminal,
     repositories,

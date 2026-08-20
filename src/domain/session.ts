@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AgentBoardError } from "./errors.js";
 import {
   ACTIVITIES,
+  AGENT_ADAPTERS,
   AGENT_MODES,
   ATTENTIONS,
   CONFIDENCE_LEVELS,
@@ -93,9 +94,10 @@ export const SessionIdentitySchema = z
 
 export const AgentObservationSchema = z
   .object({
-    adapter: z.literal("codex"),
+    adapter: z.enum(AGENT_ADAPTERS),
     mode: z.enum(AGENT_MODES),
     nativeThreadId: nonEmptyString.optional(),
+    nativeSessionId: nonEmptyString.optional(),
     launcherPid: z.number().int().nonnegative().safe().optional(),
     activity: z.enum(ACTIVITIES),
     attention: z.enum(ATTENTIONS),
@@ -108,6 +110,12 @@ export const AgentObservationSchema = z
   })
   .strict()
   .superRefine((agent, context) => {
+    if (agent.adapter !== "codex" && agent.nativeThreadId !== undefined) {
+      context.addIssue({ code: "custom", path: ["nativeThreadId"], message: "is only valid for the Codex adapter" });
+    }
+    if (agent.adapter !== "claude" && agent.nativeSessionId !== undefined) {
+      context.addIssue({ code: "custom", path: ["nativeSessionId"], message: "is only valid for the Claude adapter" });
+    }
     if (agent.attention === "completion_unread" && agent.completionObservedAt === undefined) {
       context.addIssue({
         code: "custom",

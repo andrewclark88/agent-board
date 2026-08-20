@@ -5,9 +5,9 @@ type: research-plan
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-14
+updated: 2026-08-20
 summary: |
-  Scout and both focused pre-architecture engagements are complete. Managed remote TUI is accepted as the V1 default, and the terminal V1 delivery arc is now implemented and verified. Follow-up research remains deliberately deferred until its entry conditions are met.
+  Scout and the focused Codex, Ghostty, and Codex-Claude engagements are complete. Managed remote TUI is accepted as the Codex V1 default, managed ordinary Claude with hooks is accepted as the Claude topology, and the mixed-provider terminal arc is implemented and verified. Follow-up research remains deliberately deferred until its entry conditions are met.
 decisions:
   - No deep-research or research-program campaign is warranted before the first proof.
   - Codex detector topology is the first pre-architecture decision because it changes workflow friction and state fidelity.
@@ -16,6 +16,7 @@ decisions:
   - Hardware, wireless, remote aggregation, and multi-agent research remain deferred until their entry conditions are met.
   - Ghostty 1.3+ AppleScript IDs and targeted tab-title overrides are validated for V1, with hierarchy-aware liveness required for undo-close.
   - Managed app-server plus remote TUI is the V1 default; ordinary Codex remains a degraded-confidence fallback.
+  - Codex and Claude share outcome glyphs over asymmetric native evidence; Claude preserves its ordinary interactive CLI and uses a bundled per-run observation plugin.
 ---
 
 # Agent Board research plan
@@ -80,14 +81,33 @@ Result: stable IDs and targeted title set/update/clear are suitable for V1.
 Closed tabs remain enumerable during undo-close and return with the same IDs, so
 reconciliation must distinguish visibility from process/surface existence.
 
+### 3. Codex-Claude symmetric support — `/research` complete
+
+Outputs:
+
+- `.research/analysis/campaigns/codex-claude-symmetric-support/parent.md`
+- `.research/analysis/briefs/claude-code-adapter-feasibility.md`
+- `.research/analysis/positions/codex-claude-common-glyph-contract.md`
+
+Question: Can Agent Board supervise ordinary interactive Claude tabs beside
+managed Codex tabs with one honest glyph vocabulary despite different native
+observation surfaces?
+
+Result: yes. Both providers share normalized outcomes and Board-owned
+acknowledgement, while provider identity, evidence authority, confidence, and
+capabilities remain explicit. Claude keeps its ordinary CLI and receives a
+per-run bundled hook plugin; missing or stale evidence projects diagnostic `?`
+rather than fabricated parity. The resulting mixed-provider arc is implemented
+and verified.
+
 ## Optional follow-ups after architecture
 
 - Acknowledgement behavior — a small usability/telemetry study if focus, prompt,
   and explicit-ack signals remain ambiguous after the detector prototype.
 - Store contention — a technical brief only if concurrent writers make the
   initial atomic-file design insufficient.
-- Second agent adapter — `/brief` when a specific Claude or other-agent feature
-  is promoted; do not research generic parity in advance.
+- Third agent adapter — `/brief` when a specific additional provider is
+  promoted; do not research generic parity in advance.
 - Notification and menu-bar behavior — `/research` after terminal V1 provides
   false-positive and acknowledgement data.
 - Focus/navigation — local Ghostty prototype when that backlog option is promoted.

@@ -30,6 +30,7 @@ export function createAgentNameCommand(options: AgentNameCompositionOptions = {}
   const clock = { now: () => new Date() };
   const workingFreshForMs = options.workingFreshForMs ?? 60_000;
   const dependencies: RegisterSessionDependencies = {
+    adapter: "codex",
     store,
     terminal,
     repositories: options.repositories ?? new GitRepositoryContext(),

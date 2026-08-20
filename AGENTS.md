@@ -22,16 +22,19 @@ individually through the retained workflow.
 ## Current state
 
 This repository has completed foundation ideation, a verified prior-art Scout,
-and the two blocking runtime engagements. The managed Codex app-server plus
-remote-TUI topology is the accepted V1 default, the Ghostty 1.3+ AppleScript
-contract is validated, and `docs/ARCHITECTURE.md` is locked.
+the two blocking runtime engagements, and the Codex-Claude symmetric-support
+campaign. Managed Codex app-server plus remote TUI and managed ordinary Claude
+with bundled per-run observation hooks are the accepted provider topologies;
+the Ghostty 1.3+ AppleScript contract is validated, and
+`docs/ARCHITECTURE.md` is locked.
 
-The terminal V1 delivery arc is complete: the dependency-linked work items have
-been implemented, reviewed, and verified, including the packaged end-to-end
-journeys and operator doctor. Deferred product ideas remain preserved in the
-backlog for deliberate promotion. Use Agentic Research only when a consequential
-unresolved question would change a future delivery decision; do not reopen
-settled research by default.
+The terminal V1 and mixed-provider delivery arcs are complete: the
+dependency-linked work items have been implemented, reviewed, and verified,
+including packaged end-to-end journeys, the operator doctor, and shared glyph
+support for concurrent `agent-codex` and `agent-claude` tabs. Deferred product
+ideas remain preserved in the backlog for deliberate promotion. Use Agentic
+Research only when a consequential unresolved question would change a future
+delivery decision; do not reopen settled research by default.
 
 ## Product guardrails
 

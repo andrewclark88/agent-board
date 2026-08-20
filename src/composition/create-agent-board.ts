@@ -10,6 +10,8 @@ import { GhosttyClient } from "../integrations/ghostty/client.js";
 import { diagnoseGhostty } from "../integrations/ghostty/diagnostics.js";
 import { configuredCommand } from "../integrations/command-config.js";
 import { NodeLauncherLiveness } from "../integrations/launcher-liveness.js";
+import { ClaudeProcessHost } from "../integrations/claude/process.js";
+import { agentClaudePluginRoot } from "./create-agent-claude.js";
 
 export interface AgentBoardCommand {
   readonly ack: (explicitSessionId?: string) => Promise<AcknowledgeSessionResult>;
@@ -51,6 +53,10 @@ export function createAgentBoardCommand(
     nodeVersion: process.versions.node,
     state: new StateDirectoryProbe(),
     codex: new CodexProcessHost({ command: configuredCommand("AGENT_BOARD_CODEX_COMMAND", "codex") }),
+    claude: (() => {
+      const host = new ClaudeProcessHost({ command: configuredCommand("AGENT_BOARD_CLAUDE_COMMAND", "claude") });
+      return { compatibility: () => host.compatibility(), validatePlugin: () => host.validatePlugin(agentClaudePluginRoot()) };
+    })(),
     ghostty: () => diagnoseGhostty({ command: ghosttyCommand, clientCommand: osascriptCommand }),
   } satisfies DoctorDependencies;
   return {

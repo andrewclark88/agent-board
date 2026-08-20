@@ -5,16 +5,16 @@ type: north-star
 kind: planning
 status: draft
 nav_priority: high
-updated: 2026-08-14
+updated: 2026-08-20
 summary: |
-  Agent Board is a local attention router for one operator supervising several terminal coding agents. Its first proof makes trustworthy Codex state visible in Ghostty tab titles and a shared terminal board without requiring tmux, a GUI, or hardware.
+  Agent Board is a local attention router for one operator supervising several Codex and Claude terminal agents. Its current product slice makes trustworthy provider-qualified state visible through common Ghostty title and terminal-board glyphs without requiring tmux, a GUI, or hardware.
 decisions:
   - Attention routing, not faster input or agent control, is the product wedge.
-  - The first user and workflow are Andrew supervising Codex sessions in Ghostty tabs on macOS.
+  - The first user and workflow are Andrew supervising Codex and Claude sessions in Ghostty tabs on macOS.
   - The first proof is tab titles plus a terminal board backed by one local state model.
   - State confidence and liveness remain visible rather than being collapsed into confident-looking labels.
   - The software control plane must prove value before GUI, remote, or hardware surfaces are commissioned.
-  - Vendor neutrality is preserved through adapter boundaries, not simultaneous V1 integrations.
+  - Vendor neutrality is proven through Codex and Claude adapters that share outcome semantics without pretending their evidence is identical.
   - Semantic actions require native capabilities and are outside the first proof.
 ---
 
@@ -29,7 +29,7 @@ operator, finished, or failed.
 
 Agent Board should make that attention state legible at a glance. The first
 product is a lightweight local control plane for Andrew's current workflow:
-Codex running in one Ghostty tab per project on macOS.
+Codex or Claude running in one Ghostty tab per project on macOS.
 
 The durable product value is trustworthy lifecycle normalization and attention
 routing. A tab title, terminal board, menu-bar view, or physical device is a
@@ -39,19 +39,20 @@ projection of that value rather than the product's source of truth.
 
 The first user is a technically sophisticated individual operator who:
 
-- runs several terminal coding agents concurrently;
+- runs several Codex and Claude terminal agents concurrently;
 - organizes Ghostty around one project/agent per tab;
-- wants to preserve normal terminal scrolling and Codex interaction;
+- wants to preserve normal terminal scrolling and provider-native interaction;
 - values immediate peripheral awareness over a feature-rich dashboard; and
-- will accept an intentionally narrow first integration if its state is
-  trustworthy.
+- expects a common attention vocabulary without hidden differences in evidence
+  quality or available actions.
 
-The initial environment is macOS, Ghostty, and Codex. The architecture should
-admit later terminals and agents without pretending they are already supported.
+The supported environment is macOS and Ghostty with Codex and Claude managed
+through provider-specific adapters. The architecture should admit later
+terminals and agents without pretending they are already supported.
 
 ## Concrete success scenario
 
-Andrew opens several Ghostty project tabs and starts Codex work in each. Without
+Andrew opens several Ghostty project tabs and starts Codex or Claude work in each. Without
 cycling through the tabs, he can see labels such as:
 
 ```text
@@ -70,10 +71,10 @@ does not leave a permanently misleading board entry.
 
 ## Minimalist proof and maximalist horizon
 
-The minimalist proof contains only:
+The current software proof contains only:
 
 - explicit registration and naming of the current Ghostty tab/session;
-- one trustworthy Codex adapter path;
+- trustworthy managed Codex and Claude adapter paths;
 - machine-maintained `<status> <project-name>` Ghostty tab titles;
 - a persistent local `agents` board using the same state;
 - acknowledgement and stale/dead-session behavior; and
@@ -91,7 +92,7 @@ it should not determine them in advance.
 ## Explicit non-goals for the first proof
 
 - tmux or another terminal multiplexer dependency;
-- Claude or a second agent adapter;
+- a third agent adapter before the Codex/Claude contract is proven in use;
 - generic process scraping presented as authoritative semantic state;
 - terminal macros, approval buttons, or arbitrary keystroke control;
 - click-to-focus or automatic session navigation;

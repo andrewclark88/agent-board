@@ -93,7 +93,7 @@ test("agent-name refuses a detached label invocation before targeting the focuse
   assert.equal(result, 1);
   assert.equal(registerCalls, 0);
   assert.equal(output.stdout, "");
-  assert.equal(output.stderr, "CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt\n");
+  assert.equal(output.stderr, "CONFLICT: agent-name <label> must run in the target terminal; use the managed agent or a shell prompt\n");
 
   const shortcut = streams();
   let promptCalls = 0;

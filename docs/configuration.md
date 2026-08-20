@@ -1,23 +1,23 @@
 ---
 name: agent-board-companion-configuration
-description: Read this when configuring Ghostty tabs and the Codex status line for the recommended Agent Board workflow.
+description: Read this when configuring Ghostty tabs for Codex or Claude Code sessions and the Codex status line for the recommended Agent Board workflow.
 type: design
 kind: planning
 status: locked
 nav_priority: high
 updated: 2026-08-20
 summary: |
-  Agent Board owns the compact Ghostty tab title, while Codex owns the detailed in-tab status line. Minimal merge-only examples preserve Andrew's tab and prompt-navigation workflow without copying or mutating full personal configuration files.
+  Agent Board owns the compact Ghostty tab title for both Codex and Claude Code sessions, while Codex additionally owns a detailed in-tab status line. Minimal merge-only examples preserve Andrew's tab and prompt-navigation workflow without copying or mutating full personal configuration files.
 decisions:
-  - Agent Board owns the complete title of each registered Ghostty tab.
-  - The Codex status line shows project, branch, model/reasoning, and context usage inside the active tab.
+  - Agent Board owns the complete title of each registered Ghostty tab, regardless of which agent adapter manages it.
+  - The Codex status line shows project, branch, model/reasoning, and context usage inside the active tab. This status-line guidance is Codex-specific; Claude Code sessions are not covered by it.
   - Copyable examples are merged manually and never overwrite a complete personal configuration.
   - The Ghostty manual-title prompt is not used for supervised tabs because it conflicts with machine title ownership.
 ---
 
 # Companion terminal configuration
 
-Agent Board and Codex answer different questions:
+Agent Board and the agent running in a tab answer different questions:
 
 ```text
 Ghostty tab title     ● data-platform
@@ -27,8 +27,10 @@ Codex status line     data-platform / feature/foo / gpt-5.6-sol medium / Context
                       What environment is active inside this tab?
 ```
 
-Keep both surfaces. Agent Board owns the registered tab title. Codex owns the
-detailed status line inside the terminal.
+Keep both surfaces. Agent Board owns the registered tab title for both Codex
+and Claude Code sessions. Codex additionally owns a detailed status line
+inside the terminal; the status-line guidance below is Codex-specific and does
+not apply to Claude Code.
 
 ## Configure Ghostty
 
@@ -91,10 +93,11 @@ For a direct rename, pass one label:
 agent-name data-platform
 ```
 
-Inside a current session launched by `agent-codex`, the launcher supplies the
-exact `AGENT_BOARD_SESSION_ID` to both the Codex app-server and remote TUI.
-Codex `! agent-name data-platform` and agent tool execution inherit that ID,
-rename only the bound session, and never use current Ghostty focus for targeting.
+Inside a current session launched by `agent-codex` or `agent-claude`, the
+launcher supplies the exact `AGENT_BOARD_SESSION_ID` to the owned agent
+process. A Codex `!` shell escape, `agent-name data-platform`, and the agent's
+own tool execution inherit that ID, rename only the bound session, and never
+use current Ghostty focus for targeting.
 
 Outside a managed session, run the one-label form interactively from the target
 tab's normal shell prompt. This fallback resolves Ghostty focus. Agent Board
@@ -102,7 +105,7 @@ refuses a detached or non-TTY one-label call without a bound session ID before
 focus resolution, with:
 
 ```text
-CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+CONFLICT: agent-name <label> must run in the target terminal; use the managed agent or a shell prompt
 ```
 
 For a native macOS rename prompt, run `agent-name` with no label:
@@ -157,13 +160,14 @@ Shortcut-launched command inspect and retitle Ghostty.
 
 The direct shell command remains available when the Shortcut is inconvenient;
 outside a managed session, run it interactively from the focused target tab.
-Within managed Codex, `!` and agent tool calls use the launcher's exact session
-identity. Agent Board then retains the label while status changes update only
-the leading glyph.
+Within a managed Codex or Claude session, shell escapes and agent tool calls
+use the launcher's exact session identity. Agent Board then retains the label
+while status changes update only the leading glyph.
 
 After installing an update that adds managed session targeting, exit every
-already-running managed Codex session and restart it once with `agent-codex`.
-Only newly launched Codex processes inherit `AGENT_BOARD_SESSION_ID`.
+already-running managed Codex or Claude session and restart it once with
+`agent-codex` or `agent-claude`. Only newly launched agent processes inherit
+`AGENT_BOARD_SESSION_ID`.
 
 ### Required integration values
 
@@ -184,6 +188,10 @@ Preserve any different bell choices you prefer, but keep `no-title` and omit
 `title`.
 
 ## Configure the Codex status line
+
+This section is Codex-specific. Claude Code sessions get the same Agent
+Board tab-title ownership described above, but this guide does not curate a
+Claude Code status line.
 
 The copyable merge fragment is
 [`examples/codex/status-line.toml`](../examples/codex/status-line.toml).
@@ -224,6 +232,10 @@ agent-board doctor
 agent-name agent-board
 agent-codex
 ```
+
+Repeat with `agent-claude` in place of `agent-codex` in another tab to verify
+the Claude Code workflow; skip the status-line check below for that tab, since
+it is Codex-specific.
 
 Confirm these results:
 

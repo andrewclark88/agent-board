@@ -1,5 +1,5 @@
 import { AgentBoardError } from "./errors.js";
-import type { ConfidenceLevel, TerminalPresence } from "./registries.js";
+import { AGENT_ADAPTER_CAPABILITIES, type ConfidenceLevel, type TerminalPresence } from "./registries.js";
 import { parseSessionRecord, type SessionRecord } from "./session.js";
 
 export type PrimaryGlyph = "○" | "●" | "✓" | "!" | "×";
@@ -58,6 +58,7 @@ export function projectSession(
   const age = now - observedTime;
   const workingFuture = record.agent.activity === "working" && age < 0;
   const launcherVerifiedWorking = record.agent.mode === "managed" &&
+    AGENT_ADAPTER_CAPABILITIES[record.agent.adapter].workingWhileLauncherAlive &&
     record.agent.activity === "working" &&
     record.agent.health === "live" &&
     record.agent.launcherPid !== undefined &&
@@ -83,6 +84,10 @@ export function projectSession(
       status = "diagnostic";
       break;
     case record.agent.mode === "ordinary":
+      glyph = "?";
+      status = "diagnostic";
+      break;
+    case record.agent.confidence === "inferred":
       glyph = "?";
       status = "diagnostic";
       break;
