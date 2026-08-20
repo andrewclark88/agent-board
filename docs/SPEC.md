@@ -5,17 +5,17 @@ type: spec
 kind: planning
 status: draft
 nav_priority: high
-updated: 2026-08-16
+updated: 2026-08-20
 summary: |
-  The first Agent Board release registers one Codex session per Ghostty tab, stores identity and observed state locally, projects five attention symbols into machine-maintained tab titles, and renders the same records through an `agents` command. The contract separates activity, attention, health, and evidence so simple labels remain truthful.
+  Agent Board registers one Codex or Claude session per Ghostty tab, stores provider-qualified identity and observed state locally, projects five common attention symbols into machine-maintained tab titles, and renders the same records through an `agents` command. The contract separates activity, attention, health, capability, and evidence so simple labels remain truthful.
 decisions:
   - One supervised agent per Ghostty tab is the first-release operating constraint.
   - Project labels are human-controlled presentation and never session identity.
-  - Stable Board and Ghostty identity survives managed relaunch; native Codex thread binding is scoped to one launcher and app-server lifetime.
+  - Stable Board and Ghostty identity survives managed relaunch; provider-native Codex thread or Claude session binding is scoped to one launcher lifetime.
   - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical truth.
   - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation evidence.
   - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
-  - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary mode remains a registered-but-unmanaged diagnostic state until managed observation attaches.
+  - Managed Codex app-server plus remote TUI and managed ordinary Claude plus bundled hooks are the supported provider topologies; ordinary unobserved mode remains diagnostic.
   - Managed working evidence remains working only when reconciliation has positively verified that the persisted launcher binding is alive; the existing freshness threshold is a conservative fallback for unverified or unbound working evidence, and a missing launcher becomes stale diagnostic evidence during reconciliation.
   - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
   - The first release is observation-only and exposes no semantic agent actions.
@@ -44,9 +44,9 @@ registers or renames a supervised agent. Registration records a stable Agent
 Board session ID, the human label, repository context when available, adapter
 identity, and Ghostty window/tab/terminal IDs.
 
-`agent-codex` injects that stable ID as `AGENT_BOARD_SESSION_ID` into both its
-owned Codex app-server and remote TUI. A descendant one-label invocation,
-including Codex `!` or agent tool execution, passes the exact ID to registration
+`agent-codex` and `agent-claude` inject that stable ID as
+`AGENT_BOARD_SESSION_ID` into their owned provider runtime. A descendant
+one-label invocation, including provider tool execution, passes the exact ID to registration
 and renames only that stored session. It never resolves current Ghostty focus
 for targeting.
 
@@ -57,7 +57,7 @@ process has no trustworthy originating tab. A detached or non-TTY one-label
 invocation without a bound ID exits nonzero with the stable conflict:
 
 ```text
-CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+CONFLICT: agent-name <label> must run in the target terminal; use the managed agent or a shell prompt
 ```
 
 Renaming changes only the display label. It does not change session identity,
@@ -70,15 +70,16 @@ Confirming a label changes only `identity.projectLabel` and the canonical title
 projection; it preserves session identity, agent state, and terminal binding.
 More than one label returns `Usage: agent-name [label]`.
 
-A managed Codex process started before this targeting contract was installed
+A managed agent process started before this targeting contract was installed
 does not gain the environment binding retroactively. It must exit and restart
-through `agent-codex` once before its descendant rename commands use exact
-session targeting.
+through its Agent Board launcher once before descendant rename commands use
+exact session targeting.
 
-### Observe Codex state
+### Observe provider state
 
-The Codex adapter ingests supported native lifecycle evidence and records both
-the normalized result and its evidence quality.
+Each provider adapter ingests its supported lifecycle evidence and records both
+the normalized result and its evidence quality. The visible vocabulary is
+shared; evidence authority and adapter capabilities are not flattened.
 
 The desired visible semantics are:
 
@@ -93,16 +94,19 @@ The desired visible semantics are:
 “Needs user input” includes approval and direct-question waits at the projection
 layer. Adapter detail may distinguish them for diagnostics.
 
-The completed runtime prototype keeps registration and managed observation
-deliberately distinct:
+Registration and managed observation remain deliberately distinct:
 
 - `agent-name` registers or renames a Ghostty tab but does not attach a live
   observer. The resulting ordinary-mode record remains diagnostic with
   `session is not managed` until a managed launcher claims the session.
-- Managed-TUI observation launches app-server first and connects the Codex TUI
+- Managed Codex observation launches app-server first and connects the Codex TUI
   with `codex --remote`, preserving the terminal interface while enabling richer
-  machine-readable lifecycle state. A concurrent observer successfully received
-  a remote-TUI thread's active and idle transitions on the installed build.
+  machine-readable lifecycle state.
+- Managed Claude observation launches the ordinary interactive Claude CLI with
+  a bundled per-run hook integration. Hooks report prompt submission,
+  permission and MCP input waits, normal completion, API failure, and session
+  lifecycle. Working start and user-interrupt recovery retain lower confidence
+  until runtime reconciliation establishes a trustworthy outcome.
 
 The product must not claim ordinary registration has the same fidelity as the
 managed path or project ordinary sessions into canonical agent states.
@@ -195,15 +199,16 @@ persisted camelCase shape is owned by the session-record contract in
 | Board session identity | Stable Agent Board identity |
 | Project label | User-controlled presentation |
 | Repository path and Git branch | Optional discovered context |
-| Agent adapter | Codex initially |
-| Native thread binding | Optional managed-runtime binding |
+| Agent adapter | Codex or Claude |
+| Provider-native binding | Optional Codex thread or Claude session binding owned by one managed runtime |
 | Ghostty window, tab, and terminal binding | Stable terminal-adapter context |
 
 Project label, repo path, branch, and terminal position are not identity keys.
-The Board session and Ghostty binding persist when `agent-codex` is run again in
-the registered tab. Each run owns a short-lived launcher, private app-server,
-and native Codex thread; relaunch replaces that runtime binding without changing
-the stable session or project identity.
+The Board session and Ghostty binding persist when `agent-codex` or
+`agent-claude` is run again in the registered tab. Each run owns a short-lived
+launcher and provider-native binding; Codex additionally owns a private
+app-server. Relaunch replaces runtime binding without changing stable session or
+project identity.
 
 ### Normalized observed state
 
@@ -255,8 +260,8 @@ inference without pretending that an interruption was ordinary idle state.
    interpreted heuristically.
 6. Closing a Ghostty tab cannot leave a live-looking working or attention state
    indefinitely.
-7. Setup diagnostics detect incompatible Ghostty/Codex title settings and missing
-   macOS Automation permission.
+7. Setup diagnostics detect incompatible Ghostty, Codex, or Claude integration
+   settings and missing macOS Automation permission.
 8. Names reject control characters and are safely transported through the
    Ghostty scripting boundary.
 9. The first release continues to provide meaningful board inspection without a
@@ -290,7 +295,7 @@ inference without pretending that an interruption was ordinary idle state.
 - Ghostty 1.3 or later with AppleScript enabled is the supported terminal
   contract; setup verifies the installed dictionary and Automation permission.
 - One supervised agent per Ghostty tab is supported; split aggregation is not.
-- Codex is the only first-release agent adapter.
+- Codex and Claude are the supported agent adapters.
 - Codex's own terminal-title writer must be coordinated or disabled when Agent
   Board title ownership is active.
 - Ghostty title decoration that displaces the fixed prefix must be disabled or
@@ -298,19 +303,20 @@ inference without pretending that an interruption was ordinary idle state.
 
 ## Acceptance boundary
 
-The first release succeeds when Andrew can open several supported Ghostty/Codex
-sessions, name them, start work, and use either the tab bar or `agents` to
+The current product succeeds when Andrew can open several mixed
+Ghostty/Codex/Claude sessions, name them, start work, and use either the tab bar or `agents` to
 identify working, input-needed, completed-unread, idle, and failed sessions
 without visiting each tab. State changes are timely, uncertainty is not hidden,
 dead sessions are reconciled, and installation/usage can be repeated from the
 documentation.
 
-Managed-TUI launch is accepted as the default. Its activity coverage is
-sufficient for the core contract; human-wait, detailed turn outcome, and
-acknowledgement behavior remain required implementation-level integration tests.
-Ordinary mode is a registration-only diagnostic state. It does not project the
-five canonical agent states; only a managed launcher with live observation may
-unlock those glyphs.
+Each supported provider has one managed launch path. Codex uses app-server plus
+remote TUI; Claude uses its ordinary interactive CLI plus bundled hooks. Their
+events need not be identical, but matching operator outcomes must project the
+same glyph. Human-wait, detailed outcome, interruption recovery, background
+work, and acknowledgement behavior require provider-specific integration tests.
+Ordinary unobserved mode is registration-only diagnostic state and cannot
+unlock the five canonical glyphs.
 
 ## Preserved future options
 
@@ -319,7 +325,7 @@ delivery substrate exists:
 
 - resident daemon/event hub — when multiple long-lived consumers or proactive
   behavior require subscriptions;
-- additional agent adapters — after Codex semantics are trustworthy;
+- additional agent adapters — after the Codex/Claude common contract is proven;
 - optional tmux adapter — only for an intentionally supported tmux audience;
 - focus/jump navigation — after terminal identity is reliable;
 - macOS notifications, menu-bar, and always-on-top views — after false-positive

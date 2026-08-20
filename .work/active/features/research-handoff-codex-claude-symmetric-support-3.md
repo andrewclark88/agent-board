@@ -3,7 +3,7 @@ id: research-handoff-codex-claude-symmetric-support-3
 kind: feature
 stage: drafting
 tags: [integration, cli, state]
-parent: null
+parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2]
 release_binding: null
 gate_origin: null
@@ -25,6 +25,11 @@ or hook availability prevents trustworthy observation.
 Keep detection, state authority, presentation metadata, session identity, and
 terminal control distinct so an inferred or unavailable capability never
 masquerades as provider-native state.
+
+## Simplification opportunity
+
+Extend the existing doctor component/report model and board diagnostics rather
+than creating a provider-specific diagnostic command.
 
 ## Research grounding
 

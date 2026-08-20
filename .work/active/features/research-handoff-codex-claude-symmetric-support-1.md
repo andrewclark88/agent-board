@@ -3,7 +3,7 @@ id: research-handoff-codex-claude-symmetric-support-1
 kind: feature
 stage: drafting
 tags: [integration, state]
-parent: null
+parent: epic-codex-claude-symmetric-support
 depends_on: []
 release_binding: null
 gate_origin: null
@@ -24,6 +24,11 @@ evidence kind, confidence, and capabilities.
 The common contract must distinguish observation capabilities from semantic
 control capabilities. Unsupported or stale evidence projects diagnostic `?`
 rather than a convenient primary state.
+
+## Simplification opportunity
+
+Generalize the existing provider discriminator and binding boundary in place;
+do not introduce a parallel Claude session model or a second projection policy.
 
 ## Research grounding
 

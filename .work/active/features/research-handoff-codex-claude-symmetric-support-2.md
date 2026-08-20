@@ -3,7 +3,7 @@ id: research-handoff-codex-claude-symmetric-support-2
 kind: feature
 stage: drafting
 tags: [integration, cli, state]
-parent: null
+parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1]
 release_binding: null
 gate_origin: null
@@ -26,6 +26,13 @@ The adapter is observation-first. A Board-side failure must not block Claude,
 generic terminal keys must not be presented as semantic approval, and working
 start plus interruption recovery remain visibly lower-confidence until runtime
 validation establishes safe reconciliation.
+
+## Simplification opportunity
+
+Reuse the current registration, guarded mutation, title rendering, focus
+acknowledgement, process hosting, and composition patterns. Keep only Claude
+event parsing, mapping, compatibility, plugin assets, and launch argv
+provider-specific.
 
 ## Research grounding
 

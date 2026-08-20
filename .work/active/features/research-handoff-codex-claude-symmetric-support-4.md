@@ -3,7 +3,7 @@ id: research-handoff-codex-claude-symmetric-support-4
 kind: feature
 stage: drafting
 tags: [integration, cli, state]
-parent: null
+parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2, research-handoff-codex-claude-symmetric-support-3]
 release_binding: null
 gate_origin: null
@@ -26,6 +26,12 @@ acknowledgement, interruption, provider and managed-process failure, background
 work, clean and forced exit, unsupported extensions or versions, and concurrent
 mixed-provider sessions. Absent or stale evidence must yield `?`, and no raw
 terminal key may be described as semantic approval.
+
+## Simplification opportunity
+
+Extend the packed CLI harness with a fake Claude executable and hook-event
+driver, reusing the existing fake Ghostty, state directory, title assertions,
+and Board row parser.
 
 ## Research grounding
 

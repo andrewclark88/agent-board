@@ -7,9 +7,10 @@ status: locked
 nav_priority: high
 updated: 2026-08-20
 summary: |
-  Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote TUI, and observer; normalized state is atomically persisted and projected through one policy into Ghostty titles and the `agents` board.
+  Agent Board is a local TypeScript modular monolith with five small CLI binaries and no permanently installed daemon. Each supervised tab runs a provider-specific managed launcher: Codex uses app-server plus remote TUI, while Claude preserves its ordinary interactive CLI and emits lifecycle evidence through bundled hooks. Both persist normalized state and share one Ghostty-title and board projection policy.
 decisions:
   - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary mode remains a registration-only diagnostic state until a managed observer attaches.
+  - Managed ordinary Claude plus a bundled per-run hook integration is the Claude topology; hook gaps remain lower-confidence or diagnostic rather than being promoted to native state.
   - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group; there is no global resident daemon.
   - The stable Board session, Ghostty binding, and project identity outlive a managed runtime; each relaunch replaces the prior launcher metadata and native Codex thread binding.
   - The implementation is a Node.js 22+ TypeScript modular monolith with runtime-validated external boundaries.
@@ -40,13 +41,17 @@ but one domain model and one set of adapters.
 Ghostty tab
   │
   ├─ agent-name <label> ───────────────┐
-  │                                    │
-  └─ agent-codex [codex args...]       │
+  ├─ agent-codex [codex args...]       │
        │                               │
        ├─ resolve/register tab         │
        ├─ codex app-server :0          │
        ├─ Board observer client ───────┼─> session service
        └─ codex --remote <endpoint>    │        │
+  │                                    │        │
+  └─ agent-claude [claude args...]     │        │
+       ├─ resolve/register tab         │        │
+       ├─ bundled observation hooks ───┘        │
+       └─ ordinary interactive claude           │
                                                 v
                                      versioned session store
                                          │             │
@@ -70,12 +75,12 @@ The ordinary `codex` path is not presented as evidence-equivalent. `agent-name`
 alone only creates or updates a registered session record; it does not attach a
 live observer. Until `agent-codex` claims that session and binds managed
 observation, projection treats the visible ordinary record as `? diagnostic`
-with `session is not managed`. Only managed mode can produce the five canonical
-agent glyphs.
+with `session is not managed`. Only a managed provider mode with usable
+observation capability can produce the five canonical agent glyphs.
 
 ## Process topology
 
-### Per-tab managed launcher
+### Per-tab managed Codex launcher
 
 One `agent-codex` process owns one supervised tab's runtime:
 
@@ -122,12 +127,43 @@ retains its normal interrupt behavior. Termination and hangup signals trigger
 bounded child cleanup. Child processes are never adopted as a machine-wide
 service.
 
+### Per-tab managed Claude launcher
+
+One `agent-claude` process owns one supervised tab's runtime:
+
+1. Resolve or register the current Ghostty terminal and preserve the stable
+   Board session ID, project label, and terminal binding.
+2. Claim the session for a Claude managed runtime, recording launcher identity
+   and clearing provider-native binding left by an earlier launcher.
+3. Start the ordinary interactive `claude` executable with inherited terminal
+   streams, `AGENT_BOARD_SESSION_ID`, and the packaged Agent Board plugin/hook
+   directory enabled only for that run.
+4. Hook callbacks parse bounded provider event JSON, correlate the exact Board
+   and Claude session identities, map supported events through the common
+   transition boundary, mutate the latest locked record, and render its title.
+5. Prompt submission supplies corroborated working evidence; permission and MCP
+   elicitation supply input-required evidence; `Stop`, `StopFailure`, and
+   `SessionEnd` supply completion, failure, and lifecycle evidence. Background
+   work prevents a false globally-finished projection.
+6. Because user interruption does not invoke Claude's `Stop` hook, launcher and
+   later hook evidence reconcile stale working state; unresolved recovery
+   projects diagnostic `?` rather than guessing completion or idle.
+7. Hook failures never block or alter Claude's turn. Managed policy, missing
+   hook capability, incompatible version, or invalid event shape degrades the
+   Board record visibly.
+8. On process exit or termination, perform bounded cleanup, preserve the
+   registered tab, and record provider-qualified process evidence.
+
+The Claude launcher does not host Claude's agent loop and does not use the Agent
+SDK. Claude retains its ordinary keyboard, permission, scrollback, and terminal
+interaction. Generic terminal keys are never modeled as semantic approval.
+
 ### Independent CLI invocations
 
 - `agent-name [label]` has two one-label target paths. When
   `AGENT_BOARD_SESSION_ID` is present, it passes that exact ID to registration,
   renames only the stored session, and never resolves Ghostty focus; managed
-  Codex `!` and agent-tool descendants use this path. Without a bound ID, it
+  managed-agent and tool descendants use this path. Without a bound ID, it
   requires interactive stdin and uses the focused Ghostty tab; a detached or
   non-TTY process fails before focus resolution. Its stable error is shown
   below. With no label, the command remains callable noninteractively by the
@@ -136,15 +172,15 @@ service.
   changes only the project label/title.
 
   ```text
-  CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+  CONFLICT: agent-name <label> must run in the target terminal; use the managed agent or a shell prompt
   ```
 
-  Registration without `agent-codex` leaves the session in ordinary mode, so
+  Registration without a managed provider launcher leaves the session in ordinary mode, so
   projection stays diagnostic until managed observation attaches.
 
-  Running managed Codex processes do not receive a newly added environment
+  Running managed agent processes do not receive a newly added environment
   binding retroactively. Sessions launched before this contract must exit and
-  restart through `agent-codex` once.
+  restart through their Agent Board launcher once.
 - `agents` reconciles Ghostty presence, renders every registered session, and
   repairs stale title projection where safe. One successfully validated
   application-wide snapshot is also the authority for closed-session cleanup:
@@ -153,8 +189,8 @@ service.
   registered; snapshot failure removes nothing. A failed removal leaves the
   missing diagnostic visible so a later board read can retry.
 - `agent-board doctor` validates versions, executables, Automation permission,
-  Ghostty config conflicts, Codex protocol compatibility, and state-directory
-  access.
+  Ghostty config conflicts, Codex protocol compatibility, Claude hook/plugin
+  capability, and state-directory access.
 - `agent-board ack [session]` is the explicit completion acknowledgement fallback.
 - `agent-board unregister [session]` clears the title override and removes the
   registration through a recoverable, session-scoped operation.
@@ -175,10 +211,11 @@ src/
   application/
     acknowledge-session.ts  explicit/focus-derived acknowledgement target resolution
     acknowledge.ts          completion acknowledgement transition
-    doctor.ts               runtime, state, Codex, and Ghostty diagnostics
+    doctor.ts               runtime, state, provider, and Ghostty diagnostics
+    launch-managed-claude.ts supervised Claude lifecycle orchestration
     launch-managed-codex.ts supervised lifecycle orchestration
     list-sessions.ts        board query and diagnostic annotations
-    observe-agent.ts        apply validated Codex observations
+    observe-agent.ts        apply validated provider observations
     observe-managed-codex.ts managed Codex lifecycle observation
     prompt-rename-session.ts focused-session capture and native rename application
     reconcile-session.ts    terminal and managed-launcher liveness reconciliation
@@ -192,6 +229,8 @@ src/
   integrations/
     codex/                  app-server protocol, WebSocket client, lifecycle,
                             thread binding, compatibility, and process hosting
+    claude/                 hook-event schemas, lifecycle mapping, plugin assets,
+                            compatibility, and interactive process hosting
     launcher-liveness.ts    non-destructive local signal-zero process probe
     ghostty/                AppleScript client/protocol, title actions, and diagnostics
     macos/                  native rename prompt through macOS Automation
@@ -210,6 +249,7 @@ src/
     agent-board.ts          doctor, ack, unregister command router
     agent-name.ts           naming entry point
     agents.ts               board entry point
+    agent-claude.ts         managed Claude entry point
     agent-codex.ts          managed-launch entry point
     doctor-output.ts        stable doctor rendering
     output.ts               stable board/CLI error rendering
@@ -217,6 +257,7 @@ src/
 
   composition/
     create-agent-board.ts   doctor, ack, and unregister wiring
+    create-agent-claude.ts  managed Claude wiring
     create-agent-codex.ts   managed Codex wiring
     create-agent-name.ts   naming wiring
     create-agents.ts        board wiring
@@ -226,9 +267,9 @@ tests/
   application/              use-case tests with fake ports
   cli/                      command parsing, rendering, and packaging guards
   infrastructure/           store, lock, file, and state-directory tests
-  integrations/              Codex, Ghostty, Git, and process-boundary tests
-  e2e/                      packed fake Codex/Ghostty/Automation vertical slices
-  integration/               opt-in installed Codex/Ghostty probes
+  integrations/             provider, Ghostty, Git, and process-boundary tests
+  e2e/                      packed fake provider/Ghostty/Automation vertical slices
+  integration/              opt-in installed provider/Ghostty probes
 ```
 
 The domain imports no filesystem, process, WebSocket, AppleScript, or wall-clock
@@ -261,9 +302,10 @@ terminal:
   observedAt
 
 agent:
-  adapter = codex
+  adapter = codex | claude
   mode = managed | ordinary
-  nativeThreadId?
+  nativeThreadId?       # Codex managed binding
+  nativeSessionId?      # Claude managed binding
   launcherPid?
   activity = unknown | idle | working
   attention = none | completion_unread | input_required
@@ -333,7 +375,7 @@ working without verified launcher proof and fresh -> ● working
 visible managed tab with live idle evidence    -> ○ idle
 ```
 
-Managed event rules:
+Codex managed event rules:
 
 - thread `active` with no wait flags starts or continues `working`;
 - `waitingOnApproval` or `waitingOnUserInput` sets `input_required`;
@@ -345,6 +387,21 @@ Managed event rules:
 - a new active turn clears prior completion attention and recoverable error;
 - focus acknowledges completion only when AppleScript identifies the registered
   window, selected tab, and focused terminal; elapsed time alone never does.
+
+Claude managed event rules:
+
+- `UserPromptSubmit` starts `working` at corroborated confidence;
+- `PermissionRequest` and MCP `Elicitation` set `input_required` with their
+  provider-specific subtype retained in evidence detail;
+- `Stop` sets `idle + completion_unread` only when no reported background work
+  remains;
+- `StopFailure` sets error with bounded provider detail;
+- `SessionEnd` and launcher exit update lifecycle evidence without pretending
+  that session termination is successful turn completion;
+- a later prompt, wait, completion, failure, or process observation reconciles
+  earlier working state; a user interrupt without such evidence degrades to
+  diagnostic rather than inferring idle; and
+- focus acknowledgement uses the same full Ghostty identity guard as Codex.
 
 If detailed turn outcome is temporarily unavailable, `active -> idle` may
 produce completion attention only at `corroborated` confidence and must retain
@@ -440,6 +497,26 @@ restoration itself fails. This preserves intentional terminal customization
 while preventing forced TUI shutdown from leaving modified-key sequences
 active in Ghostty.
 
+## Claude integration
+
+The adapter accepts only the documented hook events used by Agent Board and
+validates each bounded JSON payload before mapping it. Every callback requires
+the exact `AGENT_BOARD_SESSION_ID` inherited from the managed launcher and uses
+Claude's reported session ID as provider binding evidence. A callback cannot
+discover or target another focused tab.
+
+The packaged plugin is enabled per launch and does not modify user or project
+settings. Its hook command is constant, observation-only, and tolerant of Board
+failure: it reports diagnostics locally but exits without blocking Claude's
+turn. Managed policy or incompatible hook support is detected before launch
+where possible and remains visible through doctor and session diagnostics.
+
+The adapter does not parse Claude transcript JSONL as a stable control API and
+does not use raw terminal output as provider-native lifecycle evidence. The
+launcher owns process liveness and shutdown; hooks own only the event families
+they actually receive. This split is why prompt start and user-interrupt
+recovery carry lower confidence than Codex app-server lifecycle state.
+
 ## Technology and dependencies
 
 | Dependency | Purpose | Constraint |
@@ -451,6 +528,7 @@ active in Ghostty.
 | `proper-lockfile` | crash-aware cross-process session locking | Runtime dependency; lock scope is state directory only |
 | `tsx` + Node test runner | TypeScript test execution | Development dependency only |
 | Codex CLI | managed agent backend and remote TUI | Version diagnosed at startup; app-server interface is experimental |
+| Claude CLI | managed ordinary interactive agent and hook host | Version and required plugin/hook capability diagnosed at startup |
 | Ghostty | terminal identity and title projection | macOS AppleScript-capable release |
 | `/usr/bin/osascript` | Ghostty scripting transport | macOS system dependency |
 | `/bin/stty` | Exact termios capture and restoration before keyboard-reporting cleanup around managed TUI launch | macOS system dependency; shell-free, controlling terminal only |
@@ -479,15 +557,16 @@ The test pyramid follows contracts rather than implementation lines:
 1. Pure domain tests exhaust projection precedence and transition tables.
 2. Store tests cover atomic replacement, schema rejection, lock contention,
    stale-lock recovery, and concurrent rename/status updates.
-3. Codex adapter tests replay minimal recorded protocol fixtures for loaded-ID
+3. Provider adapter tests replay minimal recorded protocol or hook fixtures for loaded-ID
    discovery plus metadata reads, idle, working, both wait flags, completion,
-   interruption, failure, system error, incompatible schema, and disconnect.
+   interruption/recovery, failure, system error, incompatible schema, and disconnect.
 4. Ghostty adapter tests cover structured snapshot parsing, ID-based targeting,
    label escaping, title clear, hidden/undoable hierarchy, and failures.
-5. Hermetic end-to-end tests use fake `codex` and `osascript` executables to
-   prove register -> working -> waiting/completed/error -> title + board parity.
-6. Opt-in installed integration tests verify both Codex discovery response
-   surfaces and a temporary Ghostty window without touching existing user tabs.
+5. Hermetic end-to-end tests use fake `codex`, `claude`, and `osascript`
+   executables to prove mixed-provider register -> working ->
+   waiting/completed/error -> title + board parity.
+6. Opt-in installed integration tests verify Codex discovery, Claude hook
+   delivery, and a temporary Ghostty window without touching existing user tabs.
 7. Terminal adapter tests verify exact termios replay, keyboard-reporting
    cleanup, non-terminal silence, and restoration-failure handling.
 
@@ -496,8 +575,8 @@ available. Real-GUI tests remain bounded and opt-in.
 
 ## Installation and operation
 
-The package exposes four binaries through npm packaging: `agent-codex`,
-`agent-name`, `agents`, and `agent-board`. Development uses `npm link`; V1 user
+The package exposes five binaries through npm packaging: `agent-codex`,
+`agent-claude`, `agent-name`, `agents`, and `agent-board`. Development uses `npm link`; user
 installation may use a local checkout or packed tarball. No shell startup file
 is mutated automatically. Documentation may offer an optional alias only after
 showing the literal command it replaces.
@@ -506,8 +585,8 @@ showing the literal command it replaces.
 
 - a permanently installed event daemon or shared app-server;
 - automatic shell aliases or Ghostty keybinding mutation;
-- ordinary-TUI parity work beyond a truthful degraded adapter boundary;
-- Claude or another agent adapter;
+- provider parity beyond the truthful Codex and Claude adapter boundaries;
+- a third agent adapter;
 - focus/jump navigation and semantic agent actions;
 - notifications, menu-bar, always-on-top, or GUI surfaces;
 - external protocol, simulator, or remote aggregation;
@@ -547,6 +626,7 @@ integration-maintenance decisions, not a reason to reopen the V1 topology.
 | [Research plan](research-plan.md) | Completed and deferred research |
 | [Codex topology brief](../.research/analysis/briefs/codex-detector-topology.md) | Managed/ordinary runtime evidence |
 | [Ghostty contract brief](../.research/analysis/briefs/ghostty-registration-liveness.md) | Registration, title, and liveness evidence |
+| [Codex–Claude common-glyph position](../.research/analysis/positions/codex-claude-common-glyph-contract.md) | Shared glyph contract and asymmetric provider evidence |
 
 ## Related architecture docs
 

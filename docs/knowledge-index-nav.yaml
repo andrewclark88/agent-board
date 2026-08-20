@@ -3,7 +3,7 @@
 # Provides corpus situational awareness only. Read knowledge-index.yaml for full index.
 
 schema_version: 3
-generated_at: 2026-08-20T19:01:41Z
+generated_at: 2026-08-20T19:12:15Z
 generated_from: frontmatter
 total_docs: 25
 
@@ -15,8 +15,8 @@ by_kind:
 # Substrate items (.work/) by tier. Query via .work/bin/work-view.
 substrate_summary:
   active:
-    epic: 5
-    feature: 15
+    epic: 6
+    feature: 19
     story: 68
     release: 0
   backlog: 11
@@ -33,14 +33,14 @@ recent:
     title: "Companion terminal configuration"
     kind: planning
     updated: 2026-08-20
-  - path: docs/SPEC.md
-    title: "Agent Board specification"
-    kind: planning
-    updated: 2026-08-16
   - path: docs/VISION.md
     title: "Agent Board vision"
     kind: planning
-    updated: 2026-08-14
+    updated: 2026-08-20
+  - path: docs/SPEC.md
+    title: "Agent Board specification"
+    kind: planning
+    updated: 2026-08-20
   - path: docs/PRINCIPLES.md
     title: "Agent Board principles"
     kind: planning

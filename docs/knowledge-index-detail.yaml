@@ -1,19 +1,22 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-20T19:01:41Z'
+generated_at: '2026-08-20T19:12:15Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
   docs/ARCHITECTURE.md:
-    summary: 'Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no
-      permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote
-      TUI, and observer; normalized state is atomically persisted and projected through one policy into
-      Ghostty titles and the `agents` board.
+    summary: 'Agent Board is a local TypeScript modular monolith with five small CLI binaries and no permanently
+      installed daemon. Each supervised tab runs a provider-specific managed launcher: Codex uses app-server
+      plus remote TUI, while Claude preserves its ordinary interactive CLI and emits lifecycle evidence
+      through bundled hooks. Both persist normalized state and share one Ghostty-title and board projection
+      policy.
 
       '
     decisions:
     - Managed app-server plus `codex --remote` is the default Codex V1 topology; ordinary mode remains
       a registration-only diagnostic state until a managed observer attaches.
+    - Managed ordinary Claude plus a bundled per-run hook integration is the Claude topology; hook gaps
+      remain lower-confidence or diagnostic rather than being promoted to native state.
     - Each supervised tab owns its short-lived launcher, app-server, TUI, and observer process group;
       there is no global resident daemon.
     - The stable Board session, Ghostty binding, and project identity outlive a managed runtime; each
@@ -51,24 +54,24 @@ documents:
     - Future surfaces earn entry through observed demand.
     - Semantic actions require semantic capabilities.
   docs/SPEC.md:
-    summary: 'The first Agent Board release registers one Codex session per Ghostty tab, stores identity
-      and observed state locally, projects five attention symbols into machine-maintained tab titles,
-      and renders the same records through an `agents` command. The contract separates activity, attention,
-      health, and evidence so simple labels remain truthful.
+    summary: 'Agent Board registers one Codex or Claude session per Ghostty tab, stores provider-qualified
+      identity and observed state locally, projects five common attention symbols into machine-maintained
+      tab titles, and renders the same records through an `agents` command. The contract separates activity,
+      attention, health, capability, and evidence so simple labels remain truthful.
 
       '
     decisions:
     - One supervised agent per Ghostty tab is the first-release operating constraint.
     - Project labels are human-controlled presentation and never session identity.
-    - Stable Board and Ghostty identity survives managed relaunch; native Codex thread binding is scoped
-      to one launcher and app-server lifetime.
+    - Stable Board and Ghostty identity survives managed relaunch; provider-native Codex thread or Claude
+      session binding is scoped to one launcher lifetime.
     - Five visible symbols are derived from orthogonal stored state rather than persisted as canonical
       truth.
     - Stale and ambiguous sessions never silently map to idle or error; process exit remains observation
       evidence.
     - Registration captures validated stable Ghostty identity and renders the complete tab-title override.
-    - Managed app-server plus remote TUI is the trustworthy V1 default; ordinary mode remains a registered-but-unmanaged
-      diagnostic state until managed observation attaches.
+    - Managed Codex app-server plus remote TUI and managed ordinary Claude plus bundled hooks are the
+      supported provider topologies; ordinary unobserved mode remains diagnostic.
     - Managed working evidence remains working only when reconciliation has positively verified that the
       persisted launcher binding is alive; the existing freshness threshold is a conservative fallback
       for unverified or unbound working evidence, and a missing launcher becomes stale diagnostic evidence
@@ -76,19 +79,21 @@ documents:
     - The local store is versioned and atomically readable; a resident daemon is not a first-release requirement.
     - The first release is observation-only and exposes no semantic agent actions.
   docs/VISION.md:
-    summary: 'Agent Board is a local attention router for one operator supervising several terminal coding
-      agents. Its first proof makes trustworthy Codex state visible in Ghostty tab titles and a shared
-      terminal board without requiring tmux, a GUI, or hardware.
+    summary: 'Agent Board is a local attention router for one operator supervising several Codex and Claude
+      terminal agents. Its current product slice makes trustworthy provider-qualified state visible through
+      common Ghostty title and terminal-board glyphs without requiring tmux, a GUI, or hardware.
 
       '
     decisions:
     - Attention routing, not faster input or agent control, is the product wedge.
-    - The first user and workflow are Andrew supervising Codex sessions in Ghostty tabs on macOS.
+    - The first user and workflow are Andrew supervising Codex and Claude sessions in Ghostty tabs on
+      macOS.
     - The first proof is tab titles plus a terminal board backed by one local state model.
     - State confidence and liveness remain visible rather than being collapsed into confident-looking
       labels.
     - The software control plane must prove value before GUI, remote, or hardware surfaces are commissioned.
-    - Vendor neutrality is preserved through adapter boundaries, not simultaneous V1 integrations.
+    - Vendor neutrality is proven through Codex and Claude adapters that share outcome semantics without
+      pretending their evidence is identical.
     - Semantic actions require native capabilities and are outside the first proof.
   docs/configuration.md:
     summary: 'Agent Board owns the compact Ghostty tab title, while Codex owns the detailed in-tab status
