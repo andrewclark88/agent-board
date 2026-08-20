@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-3
 kind: feature
-stage: review
+stage: done
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2]
@@ -79,8 +79,9 @@ No child stories are needed; this is one additive diagnostic/report contract.
 
 ## Implementation notes
 
-- Doctor now checks Claude Code 2.1.226+ within the tested 2.1 family and asks
-  Claude itself to validate the exact npm-packed hook plugin.
+- Doctor enforces Claude Code 2.1.226 as the compatibility floor, treats the
+  2.1 family as tested, warns without failing readiness for newer untested
+  families, and asks Claude itself to validate the exact npm-packed hook plugin.
 - The canonical report distinguishes unavailable, unrecognized/unsupported,
   blocked/invalid plugin, compatible, and valid-plugin evidence; all existing
   components still run independently.
@@ -89,3 +90,16 @@ No child stories are needed; this is one additive diagnostic/report contract.
   unchanged shared status label.
 - Typecheck/build and 19 focused doctor, board, output, and compatibility tests
   pass.
+
+## Review (2026-08-20)
+
+Standard-weight review used the shared fresh-context Claude Opus pass. The
+reviewer approved provider/evidence/capability visibility and the observation-
+only control boundary, while identifying an unnecessarily hard ceiling on
+future Claude minor families and a missing packaged-handler filesystem check.
+
+Receiver fixes retained the tested floor, downgraded newer compatible families
+to an explicit warning, and validated both the plugin contract and installed
+handler path. The deliberate product-wide doctor readiness contract remains:
+both supported adapters must be usable for a fully ready mixed-provider setup.
+Focused and full-suite verification pass; no second review is required.

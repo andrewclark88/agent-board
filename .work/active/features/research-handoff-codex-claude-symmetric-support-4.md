@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-4
 kind: feature
-stage: review
+stage: done
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2, research-handoff-codex-claude-symmetric-support-3]
@@ -89,3 +89,18 @@ boundary.
   acknowledgement, provider/session/title isolation, and dual-provider doctor.
 - The complete suite passes after updating the intentional package-layout
   assertion for the new `assets/` directory.
+
+## Review (2026-08-20)
+
+Standard-weight review used the shared fresh-context Claude Opus pass. It found
+that the first fake Claude driver bypassed the packaged `hooks.json`, that
+pre-name adoption and several failure/background edges were absent from the
+mixed scenario, and that installed-integration documentation overstated what
+the opt-in smoke proved.
+
+Receiver fixes make the fake parse and execute the real packed hook declaration,
+exercise pre-naming, capabilities, background work, failure and SessionEnd
+preservation, and add an opt-in installed-Claude version/plugin-validation
+probe. Public and architecture docs now state that probe's boundary precisely.
+`npm test` passes 231 tests with 228 passed and three intentional opt-in skips;
+the feature closes after this verified receiver pass without re-review.

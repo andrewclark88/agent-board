@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-1
 kind: feature
-stage: review
+stage: done
 tags: [integration, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: []
@@ -89,8 +89,24 @@ No child stories are needed; this is one small shared-contract change.
 - Added the closed adapter/capability registry and provider-specific native
   binding validation without changing schema version or invalidating existing
   Codex records.
-- Registration now owns an explicit adapter identity and rejects cross-provider
-  terminal claims under the registration lock.
+- Registration now owns an explicit adapter identity, atomically adopts an
+  ordinary pre-named tab for its managed provider, and rejects a conflicting
+  managed provider claim under the registration lock.
 - Projection keeps one glyph policy while allowing only Codex's authoritative
   stream topology to extend working evidence through launcher liveness.
 - Focused build and 23 domain/registration tests pass.
+
+## Review (2026-08-20)
+
+Standard-weight review used one fresh-context cross-model pass with Claude
+Opus. The reviewer approved the shared registry, additive persistence contract,
+and one projection vocabulary, but found that an ordinary tab pre-named with
+`agent-name` could not be adopted by `agent-claude`, and that inferred managed
+evidence could initially project a false idle glyph.
+
+Receiver fixes made ordinary cross-provider pre-registration atomically
+adoptable while retaining collision protection for managed sessions, and made
+inferred managed evidence project diagnostic `?` until provider-native evidence
+arrives. Focused regressions, typecheck, build, and the serialized 231-test suite
+pass. Per standard policy, this feature closes after the one pass and verified
+fixes without re-review.

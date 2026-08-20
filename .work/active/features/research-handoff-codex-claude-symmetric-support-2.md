@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-2
 kind: feature
-stage: review
+stage: done
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1]
@@ -108,5 +108,22 @@ boundary and one shared mutation path.
   background-work, and session-end evidence without retaining native contents.
 - Native Claude session binding and transitions occur under one store mutation;
   title writes flow through reconciliation and latest durable projection.
-- Claude 2.1.226 validates the plugin cleanly; typecheck/build and 14 focused
-  adapter, launcher, hook, process, and CLI tests pass.
+- Launch waits for bounded native hook evidence and degrades visibly when the
+  plugin never reports; compaction, scheduled work, session end, and native-ID
+  rebinding preserve the normalized state contract.
+- Claude 2.1.226 validates the plugin cleanly; typecheck/build, focused adapter
+  tests, and the serialized 231-test suite pass.
+
+## Review (2026-08-20)
+
+Standard-weight review used the shared fresh-context Claude Opus pass. It found
+one material false-idle window before the first hook and important lifecycle
+edges around session end, scheduled work, compaction rebinding, and routine hook
+latency.
+
+Receiver fixes added a bounded hook-readiness gate with explicit stale
+diagnostics, a normalized session-ended transition, authoritative SessionStart
+rebinding except for compaction, correct cron/background distinctions, and a
+fast path that avoids redundant Ghostty work for routine tool hooks. The process
+shutdown timer is now unreferenced and cleared. Focused regressions and the full
+suite pass; the feature closes without re-review under standard policy.

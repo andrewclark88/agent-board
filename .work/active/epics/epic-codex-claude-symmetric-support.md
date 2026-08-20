@@ -1,7 +1,7 @@
 ---
 id: epic-codex-claude-symmetric-support
 kind: epic
-stage: implementing
+stage: review
 tags: [integration, cli, state]
 parent: null
 depends_on: []
@@ -95,3 +95,22 @@ acquisition, compatibility, native binding, and evidence mapping.
 The full-rigor campaign and locked position establish the provider-neutral
 contract, topology choice, confidence limitations, and required validation
 matrix for this delivery arc.
+
+## Child features reviewed and complete (2026-08-20)
+
+- The provider-neutral adapter contract preserves one durable session model,
+  transition reducer, projection policy, title vocabulary, and acknowledgement
+  path while exposing provider identity, native bindings, evidence, confidence,
+  and static capabilities.
+- `agent-claude` runs the ordinary interactive Claude CLI with a packaged,
+  per-run, fail-open observation plugin and bounded diagnostic degradation when
+  native hook evidence is unavailable.
+- The Board and doctor expose truthful cross-provider evidence and capability
+  diagnostics, including a tested Claude floor and visible warnings for newer
+  untested families.
+- The installed-package harness drives the real hook declaration and proves
+  concurrent Codex and Claude tabs share glyphs without sharing identity or
+  fabricating semantic control.
+- All four features completed one standard independent cross-model review pass,
+  receiver adjudication, and green integrated verification. The assembled epic
+  is ready for aggregate closure.
