@@ -19,7 +19,7 @@ owns each registered tab title and renders the same state through `agents`.
 - macOS
 - Node.js 22 or later
 - Ghostty 1.3 or later
-- Codex 0.147.x
+- Codex 0.147.x or 0.148.x
 - npm
 
 Agent Board uses Ghostty AppleScript and macOS Automation. It does not require
@@ -280,7 +280,7 @@ actions:
 - Grant macOS Automation permission.
 - Remove a fixed Ghostty `title` setting.
 - Add `no-title` to title bell features.
-- Install the supported Codex 0.147.x family.
+- Install a supported Codex 0.147.x or 0.148.x release (0.149.x is not yet supported).
 
 If title clearing fails, Agent Board keeps the session record. Repair Ghostty,
 then retry `agent-board unregister` with the exact session ID.

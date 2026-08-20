@@ -1,7 +1,8 @@
 import { AgentBoardError } from "../../domain/errors.js";
 
 const VERSION = /\b(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?\b/gu;
-export const SUPPORTED_CODEX_FAMILY = "0.147.x";
+const SUPPORTED_CODEX_MINORS = new Set([147, 148]);
+export const SUPPORTED_CODEX_FAMILY = "0.147.x or 0.148.x";
 
 export function parseCodexVersion(output: string): string {
   const versions = [...output.matchAll(VERSION)].map((match) => `${match[1]}.${match[2]}.${match[3]}`);
@@ -37,7 +38,7 @@ export function checkCodexCompatibility(output: string): CodexCompatibility {
   }
 
   const [major, minor] = version.split(".").map(Number);
-  if (major !== 0 || minor !== 147) {
+  if (major !== 0 || !SUPPORTED_CODEX_MINORS.has(minor)) {
     return {
       compatible: false,
       version,

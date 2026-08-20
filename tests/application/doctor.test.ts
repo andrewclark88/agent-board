@@ -83,7 +83,7 @@ test("diagnoseSystem maps runtime and typed Codex compatibility branches", async
   assert.equal(unknownRuntime.checks[0]?.code, "RUNTIME_VERSION_UNKNOWN");
 
   const unsupported = await diagnoseSystem(dependencies({
-    codex: { compatibility: async () => ({ compatible: false, version: "0.148.0", reasonCode: "unsupported" }) },
+    codex: { compatibility: async () => ({ compatible: false, version: "0.149.0", reasonCode: "unsupported" }) },
   }));
   assert.equal(unsupported.checks.find((item) => item.component === "codex")?.code, "CODEX_VERSION_UNSUPPORTED");
 
