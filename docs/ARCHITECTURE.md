@@ -565,8 +565,13 @@ The test pyramid follows contracts rather than implementation lines:
 5. Hermetic end-to-end tests use fake `codex`, `claude`, and `osascript`
    executables to prove mixed-provider register -> working ->
    waiting/completed/error -> title + board parity.
-6. Opt-in installed integration tests verify Codex discovery, Claude hook
-   delivery, and a temporary Ghostty window without touching existing user tabs.
+6. Opt-in installed integration tests probe real executables individually:
+   installed Codex verifies version plus app-server schema compatibility
+   (status enum coverage, `thread/loaded/list` and `thread/read` shape);
+   installed Claude verifies version plus `claude plugin validate` against the
+   packaged hook plugin, not live interactive hook delivery; a separate
+   Ghostty probe opens and closes a temporary window without touching
+   existing user tabs. None of these automate the real Claude TUI.
 7. Terminal adapter tests verify exact termios replay, keyboard-reporting
    cleanup, non-terminal silence, and restoration-failure handling.
 
