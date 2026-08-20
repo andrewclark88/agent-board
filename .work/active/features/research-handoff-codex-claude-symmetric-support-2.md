@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-2
 kind: feature
-stage: drafting
+stage: implementing
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1]
@@ -41,3 +41,60 @@ provider-specific.
 
 Claude's hook/plugin route provides the smallest topology that preserves its
 ordinary TUI while producing the lifecycle evidence required for common glyphs.
+
+## Design
+
+### Architectural choice
+
+Launch the installed `claude` executable directly with inherited terminal I/O,
+an Agent Board session environment variable, and `--plugin-dir` pointing at a
+read-only plugin shipped in the npm package. The plugin uses Claude's exec-form
+hook contract (`node`, explicit argv, no shell) to call a private built JS hook
+entrypoint. That entrypoint validates bounded stdin JSON, maps native events to
+the shared transition reducer, binds Claude's native session ID under the
+session lock, renders the latest title, and always exits zero after reporting a
+Board-side diagnostic so observation can never control Claude.
+
+The selected events are `SessionStart`, `UserPromptSubmit`,
+`PermissionRequest`, `PermissionDenied`, `PostToolUse`, `PostToolUseFailure`,
+`Elicitation`, `ElicitationResult`, `Stop`, `StopFailure`, and `SessionEnd`.
+`Stop` with background tasks remains working; an ordinary stop resolves any
+wait then records completion. There is no fabricated interrupt event: an
+unresolved Claude working observation expires to `?` under feature 1's shared
+capability rule.
+
+The Agent SDK and transcript polling are rejected because they replace the
+ordinary TUI or infer semantics. User/project settings mutation is rejected in
+favor of per-run plugin scope.
+
+### Implementation units
+
+1. `assets/claude-plugin/`: minimal manifest plus `hooks/hooks.json`, using
+   `${CLAUDE_PLUGIN_ROOT}` and exec-form argv to the packaged hook module.
+2. `src/integrations/claude/lifecycle.ts`: strict common envelope parsing,
+   event-specific bounded parsing, and pure mapping to zero or more normalized
+   transitions without retaining prompt/tool content.
+3. `src/application/observe-claude-hook.ts`: guarded provider/session/native-ID
+   mutation, ordered transitions, and latest-record title reconciliation.
+4. `src/integrations/claude/process.ts` and
+   `src/application/launch-managed-claude.ts`: shell-free interactive spawn,
+   managed registration, launcher PID ownership, clean/failure/termination
+   outcomes, and focus acknowledgement watcher.
+5. `src/composition/create-agent-claude.ts`, `src/cli/agent-claude.ts`, private
+   hook CLI, and `package.json`: one overrideable composition root and installed
+   `agent-claude` binary; reuse the existing terminal-mode/signal contract.
+
+### Testing and acceptance
+
+- Lifecycle fixtures cover every selected event, native ID binding, background
+  work, unknown events, malformed/oversized input, and no prompt-content leak.
+- Application tests prove atomic provider/terminal/native-ID guards, ordered
+  wait resolution plus completion, latest-title projection, and fail-open hook
+  behavior.
+- Launcher/CLI tests prove exact forwarded argv, plugin injection, inherited
+  TTY, signal cleanup, process outcomes, and no semantic control output.
+- `npm pack` contains the plugin manifest, hook config, private handler, and
+  installed `agent-claude` bin.
+
+No child stories are needed; the adapter is cohesive under one provider-owned
+boundary and one shared mutation path.
