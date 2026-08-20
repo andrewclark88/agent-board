@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-0-148-compatibility
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -66,3 +66,24 @@ the reported unsupported-version result.
 - **Adjacent issues parked:** None. The audit retained one non-blocking note
   about historical 0.147-only wording in completed feature bodies; current
   foundation docs and implementation are consistent.
+
+## Review (2026-08-20)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review at the project's standard
+weight; no independent, fresh-context, or cross-model reviewer ran. The diff
+addresses the stale allowlist directly, retains a fail-closed future-version
+boundary, and includes a regression test that failed before the fix. The full
+suite, real installed-schema probe, live app-server initialize/query probe,
+operator doctor, knowledge-index lint, and system documentation audit are
+green. Security-specific lenses were bounded to the unchanged shell-free local
+process boundary; no auth, secret, path, or remote-network behavior changed.
