@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-1
 kind: feature
-stage: drafting
+stage: implementing
 tags: [integration, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: []
@@ -38,3 +38,48 @@ do not introduce a parallel Claude session model or a second projection policy.
 The shared product boundary already exists above the current Codex adapter; it
 needs plural provider identity and capability metadata before a Claude adapter
 can join it honestly.
+
+## Design
+
+### Architectural choice
+
+Define one closed adapter registry (`codex`, `claude`) as the single source of
+truth for provider identity and observation capabilities. Extend the existing
+agent observation in place with a provider-neutral `nativeSessionId`; keep
+`nativeThreadId` as an optional Codex binding so existing durable records remain
+readable without a user-approved migration. Registration receives the adapter
+explicitly from each launcher. Projection consults the registry before treating
+launcher liveness as durable working evidence: Codex may do so, Claude may not.
+
+Rejected alternatives are parallel provider record schemas, which would fork
+transitions and projection, and a persisted free-form capability array, which
+could drift from the installed adapter implementation. Capabilities are static
+code metadata; records retain provider, evidence kind, confidence, and native
+binding evidence.
+
+### Implementation units
+
+1. `src/domain/registries.ts`: add `AGENT_ADAPTERS`, `AgentAdapter`, and immutable
+   adapter capability metadata including `workingWhileLauncherAlive` and native
+   observation/control descriptions.
+2. `src/domain/session.ts`: accept either adapter, add optional
+   `nativeSessionId`, and enforce provider-specific binding ownership while
+   continuing to parse existing Codex records.
+3. `src/application/register-session.ts` and composition callers: require the
+   registering adapter and persist it atomically on creation; reject reuse of a
+   terminal already registered to another provider.
+4. `src/domain/projection.ts`: gate the verified-launcher working exemption on
+   adapter capability. All glyph precedence and labels remain shared.
+
+### Testing and acceptance
+
+- Domain tests prove old Codex JSON remains valid, Claude identity is valid,
+  invalid cross-provider bindings fail, and the registry is exhaustive.
+- Registration tests prove provider identity is explicit and a mismatched
+  provider cannot silently claim an existing terminal.
+- Projection tests prove equivalent fresh states have identical glyphs while a
+  stale Claude working hook becomes `?` even if its launcher PID is alive.
+- No second transition reducer, projection function, or provider-specific glyph
+  vocabulary is introduced.
+
+No child stories are needed; this is one small shared-contract change.
