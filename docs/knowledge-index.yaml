@@ -6,7 +6,7 @@
 #   2 = enforce (missing v2 fields are errors)
 # Set to 2 once the project's docs are fully backfilled to v2 frontmatter.
 schema_version: 2
-generated_at: 2026-08-20T19:12:15Z
+generated_at: 2026-08-20T20:47:50Z
 generated_from: frontmatter
 total_docs: 25
 
@@ -27,7 +27,7 @@ documents:
     kind: planning
     updated: 2026-08-20
     status: locked
-    consumer_hint: Read this when configuring Ghostty tabs and the Codex status line for the recommended Agent Board workflow.
+    consumer_hint: Read this when configuring Ghostty tabs for Codex or Claude Code sessions and the Codex status line for the recommended Agent Board workflow.
 
   - path: docs/VISION.md
     title: Agent Board vision
@@ -49,7 +49,7 @@ documents:
     title: Agent Board research plan
     type: research-plan
     kind: planning
-    updated: 2026-08-14
+    updated: 2026-08-20
     status: locked
     consumer_hint: Read this for the completed pre-architecture research decisions and the entry conditions for deliberately deferred follow-up research.
 

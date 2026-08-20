@@ -4,13 +4,37 @@
 
 **Date:** 2026-08-20
 
-**Documents reviewed:** 6 system planning documents plus supporting operator docs
+**Documents reviewed:** 6 system planning documents plus README, AGENTS,
+historical/migration guidance, the knowledge indexes, research corpus, work
+substrate, and matching code/test/package surfaces
 
-**Passes run:** 1 system-level pass; no module planning docs discovered
+**Passes run:** 4 fresh system-level passes; no module planning docs discovered
 
-**Issues found:** 0 Critical, 0 High, 1 Medium, 0 Low, 2 Info
+**Final issues:** 0 Critical, 0 High, 1 Medium, 1 Low, 1 Info
 
-## Pass 1: System-Level
+## Exit gate
+
+**PASS:** the final fresh independent audit found zero Critical and zero High
+issues.
+
+## Auto-fix loop
+
+The initial independent pass found two Critical and one High issue:
+
+- the mixed-provider test returned the managed Claude row before authoritative
+  idle evidence arrived, contradicting the recorded green verification;
+- `docs/research-plan.md` still described Claude as deferred future work; and
+- `docs/ARCHITECTURE.md` omitted Claude's version-compatibility decision.
+
+The receiver strengthened the test's convergence predicate, rolled the completed
+Claude research into the research plan, and documented the Claude compatibility
+floor and warning policy. The next fresh audit found the two Claude hook entry
+files absent from the architecture module map; those entries were added. The
+following audit found `AGENTS.md` still described the pre-Claude repository
+state; its current-state section was rolled forward. The fourth fresh audit
+returned 0 Critical and 0 High.
+
+## Final findings
 
 ### Critical (0)
 
@@ -22,61 +46,68 @@ None.
 
 ### Medium (1)
 
-#### Completed feature bodies retain the former Codex compatibility boundary
+#### Historical work-item bodies retain the former Codex compatibility boundary
 
-**Files:**
+Several completed Codex feature bodies describe compatibility as `0.147.x`
+only, while current code and foundation docs accept tested `0.147.x` and
+`0.148.x` and reject `0.149.x`.
 
-- `.work/active/features/epic-managed-codex-observation-app-server-client.md`
-- `.work/active/features/epic-managed-codex-observation-supervised-launcher.md`
-- `.work/active/features/epic-operational-readiness-doctor-command.md`
+**Disposition:** non-blocking historical substrate prose. Git owns delivery
+history; current code, tests, architecture, README, and operator guidance agree.
 
-**What:** Completed design and acceptance prose describes compatibility as
-strictly Codex `0.147.x`, while the current implementation and foundation docs
-accept tested `0.147.x` and `0.148.x` releases and reject `0.149.x`.
+### Low (1)
 
-**Disposition:** Non-blocking historical substrate text. Git owns delivery
-history; the current compatibility contract is consistent in code, tests,
-operator docs, and locked architecture.
+The architecture module map omits the pre-existing `src/domain/errors.ts` file.
+This is cosmetic and unrelated to the symmetric-provider delivery.
 
-### Info (2)
+### Info (1)
 
-1. The research corpus retains the original Codex `0.147.0` runtime/schema
-   attestations. The `0.148.0` upgrade is supported by the live installed-schema
-   probe, live app-server initialization/query probe, regression test, and this
-   focused fix story rather than a separate research engagement.
-2. `story-fix-codex-0-148-compatibility` was still implementing when the audit
-   ran. Its lifecycle is completed after verification and bounded inline review.
+The Claude event-rules prose names the operator-significant events but does not
+enumerate every one of the 11 packaged hook events. All events are wired and
+handled correctly in the plugin and lifecycle mapper.
 
-## Clean Areas
+## Clean areas
 
-- README, architecture, configuration guide, and status-line example consistently
-  state `0.147.x`/`0.148.x` support and `0.149.x` fail-closed behavior.
-- Runtime code implements the documented allowlist.
-- Planning-document cross-references and generated knowledge-index paths resolve.
-- Vision, specification, principles, architecture, and research plan agree on
-  managed app-server plus remote TUI as the V1 topology.
-- Architecture-listed source, test, packaging, and CLI surfaces exist.
-- The full hermetic suite passed with 200 tests, 2 opt-in skips, and 0 failures.
+- Shared `○ ● ✓ ! ×` glyph semantics and the diagnostic `?` fallback agree
+  across vision, specification, architecture, README, research, and code.
+- Codex app-server/remote-TUI and Claude ordinary-CLI/bundled-hook topologies are
+  documented consistently with the implementation.
+- Claude `2.1.226` floor, tested `2.1.x` family, and warning behavior for newer
+  families match the compatibility and doctor code.
+- All local documentation links resolve, and no module-level planning-doc sets
+  exist.
+- The packed Claude plugin, five npm binaries, mixed-provider runtime journey,
+  and opt-in installed probes exist as documented.
+- The complete suite reports 231 tests: 228 passed, zero failed, and three
+  intentional opt-in skips.
 
-## Blocking Briefs Status
+## Blocking briefs status
 
-| Brief | Purpose | Exists on disk? | Status |
-|---|---|---:|---|
-| `.research/analysis/briefs/codex-detector-topology.md` | Managed Codex topology | Yes | Complete |
-| `.research/analysis/briefs/ghostty-registration-liveness.md` | Ghostty identity/liveness | Yes | Complete |
-| `.research/analysis/campaigns/agent-board-prior-art/parent.md` | Prior-art Scout | Yes | Complete |
+| Brief or campaign | Exists | Status |
+| --- | --- | --- |
+| `.research/analysis/briefs/codex-detector-topology.md` | Yes | Locked/complete |
+| `.research/analysis/briefs/ghostty-registration-liveness.md` | Yes | Locked/complete |
+| `.research/analysis/briefs/claude-code-adapter-feasibility.md` | Yes | Locked/complete |
+| `.research/analysis/campaigns/agent-board-prior-art/parent.md` | Yes | Complete |
+| `.research/analysis/campaigns/codex-claude-symmetric-support/parent.md` | Yes | Locked/complete |
+| `.research/analysis/positions/codex-claude-common-glyph-contract.md` | Yes | Locked/complete |
 
-## Completed-Delivery Verification
+No `[needs-brief]` gaps remain.
 
-The two blocking research outputs, architecture-listed source/test surfaces,
-packaged golden/failure/infrastructure/chaos journeys, operator doctor, and four
-npm binaries exist. The complete hermetic test suite is green.
+## Completed-output verification
 
-## Provenance Summary
+- `epic-codex-claude-symmetric-support` and all four child features are done.
+- Package bins, Claude plugin assets, application/integration modules, and tests
+  named by the architecture exist.
+- Three consecutive focused mixed-provider packed runs passed.
+- A complete serialized `npm test` run passed 228 tests with zero failures and
+  three opt-in skips; typecheck/build completed successfully.
+
+## Provenance summary
 
 | research_method | Artifacts | Latest updated |
-|---|---:|---|
-| `/research` | 2 focused briefs | 2026-08-14 |
+| --- | ---: | --- |
+| `/research` | 5 focused outputs | 2026-08-20 |
 | `/scout` | 1 campaign parent | 2026-08-14 |
 
-No focused-brief refresh candidates were identified.
+No actionable refresh candidates were identified.

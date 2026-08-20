@@ -19,7 +19,7 @@ decisions:
   - Managed working projection uses an ephemeral, reconciliation-verified launcher process existence check matched to the persisted launcher binding; the 60-second freshness threshold remains a fallback whenever that proof is unavailable.
   - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
   - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably focused, with an explicit acknowledgement command as fallback.
-  - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than being reclassified as native state.
+  - Provider compatibility is explicit and evidence-preserving: experimental Codex protocol families are version-gated, while Claude Code 2.1.226 is the hook floor, 2.1.x is tested, and newer families warn when plugin validation succeeds.
   - V1 exposes observation, naming, and board administration, with no semantic agent actions; focus navigation, notifications, GUI, remote, and hardware remain outside the runtime boundary.
 ---
 
@@ -30,7 +30,9 @@ decisions:
 > How the system is built. For product intent, see [Vision](VISION.md),
 > [Specification](SPEC.md), and [Principles](PRINCIPLES.md). Runtime decisions
 > are grounded in the [Codex topology brief](../.research/analysis/briefs/codex-detector-topology.md)
-> and [Ghostty contract brief](../.research/analysis/briefs/ghostty-registration-liveness.md).
+> and [Ghostty contract brief](../.research/analysis/briefs/ghostty-registration-liveness.md),
+> plus the [Codex-Claude campaign](../.research/analysis/campaigns/codex-claude-symmetric-support/parent.md)
+> and [common-glyph position](../.research/analysis/positions/codex-claude-common-glyph-contract.md).
 
 ## System overview
 
@@ -216,6 +218,7 @@ src/
     launch-managed-codex.ts supervised lifecycle orchestration
     list-sessions.ts        board query and diagnostic annotations
     observe-agent.ts        apply validated provider observations
+    observe-claude-hook.ts  apply validated Claude hook observations
     observe-managed-codex.ts managed Codex lifecycle observation
     prompt-rename-session.ts focused-session capture and native rename application
     reconcile-session.ts    terminal and managed-launcher liveness reconciliation
@@ -250,6 +253,7 @@ src/
     agent-name.ts           naming entry point
     agents.ts               board entry point
     agent-claude.ts         managed Claude entry point
+    agent-claude-hook.ts    packaged Claude hook event entry point
     agent-codex.ts          managed-launch entry point
     doctor-output.ts        stable doctor rendering
     output.ts               stable board/CLI error rendering
@@ -609,6 +613,11 @@ phases in the V1 architecture.
   family, not an implicit promise for every future Codex release. A future
   upgrade must refresh the generated-schema integration probe and lifecycle
   fixtures together.
+- Managed Claude observation requires Claude Code `2.1.226` or newer. The
+  `2.1.x` family is tested; newer families remain available with an explicit
+  `CLAUDE_VERSION_UNTESTED` warning when the packaged plugin still validates.
+  This separates the hard hook-contract floor from evidence about versions the
+  installed integration suite has actually exercised.
 - The packaged golden journey proves lifecycle/title/board convergence under
   one second with the default observer and focus polling settings. The interval
   remains a tunable operational parameter, but changing it is a performance

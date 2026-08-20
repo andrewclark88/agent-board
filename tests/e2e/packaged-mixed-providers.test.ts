@@ -17,7 +17,7 @@ test("packed Codex and Claude tabs share glyphs while preserving provider identi
     const named = await harness.run("agent-name", ["claude-project"], { stdinIsTTY: true });
     assert.equal(named.code, 0, named.stderr);
     claude = harness.start("agent-claude", ["--continue"]);
-    const claudeIdle = await waitForBoardRow(harness, (row) => row.adapter === "claude" && row.agentMode === "managed", 3_000);
+    const claudeIdle = await waitForBoardRow(harness, (row) => row.adapter === "claude" && row.agentMode === "managed" && row.glyph === "○", 3_000);
     assert.equal(claudeIdle.glyph, "○");
     assert.notEqual(claudeIdle.sessionId, codexIdle.sessionId);
     assert.equal(claudeIdle.label, "claude-project");

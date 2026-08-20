@@ -1,6 +1,6 @@
 # Auto-generated. DO NOT EDIT BY HAND.
 # On-demand layer — load when surfacing a specific doc's full context.
-generated_at: '2026-08-20T19:12:15Z'
+generated_at: '2026-08-20T20:47:50Z'
 generated_from: frontmatter
 schema_version: 2
 documents:
@@ -33,8 +33,9 @@ documents:
     - Ghostty 1.3+ AppleScript stable IDs and targeted tab-title overrides are the primary terminal contract.
     - Completion acknowledgement is Board-owned and clears when the registered Ghostty tab is reliably
       focused, with an explicit acknowledgement command as fallback.
-    - Experimental Codex protocol compatibility is version-gated and failures degrade visibly rather than
-      being reclassified as native state.
+    - Provider compatibility is explicit and evidence-preserving: experimental Codex protocol families
+        are version-gated, while Claude Code 2.1.226 is the hook floor, 2.1.x is tested, and newer families
+        warn when plugin validation succeeds.
     - V1 exposes observation, naming, and board administration, with no semantic agent actions; focus
       navigation, notifications, GUI, remote, and hardware remain outside the runtime boundary.
   docs/PRINCIPLES.md:
@@ -96,15 +97,17 @@ documents:
       pretending their evidence is identical.
     - Semantic actions require native capabilities and are outside the first proof.
   docs/configuration.md:
-    summary: 'Agent Board owns the compact Ghostty tab title, while Codex owns the detailed in-tab status
-      line. Minimal merge-only examples preserve Andrew''s tab and prompt-navigation workflow without
-      copying or mutating full personal configuration files.
+    summary: 'Agent Board owns the compact Ghostty tab title for both Codex and Claude Code sessions,
+      while Codex additionally owns a detailed in-tab status line. Minimal merge-only examples preserve
+      Andrew''s tab and prompt-navigation workflow without copying or mutating full personal configuration
+      files.
 
       '
     decisions:
-    - Agent Board owns the complete title of each registered Ghostty tab.
+    - Agent Board owns the complete title of each registered Ghostty tab, regardless of which agent adapter
+      manages it.
     - The Codex status line shows project, branch, model/reasoning, and context usage inside the active
-      tab.
+      tab. This status-line guidance is Codex-specific; Claude Code sessions are not covered by it.
     - Copyable examples are merged manually and never overwrite a complete personal configuration.
     - The Ghostty manual-title prompt is not used for supervised tabs because it conflicts with machine
       title ownership.
@@ -118,8 +121,9 @@ documents:
 
       '
   docs/research-plan.md:
-    summary: 'Scout and both focused pre-architecture engagements are complete. Managed remote TUI is
-      accepted as the V1 default, and the terminal V1 delivery arc is now implemented and verified. Follow-up
+    summary: 'Scout and the focused Codex, Ghostty, and Codex-Claude engagements are complete. Managed
+      remote TUI is accepted as the Codex V1 default, managed ordinary Claude with hooks is accepted as
+      the Claude topology, and the mixed-provider terminal arc is implemented and verified. Follow-up
       research remains deliberately deferred until its entry conditions are met.
 
       '
@@ -137,6 +141,8 @@ documents:
       liveness required for undo-close.
     - Managed app-server plus remote TUI is the V1 default; ordinary Codex remains a degraded-confidence
       fallback.
+    - Codex and Claude share outcome glyphs over asymmetric native evidence; Claude preserves its ordinary
+      interactive CLI and uses a bundled per-run observation plugin.
   .research/analysis/briefs/claude-code-adapter-feasibility.md:
     summary: '{inferred: feasibility from documented primitives and current repository boundaries} A hook-based
       Claude Code adapter is feasible and should be materially smaller than the Codex managed-app-server
