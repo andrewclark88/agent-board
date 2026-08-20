@@ -5,7 +5,7 @@ type: design
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-16
+updated: 2026-08-20
 summary: |
   Agent Board owns the compact Ghostty tab title, while Codex owns the detailed in-tab status line. Minimal merge-only examples preserve Andrew's tab and prompt-navigation workflow without copying or mutating full personal configuration files.
 decisions:
@@ -203,7 +203,7 @@ The safest setup path uses Codex itself:
 
 4. Enable status-line colors if desired.
 
-The tested Codex 0.147.x setup writes this configuration:
+The tested Codex 0.147.x and 0.148.x setups write this configuration:
 
 ```toml
 [tui]

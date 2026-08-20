@@ -5,7 +5,7 @@ type: architecture
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-16
+updated: 2026-08-20
 summary: |
   Agent Board V1 is a local TypeScript modular monolith with four small CLI binaries and no permanently installed daemon. Each supervised tab runs a launcher-owned Codex app-server, remote TUI, and observer; normalized state is atomically persisted and projected through one policy into Ghostty titles and the `agents` board.
 decisions:
@@ -24,7 +24,7 @@ decisions:
 
 # Architecture: Agent Board
 
-*Last updated: 2026-08-16*
+*Last updated: 2026-08-20*
 
 > How the system is built. For product intent, see [Vision](VISION.md),
 > [Specification](SPEC.md), and [Principles](PRINCIPLES.md). Runtime decisions
@@ -519,11 +519,12 @@ phases in the V1 architecture.
 
 ## Bounded compatibility and tuning checks
 
-- Managed observation currently accepts Codex `0.147.x`; `agent-board doctor`
-  reports unsupported or unrecognized versions before launch. Compatibility is
-  intentionally a narrow tested family, not an implicit promise for every
-  future Codex release. A future upgrade must refresh the generated-schema
-  integration probe and lifecycle fixtures together.
+- Managed observation currently accepts Codex `0.147.x` or `0.148.x`;
+  `agent-board doctor` reports unsupported or unrecognized versions before
+  launch, including `0.149.x`. Compatibility is intentionally a narrow tested
+  family, not an implicit promise for every future Codex release. A future
+  upgrade must refresh the generated-schema integration probe and lifecycle
+  fixtures together.
 - The packaged golden journey proves lifecycle/title/board convergence under
   one second with the default observer and focus polling settings. The interval
   remains a tunable operational parameter, but changing it is a performance
