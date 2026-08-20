@@ -1,7 +1,7 @@
 ---
 id: research-handoff-codex-claude-symmetric-support-4
 kind: feature
-stage: drafting
+stage: implementing
 tags: [integration, cli, state]
 parent: epic-codex-claude-symmetric-support
 depends_on: [research-handoff-codex-claude-symmetric-support-1, research-handoff-codex-claude-symmetric-support-2, research-handoff-codex-claude-symmetric-support-3]
@@ -40,3 +40,39 @@ and Board row parser.
 
 The cross-provider runtime matrix is the release evidence that makes shared
 glyph support a trustworthy product claim rather than a presentation-only edit.
+
+## Design
+
+### Architectural choice
+
+Extend the scenario-driven packed CLI harness with one fake Claude executable
+that understands `--version`, `plugin validate`, and an interactive launch. The
+fake discovers the injected plugin, invokes its real packaged hook command with
+native JSON fixtures, and remains independently controllable beside fake Codex.
+This tests the installed tarball and provider boundary without scripting either
+real proprietary TUI.
+
+### Implementation units
+
+1. `tests/e2e/fixtures/fake-claude.mjs`: bounded fake CLI and hook-event driver.
+2. `tests/e2e/support/package-harness.ts`: Claude scenario state, executable
+   configuration, `agent-claude` bin typing, and mixed-session helpers.
+3. Packed golden/failure/chaos tests: concurrent Codex and Claude tabs covering
+   working, input, completion/ack, stale Claude evidence, background work,
+   clean/failing/forced exits, and independent terminal identity.
+4. Installed integration smoke: validate the packaged plugin with the available
+   Claude CLI when explicitly requested by the integration-test environment.
+
+### Testing and acceptance
+
+- Equivalent fresh normalized states render `○ ● ✓ ! ×` identically for both
+  adapters; diagnostics use `?` and explain the provider-specific limitation.
+- Concurrent mixed launchers never overwrite one another's provider, terminal,
+  native session binding, title, or acknowledgement.
+- The fake exercises the real packaged plugin path and hook entrypoint, not a
+  test-only observer shortcut.
+- Full typecheck, build, unit/integration suite, npm-pack inspection, and packed
+  runtime suite pass with no raw-key semantic-control claim.
+
+No child stories are needed; the harness and matrix form one release-evidence
+boundary.
