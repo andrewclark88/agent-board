@@ -19,13 +19,19 @@ export async function observeClaudeHook(
   input: unknown,
 ): Promise<void> {
   const observation = mapClaudeHook(input, dependencies.clock.now().toISOString());
+  let projectedStateChanged = true;
   await dependencies.store.mutate(sessionId, (current) => {
     if (current.agent.adapter !== "claude" || current.agent.mode !== "managed") {
       throw new AgentBoardError("CONFLICT", `Session ${sessionId} is not a managed Claude session`);
     }
-    if (current.agent.nativeSessionId !== undefined && current.agent.nativeSessionId !== observation.nativeSessionId) {
+    if (current.agent.nativeSessionId !== undefined && current.agent.nativeSessionId !== observation.nativeSessionId && observation.event !== "SessionStart") {
       throw new AgentBoardError("CONFLICT", `Session ${sessionId} is bound to another Claude session`);
     }
+    if (
+      (observation.event === "PostToolUse" || observation.event === "PostToolUseFailure") &&
+      current.agent.nativeSessionId === observation.nativeSessionId &&
+      current.agent.activity === "working" && current.agent.attention === "none" && current.agent.health === "live"
+    ) projectedStateChanged = false;
     let next: SessionRecord = {
       ...current,
       agent: { ...current.agent, nativeSessionId: observation.nativeSessionId },
@@ -33,6 +39,7 @@ export async function observeClaudeHook(
     for (const transition of observation.transitions) next = applyAgentTransition(next, transition);
     return next;
   });
+  if (!projectedStateChanged) return;
   await reconcileSession({
     store: dependencies.store,
     terminal: dependencies.terminal,

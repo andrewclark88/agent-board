@@ -12,7 +12,10 @@ import {
 
 const at = "2026-08-14T18:00:00Z";
 
-function record(): SessionRecord {
+function record(overrides: Partial<SessionRecord["agent"]> = {}): SessionRecord {
+  const completionObservedAt = overrides.attention === "completion_unread"
+    ? overrides.completionObservedAt ?? at
+    : undefined;
   return {
     schemaVersion: SCHEMA_VERSION,
     revision: 7,
@@ -25,7 +28,8 @@ function record(): SessionRecord {
     agent: {
       adapter: "codex", mode: "managed", nativeThreadId: "thread-1", launcherPid: 12,
       activity: "idle", attention: "none", health: "live", observedAt: at,
-      evidenceKind: "initial", confidence: "authoritative",
+      evidenceKind: "initial", confidence: "authoritative", ...overrides,
+      ...(completionObservedAt === undefined ? {} : { completionObservedAt }),
     },
   };
 }
@@ -110,4 +114,23 @@ test("authoritative interruption retracts an earlier inferred completion", () =>
   assert.equal(interrupted.agent.attention, "none");
   assert.equal(interrupted.agent.health, "live");
   assert.equal(interrupted.agent.completionObservedAt, undefined);
+});
+
+test("session end clears vanished input waits without erasing failure or completion", () => {
+  const failed = applyAgentTransition(record({ health: "error", activity: "idle" }), {
+    type: "session-ended", observedAt: evidence.observedAt, evidenceKind: "claude.hook.SessionEnd", confidence: "authoritative",
+  });
+  assert.equal(failed.agent.health, "error");
+  assert.equal(failed.agent.attention, "none");
+
+  const waiting = applyAgentTransition(record({ attention: "input_required", activity: "idle" }), {
+    type: "session-ended", observedAt: evidence.observedAt, evidenceKind: "claude.hook.SessionEnd", confidence: "authoritative",
+  });
+  assert.equal(waiting.agent.attention, "none");
+
+  const completed = applyAgentTransition(record({ attention: "completion_unread", completionObservedAt: at, activity: "idle" }), {
+    type: "session-ended", observedAt: evidence.observedAt, evidenceKind: "claude.hook.SessionEnd", confidence: "authoritative",
+  });
+  assert.equal(completed.agent.attention, "completion_unread");
+  assert.equal(completed.agent.completionObservedAt, at);
 });

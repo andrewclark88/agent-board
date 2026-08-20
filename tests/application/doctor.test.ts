@@ -16,7 +16,7 @@ function dependencies(overrides: Partial<DoctorDependencies> = {}): DoctorDepend
     nodeVersion: "22.12.0",
     state: { probe: async () => "/private/state" },
     codex: { compatibility: async () => ({ compatible: true, version: "0.147.2" }) },
-    claude: { compatibility: async () => ({ compatible: true, version: "2.1.226" }), validatePlugin: async () => undefined },
+    claude: { compatibility: async () => ({ compatible: true, version: "2.1.226", tested: true }), validatePlugin: async () => undefined },
     ghostty: async () => cleanGhostty,
     ...overrides,
   };
@@ -103,10 +103,18 @@ test("diagnoseSystem reports Claude compatibility and packaged-plugin failures",
   assert.equal(unsupported.checks.find((item) => item.component === "claude")?.code, "CLAUDE_VERSION_UNSUPPORTED");
 
   const invalidPlugin = await diagnoseSystem(dependencies({
-    claude: { compatibility: async () => ({ compatible: true, version: "2.1.226" }), validatePlugin: async () => { throw new Error("blocked"); } },
+    claude: { compatibility: async () => ({ compatible: true, version: "2.1.226", tested: true }), validatePlugin: async () => { throw new Error("blocked"); } },
   }));
   assert.equal(invalidPlugin.ready, false);
   assert.deepEqual(invalidPlugin.checks.filter((item) => item.component === "claude").map((item) => item.code), ["CLAUDE_COMPATIBLE", "CLAUDE_PLUGIN_UNAVAILABLE"]);
+});
+
+test("newer Claude families are warning-level when the plugin still validates", async () => {
+  const report = await diagnoseSystem(dependencies({
+    claude: { compatibility: async () => ({ compatible: true, version: "2.2.0", tested: false }), validatePlugin: async () => undefined },
+  }));
+  assert.equal(report.ready, true);
+  assert.equal(report.checks.find((item) => item.code === "CLAUDE_VERSION_UNTESTED")?.severity, "warning");
 });
 
 test("Ghostty config errors do not fabricate an Automation failure", async () => {

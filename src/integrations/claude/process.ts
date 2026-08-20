@@ -1,4 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
+import { access } from "node:fs/promises";
+import { resolve } from "node:path";
 
 import { AgentBoardError } from "../../domain/errors.js";
 import { NodeProcessRunner, type ProcessRunner } from "../process-runner.js";
@@ -46,6 +48,8 @@ export class ClaudeProcessHost {
   async validatePlugin(pluginRoot: string): Promise<void> {
     const result = await this.runner.run({ command: this.command, args: ["plugin", "validate", pluginRoot], timeoutMs: this.diagnosticTimeoutMs, maxOutputBytes: 64 * 1024 });
     if (result.exitCode !== 0) throw new AgentBoardError("ADAPTER_FAILURE", "Claude rejected the Agent Board hook plugin");
+    try { await access(resolve(pluginRoot, "../../dist/cli/agent-claude-hook.js")); }
+    catch (error) { throw new AgentBoardError("ADAPTER_FAILURE", "Packaged Claude hook handler is unavailable", { cause: error }); }
   }
 
   start(pluginRoot: string, forwardedArgs: readonly string[], sessionId: string): ClaudeChild {
@@ -78,10 +82,18 @@ export class ClaudeProcessHost {
   async stop(child: ClaudeChild): Promise<void> {
     if (child.process.exitCode !== null || child.process.signalCode !== null) return;
     child.process.kill("SIGTERM");
-    await Promise.race([
-      child.exited.then(() => undefined),
-      new Promise<void>((resolve) => setTimeout(resolve, 5_000)),
-    ]);
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      await Promise.race([
+        child.exited.then(() => undefined),
+        new Promise<void>((resolve) => {
+          timer = setTimeout(resolve, 5_000);
+          timer.unref?.();
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
     if (child.process.exitCode === null && child.process.signalCode === null) child.process.kill("SIGKILL");
   }
 }

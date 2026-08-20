@@ -51,6 +51,7 @@ function fixture(exited: Promise<ClaudeProcessExit>) {
       },
       launcher: { isAlive: async () => true },
       clock: { now: () => new Date(at) }, workingFreshForMs: 60_000, focusPollIntervalMs: 1,
+      hookReadyTimeoutMs: 10,
     },
   };
 }
@@ -80,4 +81,16 @@ test("managed Claude termination stops the owned child and records interruption"
   assert.equal(value.stopped(), 1);
   assert.equal(value.current().agent.evidenceKind, "claude.launcher.interrupted");
   assert.equal(value.current().agent.confidence, "corroborated");
+});
+
+test("hookless managed Claude degrades to diagnostic evidence", async () => {
+  const exit = deferred<ClaudeProcessExit>();
+  const value = fixture(exit.promise);
+  const launched = launchManagedClaude(value.dependencies, [], new AbortController().signal);
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(value.current().agent.health, "stale");
+  assert.equal(value.current().agent.activity, "unknown");
+  assert.equal(value.current().agent.evidenceKind, "claude.hook.unavailable");
+  exit.resolve({ exitCode: 0, signal: null });
+  await launched;
 });

@@ -19,6 +19,7 @@ export interface ManagedClaudeLaunchDependencies {
   readonly clock: Clock;
   readonly workingFreshForMs: number;
   readonly focusPollIntervalMs: number;
+  readonly hookReadyTimeoutMs: number;
 }
 
 export interface ManagedClaudeLaunchResult {
@@ -38,6 +39,40 @@ async function reconcile(dependencies: ManagedClaudeLaunchDependencies, sessionI
   } catch {
     // Reconciliation already preserves conservative terminal diagnostics.
   }
+}
+
+async function waitForHookEvidence(
+  dependencies: ManagedClaudeLaunchDependencies,
+  sessionId: string,
+  child: ClaudeChild,
+  signal: AbortSignal,
+): Promise<void> {
+  if (!Number.isSafeInteger(dependencies.hookReadyTimeoutMs) || dependencies.hookReadyTimeoutMs < 1) {
+    throw new AgentBoardError("INVALID_RECORD", "Claude hook readiness timeout must be a positive safe integer");
+  }
+  const deadline = Date.now() + dependencies.hookReadyTimeoutMs;
+  while (!signal.aborted && child.process.exitCode === null && child.process.signalCode === null && Date.now() < deadline) {
+    const current = await dependencies.store.get(sessionId);
+    if (current === null) throw new AgentBoardError("NOT_FOUND", `Session not found: ${sessionId}`);
+    if (current.agent.nativeSessionId !== undefined && current.agent.evidenceKind.startsWith("claude.hook.")) return;
+    await new Promise<void>((resolve) => setTimeout(resolve, 25));
+  }
+  await dependencies.store.mutate(sessionId, (current) => {
+    if (current.agent.adapter !== "claude" || current.agent.nativeSessionId !== undefined || current.agent.evidenceKind.startsWith("claude.hook.")) return current;
+    return {
+      ...current,
+      agent: {
+        ...current.agent,
+        activity: "unknown",
+        health: "stale",
+        observedAt: dependencies.clock.now().toISOString(),
+        evidenceKind: "claude.hook.unavailable",
+        confidence: "corroborated",
+        detail: "Claude hook observation did not become ready",
+      },
+    };
+  });
+  await reconcile(dependencies, sessionId);
 }
 
 async function markOutcome(
@@ -89,6 +124,7 @@ export async function launchManagedClaude(
       ...current,
       agent: { ...current.agent, launcherPid: child?.pid },
     }));
+    await waitForHookEvidence(dependencies, sessionId, child, signal);
     focusController = new AbortController();
     focusPromise = watchCompletionFocus({
       store: dependencies.store,

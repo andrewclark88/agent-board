@@ -25,6 +25,7 @@ export interface AgentClaudeCompositionOptions {
   readonly pluginRoot?: string;
   readonly workingFreshForMs?: number;
   readonly focusPollIntervalMs?: number;
+  readonly hookReadyTimeoutMs?: number;
 }
 
 export function agentClaudePluginRoot(): string {
@@ -58,6 +59,7 @@ export function createAgentClaudeCommand(options: AgentClaudeCompositionOptions 
     pluginRoot: options.pluginRoot ?? agentClaudePluginRoot(),
     ...dependencies,
     focusPollIntervalMs: options.focusPollIntervalMs ?? 1_000,
+    hookReadyTimeoutMs: options.hookReadyTimeoutMs ?? 3_000,
   };
   return { launch: (args, signal) => launchManagedClaude(launchDependencies, args, signal) };
 }

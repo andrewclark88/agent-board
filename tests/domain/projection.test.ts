@@ -100,6 +100,12 @@ test("ordinary registrations remain visibly unobserved instead of claiming idle"
   assert.deepEqual(projection.diagnostics, ["session is not managed", "evidence is inferred"]);
 });
 
+test("managed sessions require non-inferred provider evidence before a primary glyph", () => {
+  const projection = projectSession(record({ mode: "managed", activity: "idle", confidence: "inferred", evidenceKind: "registration" }), { now, workingFreshForMs: 60_000 });
+  assert.equal(projection.glyph, "?");
+  assert.deepEqual(projection.diagnostics, ["evidence is inferred"]);
+});
+
 test("disconnected terminal diagnostics outrank attention glyphs", () => {
   const projection = projectSession(record({ attention: "completion_unread", health: "stale", confidence: "inferred", detail: "native detail" }, { presence: "missing" }), { now, workingFreshForMs: 60_000 });
   assert.equal(projection.glyph, "?");

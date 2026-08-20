@@ -66,3 +66,13 @@ test("hook observation rejects provider and native-session mismatches inside mut
   await value.dependencies.store.mutate("board-session", (current) => ({ ...current, agent: { ...current.agent, adapter: "codex", nativeSessionId: undefined } }));
   await assert.rejects(observeClaudeHook(value.dependencies, "board-session", { session_id: "one", hook_event_name: "Stop" }), /not a managed Claude session/);
 });
+
+test("SessionStart can authoritatively rebind a cleared or forked native session", async () => {
+  const value = fixture();
+  await observeClaudeHook(value.dependencies, "board-session", { session_id: "one", hook_event_name: "SessionStart", source: "startup" });
+  await observeClaudeHook(value.dependencies, "board-session", { session_id: "two", hook_event_name: "SessionStart", source: "clear" });
+  assert.equal(value.current().agent.nativeSessionId, "two");
+  await observeClaudeHook(value.dependencies, "board-session", { session_id: "two", hook_event_name: "UserPromptSubmit" });
+  await observeClaudeHook(value.dependencies, "board-session", { session_id: "two", hook_event_name: "SessionStart", source: "compact" });
+  assert.equal(value.current().agent.activity, "working");
+});

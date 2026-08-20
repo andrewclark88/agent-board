@@ -42,10 +42,15 @@ export function mapClaudeHook(input: unknown, observedAt: string): ClaudeLifecyc
   let transitions: readonly AgentTransition[];
   switch (event) {
     case "SessionStart":
-      transitions = [{ type: "idle", ...evidence(observedAt, event, "authoritative") }];
+      transitions = value.source === "compact"
+        ? []
+        : [{ type: "idle", ...evidence(observedAt, event, "authoritative") }];
       break;
     case "UserPromptSubmit":
-      transitions = [{ type: "working", ...evidence(observedAt, event, "corroborated", "Claude prompt submission observed; interruption is not natively observable") }];
+      transitions = [
+        { type: "input-resolved", ...evidence(observedAt, event, "corroborated") },
+        { type: "working", ...evidence(observedAt, event, "corroborated", "Claude prompt submission observed; interruption is not natively observable") },
+      ];
       break;
     case "PermissionRequest":
     case "Elicitation":
@@ -58,13 +63,16 @@ export function mapClaudeHook(input: unknown, observedAt: string): ClaudeLifecyc
       transitions = [{ type: "input-resolved", ...evidence(observedAt, event, "authoritative") }];
       break;
     case "Stop": {
-      const hasBackgroundWork = (Array.isArray(value.background_tasks) && value.background_tasks.length > 0) ||
-        (Array.isArray(value.session_crons) && value.session_crons.length > 0);
+      const hasBackgroundWork = Array.isArray(value.background_tasks) && value.background_tasks.length > 0;
+      const hasScheduledWork = Array.isArray(value.session_crons) && value.session_crons.length > 0;
       transitions = hasBackgroundWork
-        ? [{ type: "working", ...evidence(observedAt, event, "authoritative", "Claude response stopped with background work still active") }]
+        ? [
+            { type: "input-resolved", ...evidence(observedAt, event, "authoritative") },
+            { type: "working", ...evidence(observedAt, event, "authoritative", "Claude response stopped with background work still active") },
+          ]
         : [
             { type: "input-resolved", ...evidence(observedAt, event, "authoritative") },
-            { type: "completed", ...evidence(observedAt, event, "authoritative") },
+            { type: "completed", ...evidence(observedAt, event, "authoritative", hasScheduledWork ? "Claude completed with scheduled session work pending" : undefined) },
           ];
       break;
     }
@@ -75,7 +83,7 @@ export function mapClaudeHook(input: unknown, observedAt: string): ClaudeLifecyc
       ];
       break;
     case "SessionEnd":
-      transitions = [{ type: "idle", ...evidence(observedAt, event, "authoritative", "Claude session ended") }];
+      transitions = [{ type: "session-ended", ...evidence(observedAt, event, "authoritative", "Claude session ended") }];
       break;
   }
   return Object.freeze({ nativeSessionId, event, transitions: Object.freeze([...transitions]) });

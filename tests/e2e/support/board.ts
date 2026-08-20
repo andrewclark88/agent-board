@@ -10,6 +10,11 @@ export interface PackagedBoardRow {
   readonly agentMode: string;
   readonly adapter: string;
   readonly evidenceKind: string;
+  readonly adapterCapabilities: {
+    readonly workingWhileLauncherAlive: boolean;
+    readonly observation: string;
+    readonly semanticControl: string;
+  };
   readonly titleRendered: boolean;
   readonly diagnostics: readonly string[];
 }

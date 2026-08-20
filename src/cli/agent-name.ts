@@ -16,7 +16,7 @@ export interface AgentNameCommandDependencies {
 }
 
 const USAGE = "Usage: agent-name [label]\n";
-const DETACHED_LABEL_ERROR = "CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt\n";
+const DETACHED_LABEL_ERROR = "CONFLICT: agent-name <label> must run in the target terminal; use the managed agent or a shell prompt\n";
 
 function errorMessage(error: unknown): string {
   if (error instanceof AgentBoardError) return `${error.code}: ${error.message}`;

@@ -157,6 +157,7 @@ async function claudeChecks(dependencies: DoctorDependencies): Promise<DoctorChe
   }
   return [
     check("claude", "CLAUDE_COMPATIBLE", "info", `Claude Code ${result.version} supports managed hook observation`),
+    ...(result.tested ? [] : [check("claude", "CLAUDE_VERSION_UNTESTED", "warning", `Claude Code ${result.version} is newer than the tested 2.1 family`, "Run the packaged mixed-provider checks after Claude Code updates.")]),
     check("claude", "CLAUDE_PLUGIN_VALID", "info", "The packaged Agent Board Claude hook plugin is valid"),
   ];
 }

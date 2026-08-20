@@ -87,6 +87,10 @@ export function projectSession(
       glyph = "?";
       status = "diagnostic";
       break;
+    case record.agent.confidence === "inferred":
+      glyph = "?";
+      status = "diagnostic";
+      break;
     case record.agent.health === "error":
       glyph = "×";
       status = "error";

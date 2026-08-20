@@ -25,11 +25,19 @@ if (!pluginRoot) {
   process.stderr.write("Agent Board plugin was not supplied\n");
   process.exit(2);
 }
-const hookModule = `${pluginRoot}/../../dist/cli/agent-claude-hook.js`;
+const hookConfiguration = JSON.parse(readFileSync(`${pluginRoot}/hooks/hooks.json`, "utf8"));
 let sequence = -1;
 function emit(event, fields = {}) {
   const input = JSON.stringify({ session_id: "fake-claude-session", hook_event_name: event, cwd: process.cwd(), transcript_path: "/fake/transcript", ...fields });
-  const result = spawnSync(process.execPath, [hookModule], { env: process.env, input, encoding: "utf8", maxBuffer: 2 ** 20 });
+  const handler = hookConfiguration.hooks?.[event]?.[0]?.hooks?.[0];
+  if (!handler || handler.type !== "command" || !Array.isArray(handler.args)) {
+    process.stderr.write(`No packaged hook handler for ${event}\n`);
+    process.exit(2);
+  }
+  const substitute = (value) => value.replaceAll("${CLAUDE_PLUGIN_ROOT}", pluginRoot);
+  const command = substitute(handler.command);
+  const hookArgs = handler.args.map(substitute);
+  const result = spawnSync(command, hookArgs, { env: process.env, input, encoding: "utf8", maxBuffer: 2 ** 20 });
   if (result.status !== 0) process.stderr.write(result.stderr || "hook failed\n");
 }
 emit("SessionStart");

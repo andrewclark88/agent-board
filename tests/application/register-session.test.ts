@@ -187,17 +187,18 @@ test("concurrent registrations for one terminal converge on one session", async 
   }
 });
 
-test("registration preserves provider ownership for a terminal", async () => {
+test("a launcher adopts an ordinary pre-named tab but not a managed provider session", async () => {
   const root = await mkdtemp(join(tmpdir(), "agent-board-registration-"));
   try {
     const store = new JsonSessionStore({ paths: paths(join(root, "v1")) });
     const terminal = new FakeTerminal({ adapter: "ghostty", windowId: "w", tabId: "t", terminalId: "term" });
     const repositories = new FakeRepositories({});
     await registerSession(deps(store, terminal, repositories), {});
-    await assert.rejects(
-      registerSession({ ...deps(store, terminal, repositories), adapter: "claude" }, {}),
-      (error: unknown) => error instanceof AgentBoardError && error.code === "CONFLICT",
-    );
+    const adopted = await registerSession({ ...deps(store, terminal, repositories), adapter: "claude" }, {});
+    assert.equal(adopted.created, false);
+    assert.equal(adopted.record.agent.adapter, "claude");
+    await store.mutate(adopted.record.sessionId, (current) => ({ ...current, agent: { ...current.agent, mode: "managed" } }));
+    await assert.rejects(registerSession(deps(store, terminal, repositories), {}), (error: unknown) => error instanceof AgentBoardError && error.code === "CONFLICT");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

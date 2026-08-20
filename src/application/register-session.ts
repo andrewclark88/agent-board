@@ -109,7 +109,21 @@ export async function registerSession(
     const existing = matches[0];
     if (existing !== undefined) {
       if (existing.agent.adapter !== dependencies.adapter) {
-        throw new AgentBoardError("CONFLICT", `Terminal ${focused.terminalId} is already registered to ${existing.agent.adapter}`);
+        if (existing.agent.mode !== "ordinary") {
+          throw new AgentBoardError("CONFLICT", `Terminal ${focused.terminalId} is already managed by ${existing.agent.adapter}`);
+        }
+        const adopted = await dependencies.store.mutate(existing.sessionId, (current) => {
+          if (current.agent.mode !== "ordinary") {
+            throw new AgentBoardError("CONFLICT", `Terminal ${focused.terminalId} became managed during provider adoption`);
+          }
+          const { nativeThreadId: _thread, nativeSessionId: _nativeSession, ...agent } = current.agent;
+          return {
+            ...current,
+            identity: explicitLabel === undefined ? current.identity : { ...current.identity, projectLabel: explicitLabel },
+            agent: { ...agent, adapter: dependencies.adapter },
+          };
+        });
+        return { record: adopted, created: false };
       }
       if (explicitLabel === undefined) return { record: existing, created: false };
       const record = await dependencies.store.mutate(existing.sessionId, (current) => ({

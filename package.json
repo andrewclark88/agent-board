@@ -23,6 +23,7 @@
     "pretest": "npm run build",
     "test": "tsx --test --test-concurrency=1 'tests/**/*.test.ts'",
     "test:integration:codex": "tsx --test --test-concurrency=1 tests/integration/installed-codex.test.ts",
+    "test:integration:claude": "tsx --test --test-concurrency=1 tests/integration/installed-claude.test.ts",
     "test:integration:ghostty": "tsx --test --test-concurrency=1 tests/integration/disposable-ghostty.test.ts"
   },
   "dependencies": {
