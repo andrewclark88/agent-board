@@ -1,7 +1,7 @@
 ---
 id: epic-codex-claude-symmetric-support
 kind: epic
-stage: review
+stage: done
 tags: [integration, cli, state]
 parent: null
 depends_on: []
@@ -114,3 +114,33 @@ matrix for this delivery arc.
 - All four features completed one standard independent cross-model review pass,
   receiver adjudication, and green integrated verification. The assembled epic
   is ready for aggregate closure.
+
+## Review (2026-08-20)
+
+**Verdict**: Approve with verified fixes.
+
+**Material findings resolved**: the aggregate Claude Opus review found two
+current-cycle blockers: `agent-name` pre-registration prevented the promised
+pre-name then `agent-claude` workflow, and a managed Claude session could show
+false idle before any native hook evidence. Ordinary pre-registration is now
+atomically adopted by the launcher while managed collisions still fail, and
+inferred managed evidence remains diagnostic until native observation arrives.
+
+**Important findings adjudicated**: session end preserves failure/completion
+while clearing vanished input waits; scheduled work no longer masquerades as
+background activity; compaction cannot spuriously rebind lifecycle state;
+routine tool hooks avoid unnecessary terminal reconciliation; newer untested
+Claude families warn instead of hard-failing; the fake provider executes the
+real packed hook declaration; installed-test claims now match the opt-in smoke;
+and public naming/error guidance is provider-neutral. The product-wide doctor
+readiness contract and static capability registry remain deliberate design
+choices.
+
+**Verification**: `npm run typecheck`, build through `npm test`, focused
+adapter regressions, real npm-package mixed-provider journeys, and the complete
+serialized suite all pass. The final suite reports 231 tests: 228 passed, zero
+failed, and three intentional opt-in installed-environment probes skipped.
+
+Standard review weight used one independent cross-model aggregate pass. The
+receiver fixed every confirmed material issue and closed without a second pass,
+as required by standard policy.
