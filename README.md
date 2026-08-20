@@ -3,8 +3,10 @@
 Agent Board is a local attention router for terminal coding agents. It shows
 which Ghostty tabs need attention without requiring a manual tab scan.
 
-The first release supports Codex in one Ghostty tab per project on macOS. It
-owns each registered tab title and renders the same state through `agents`.
+The first release supports Codex and Claude Code, one managed session per
+Ghostty tab per project, on macOS. It owns each registered tab title and
+renders the same state through `agents`, regardless of which agent is running
+in that tab.
 
 ```text
 ● data-platform        working
@@ -20,6 +22,8 @@ owns each registered tab title and renders the same state through `agents`.
 - Node.js 22 or later
 - Ghostty 1.3 or later
 - Codex 0.147.x or 0.148.x
+- Claude Code 2.1.226 or later (the 2.1.x family is tested; newer releases run
+  with a warning as long as the packaged Agent Board plugin still validates)
 - npm
 
 Agent Board uses Ghostty AppleScript and macOS Automation. It does not require
@@ -27,10 +31,11 @@ tmux, a daemon, a database server, or network access for local board operations.
 
 ## Configure Ghostty
 
-The complete recommended tab workflow and Codex status-line pairing are in the
-[companion configuration guide](docs/configuration.md). Copyable merge fragments live
-under [`examples/ghostty/`](examples/ghostty/) and
-[`examples/codex/`](examples/codex/).
+The complete recommended tab workflow, and Codex-specific status-line pairing,
+are in the [companion configuration guide](docs/configuration.md). The tab
+workflow applies to both Codex and Claude Code sessions; the status-line
+guidance is Codex-specific. Copyable merge fragments live under
+[`examples/ghostty/`](examples/ghostty/) and [`examples/codex/`](examples/codex/).
 
 Enable AppleScript in your Ghostty configuration:
 
@@ -53,7 +58,8 @@ manual title override for those tabs.
    npm install
    ```
 
-2. Build the four commands.
+2. Build the five commands (`agent-board`, `agent-name`, `agent-codex`,
+   `agent-claude`, and `agents`).
 
    ```bash
    npm run build
@@ -83,9 +89,10 @@ manual title override for those tabs.
 The first AppleScript check may cause a macOS Automation prompt. Grant the
 requested Ghostty control, then run the doctor again.
 
-The doctor checks the runtime, local state directory, Codex, and Ghostty. It
-returns nonzero when an error blocks managed operation. Warnings do not block
-managed operation.
+The doctor checks the runtime, local state directory, Codex, Claude Code, and
+Ghostty, including whether Claude Code accepts the packaged Agent Board hook
+plugin. It returns nonzero when an error blocks managed operation. Warnings do
+not block managed operation.
 
 Use JSON for automation:
 
@@ -103,13 +110,19 @@ agent-board doctor --json
    agent-name agent-board
    ```
 
-   Before the managed launcher is running, use the target tab's normal shell
+   Before a managed launcher is running, use the target tab's normal shell
    prompt so Agent Board can safely resolve that focused terminal.
 
-3. Start Codex through the managed launcher.
+3. Start the agent through its managed launcher.
 
    ```bash
    agent-codex
+   ```
+
+   or
+
+   ```bash
+   agent-claude
    ```
 
 `agent-codex` starts a private Codex app-server and connects the normal remote
@@ -117,18 +130,32 @@ TUI. It forwards supported extra Codex arguments unchanged; Agent Board reserves
 the remote transport and terminal-title override, so arguments that set
 `--remote` or `tui.terminal_title` are rejected.
 
-The launcher gives both owned Codex processes the exact registered session
-identity through `AGENT_BOARD_SESSION_ID`. Commands descended from either
-process—including Codex `! agent-name data-platform` and an agent's tool
-execution—rename that stored session without consulting current Ghostty focus.
-If a managed Codex session was already running when this capability was
-installed, exit it and start it once more with `agent-codex` to inherit the
-session identity.
+`agent-claude` launches an ordinary, interactive Claude Code session — the same
+TUI you get from running `claude` directly — with a per-run, observation-only
+Agent Board plugin loaded alongside it. The plugin only reports Claude's own
+lifecycle hooks (prompt submitted, permission requested, turn stopped, session
+ended, and so on); it adds no approval, input-forwarding, or automation
+surface. `agent-claude` forwards supported extra Claude Code arguments
+unchanged; Agent Board reserves the interactive surface the plugin depends on,
+so `-p`, `--print`, `--bare`, and `--background` are rejected.
 
-`agent-name` only registers and names the tab. Until `agent-codex` establishes
-managed observation, the session remains ordinary and the board reports `?`
-with the diagnostic `session is not managed` instead of guessing that the tab
-is idle.
+Either launcher gives its owned agent process the exact registered session
+identity through `AGENT_BOARD_SESSION_ID`. Any command descended from that
+process—a shell escape run from inside the TUI (Codex `!`), an `agent-name`
+invocation, or an agent's own tool execution—inherits that session ID and
+renames the stored session without consulting current Ghostty focus. If a
+managed Codex or Claude session was already running when this capability was
+installed, exit it and start it once more with `agent-codex` or `agent-claude`
+to inherit the session identity.
+
+`agent-name` only registers and names the tab; it does not choose which agent
+will manage it. Until `agent-codex` or `agent-claude` establishes managed
+observation, the session remains ordinary and the board reports `?` with the
+diagnostic `session is not managed` instead of guessing that the tab is idle.
+Whichever managed launcher starts next in that tab safely adopts the pre-named
+ordinary session as its own. A tab already managed by one provider cannot be
+adopted by the other; starting the other launcher there fails with a conflict
+instead of silently switching providers.
 
 You may omit the separate `agent-name` step. The launcher then registers the
 current tab with a label derived from its repository or working directory.
@@ -161,7 +188,7 @@ The five normal symbols apply only to managed sessions with live observation:
 | `○` | The agent is idle. | None. |
 | `●` | The agent is working. | None. |
 | `✓` | Work finished and remains unread. | Visit or acknowledge it. |
-| `!` | The agent needs input. | Visit the tab and respond in Codex. |
+| `!` | The agent needs input. | Visit the tab and respond in the agent. |
 | `×` | The agent or managed launcher failed. | Visit the tab and inspect the error. |
 
 A `?` row is a diagnostic state, not a sixth agent outcome. It means Agent
@@ -171,11 +198,16 @@ Board diagnostics may report stale evidence, hidden tabs, missing terminals,
 title synchronization failures, or an ordinary session that has only been
 registered by `agent-name`. Agent Board does not relabel uncertainty as idle.
 
-A quiet managed turn may run for hours and remains `● working` while its owned
-launcher is still positively alive. Each `agents` read reconciles the registered
-launcher before rendering the board; if that launcher has vanished or cannot be
-probed, the session degrades to a `?` diagnostic until new managed evidence is
-available.
+A quiet managed turn may run for hours. Codex's working evidence stays fresh
+from launcher liveness alone, so it remains `● working` while its owned
+launcher is still positively alive. Claude Code's working evidence is
+corroborated rather than launcher-verified — a submitted prompt is observed,
+but interruption is not natively observable — so a managed Claude session ages
+from `● working` to a `?` diagnostic if no new hook evidence arrives within the
+freshness window, instead of guessing that it is still running. Each `agents`
+read reconciles the registered launcher before rendering the board; if that
+launcher has vanished or cannot be probed, the session degrades to a `?`
+diagnostic until new managed evidence is available.
 
 When you close a managed tab with `⌘W`, there is no normal cleanup command to
 run. The next `agents` refresh takes one validated Ghostty snapshot and removes
@@ -186,16 +218,17 @@ guessing.
 
 ## Rename, acknowledge, and unregister
 
-Rename the current managed Codex session with:
+Rename the current managed session with:
 
 ```bash
 agent-name data-platform
 ```
 
-Inside a session started by the current `agent-codex`, both Codex `!` and agent
-tool execution inherit its exact `AGENT_BOARD_SESSION_ID`. The one-label command
-therefore renames only that stored session and never uses the currently focused
-Ghostty tab as its target.
+Inside a session started by the current `agent-codex` or `agent-claude`, a
+Codex `!` shell escape, an agent's own tool execution, and any other process
+descended from the launcher inherit its exact `AGENT_BOARD_SESSION_ID`. The
+one-label command therefore renames only that stored session and never uses
+the currently focused Ghostty tab as its target.
 
 Outside a managed session, the same command falls back to focus-based targeting
 and must run interactively at the target tab's normal shell prompt. A detached
@@ -203,7 +236,7 @@ or non-TTY one-label invocation without a bound session ID fails before focus
 resolution with:
 
 ```text
-CONFLICT: agent-name <label> must run in the target terminal; use Codex ! or a shell prompt
+CONFLICT: agent-name <label> must run in the target terminal; use the managed agent or a shell prompt
 ```
 
 The label changes independently from agent state and session identity.
@@ -281,24 +314,35 @@ actions:
 - Remove a fixed Ghostty `title` setting.
 - Add `no-title` to title bell features.
 - Install a supported Codex 0.147.x or 0.148.x release (0.149.x is not yet supported).
+- Install a supported Claude Code 2.1.226 or later release; the 2.1.x family is
+  tested, and newer releases run with a warning as long as the packaged
+  plugin still validates.
+- Reinstall Agent Board if Claude Code rejects or cannot load the packaged
+  Agent Board hook plugin.
 
 If title clearing fails, Agent Board keeps the session record. Repair Ghostty,
 then retry `agent-board unregister` with the exact session ID.
 
-`agent-codex` captures the exact terminal mode before launching Codex. After
-every managed exit path, including observer or app-server failure, it restores
-that exact mode and clears the CSI-u and modifyOtherKeys keyboard reporting
-that Codex may have enabled. If capture fails on a terminal, Codex does not
-launch. Only if restoration itself fails does Agent Board print a recovery
-message: run `reset` and press Return to recover that shell; if necessary,
-follow with `stty sane`.
+Both `agent-codex` and `agent-claude` capture the exact terminal mode before
+launching their agent. After every managed exit path, including observer,
+app-server, or hook failure, each launcher restores that exact mode and clears
+the CSI-u and modifyOtherKeys keyboard reporting the agent may have enabled. If
+capture fails on a terminal, the agent does not launch. Only if restoration
+itself fails does Agent Board print a recovery message: run `reset` and press
+Return to recover that shell; if necessary, follow with `stty sane`.
 
 ## Current limits
 
-- Codex is the only agent adapter.
-- Managed launch through `agent-codex` provides the supported state fidelity.
-- A separately started `codex` process is not attached after launch.
-- One supervised agent per Ghostty tab is supported.
+- Codex and Claude Code are the supported agent adapters.
+- Managed launch through `agent-codex` or `agent-claude` provides the
+  supported state fidelity.
+- A separately started `codex` or `claude` process is not attached after
+  launch.
+- One supervised agent per Ghostty tab is supported; a tab already managed by
+  one provider cannot be adopted by the other.
+- `agent-claude` runs Claude Code's own interactive TUI unchanged; the
+  packaged plugin only observes lifecycle hooks and adds no approval, input,
+  or automation surface of its own.
 - The first release does not send approvals, input, interrupts, or keystrokes.
 - The first release has no GUI, menu-bar app, remote service, or hardware dependency.
 
@@ -314,17 +358,21 @@ npm test
 ```
 
 The suite builds and installs a packed artifact in temporary directories. It
-uses private executable substitutes and does not touch live Ghostty tabs.
-The current suite contains 202 tests: 200 pass by default and the two live
-compatibility probes below remain skipped until explicitly enabled.
+uses private executable substitutes and does not touch live Ghostty tabs, a
+live Codex install, or a live Claude Code install. The current suite contains
+231 tests; the three live compatibility and hardware probes below remain
+skipped until explicitly enabled.
 
-Two live compatibility probes are opt-in. The Codex probe reads generated
-protocol schemas, including the `thread/loaded/list` ID response and the
-`thread/read` metadata response used during discovery. The Ghostty probe
+Three probes are opt-in. The Codex probe reads generated protocol schemas,
+including the `thread/loaded/list` ID response and the `thread/read` metadata
+response used during discovery. The Claude probe runs an installed `claude`
+binary directly to confirm its reported version and that `claude plugin
+validate` accepts the packaged Agent Board hook plugin. The Ghostty probe
 creates and removes a disposable window.
 
 ```bash
 AGENT_BOARD_LIVE_CODEX=1 npm run test:integration:codex
+AGENT_BOARD_LIVE_CLAUDE=1 npm run test:integration:claude
 AGENT_BOARD_LIVE_GHOSTTY=1 npm run test:integration:ghostty
 ```
 
