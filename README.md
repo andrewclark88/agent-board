@@ -21,7 +21,7 @@ in that tab.
 - macOS
 - Node.js 22 or later
 - Ghostty 1.3 or later
-- Codex 0.147.x or 0.148.x
+- Codex 0.147.x, 0.148.x, or 0.149.x
 - Claude Code 2.1.226 or later (the 2.1.x family is tested; newer releases run
   with a warning as long as the packaged Agent Board plugin still validates)
 - npm
@@ -313,7 +313,7 @@ actions:
 - Grant macOS Automation permission.
 - Remove a fixed Ghostty `title` setting.
 - Add `no-title` to title bell features.
-- Install a supported Codex 0.147.x or 0.148.x release (0.149.x is not yet supported).
+- Install a supported Codex 0.147.x, 0.148.x, or 0.149.x release (0.150.x is not yet supported).
 - Install a supported Claude Code 2.1.226 or later release; the 2.1.x family is
   tested, and newer releases run with a warning as long as the packaged
   plugin still validates.
