@@ -5,7 +5,7 @@ type: architecture
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-08-20
+updated: 2026-08-25
 summary: |
   Agent Board is a local TypeScript modular monolith with five small CLI binaries and no permanently installed daemon. Each supervised tab runs a provider-specific managed launcher: Codex uses app-server plus remote TUI, while Claude preserves its ordinary interactive CLI and emits lifecycle evidence through bundled hooks. Both persist normalized state and share one Ghostty-title and board projection policy.
 decisions:
@@ -25,7 +25,7 @@ decisions:
 
 # Architecture: Agent Board
 
-*Last updated: 2026-08-20*
+*Last updated: 2026-08-25*
 
 > How the system is built. For product intent, see [Vision](VISION.md),
 > [Specification](SPEC.md), and [Principles](PRINCIPLES.md). Runtime decisions
@@ -607,12 +607,12 @@ phases in the V1 architecture.
 
 ## Bounded compatibility and tuning checks
 
-- Managed observation currently accepts Codex `0.147.x` or `0.148.x`;
-  `agent-board doctor` reports unsupported or unrecognized versions before
-  launch, including `0.149.x`. Compatibility is intentionally a narrow tested
-  family, not an implicit promise for every future Codex release. A future
-  upgrade must refresh the generated-schema integration probe and lifecycle
-  fixtures together.
+- Managed observation currently accepts Codex `0.147.x`, `0.148.x`, or
+  `0.149.x`; `agent-board doctor` reports unsupported or unrecognized versions
+  before launch, including `0.150.x`. Compatibility is intentionally a narrow
+  tested family, not an implicit promise for every future Codex release. A
+  future upgrade must refresh the generated-schema integration probe and
+  lifecycle fixtures together.
 - Managed Claude observation requires Claude Code `2.1.226` or newer. The
   `2.1.x` family is tested; newer families remain available with an explicit
   `CLAUDE_VERSION_UNTESTED` warning when the packaged plugin still validates.
