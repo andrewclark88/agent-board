@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-0-149-compatibility
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -61,3 +61,23 @@ current app-server schema shapes against the real `0.149.1` executable.
   doing so could register and take over the operator's currently focused Ghostty
   tab; the failed version gate that caused the silent exit was exercised directly.
 - Adjacent issues parked: none.
+
+## Review (2026-08-25)
+
+**Verdict**: Approve
+
+**Blockers**: none
+
+**Important**: none
+
+**Nits**: none
+
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review at the project-standard weight;
+no independent, fresh-context, or cross-model reviewer ran. Correctness, regression
+coverage, design alignment, compatibility boundary, security applicability, naming,
+and foundation-doc alignment were reviewed against the committed diff. The change
+widens only the explicitly tested minor allowlist, preserves rejection of the next
+unverified family, and introduces no command-execution, auth, schema, or public-API
+risk. Verification is green and there are no material findings.
