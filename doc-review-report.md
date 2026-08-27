@@ -2,43 +2,39 @@
 
 **Project:** Agent Board
 
-**Date:** 2026-08-25
+**Date:** 2026-08-27
 
-**Documents reviewed:** 6 system planning documents plus README, AGENTS, the
-knowledge indexes, current work state, and matching code, test, example, and
-package surfaces
+**Scope:** Independent re-verification of the Codex `0.149.x` → `0.150.x`
+supported-family widening (story: `.work/active/stories/story-fix-codex-0-150-compatibility.md`,
+stage `review`). This is a fresh, from-scratch audit — not a diff against
+the prior report — covering all 6 indexed system planning docs
+(`docs/ARCHITECTURE.md`, `docs/configuration.md`, `docs/VISION.md`,
+`docs/SPEC.md`, `docs/PRINCIPLES.md`, `docs/research-plan.md`), `README.md`,
+`AGENTS.md`, the three knowledge-index layers, the source adapter
+(`src/integrations/codex/compatibility.ts` and its consumer
+`src/application/doctor.ts`), the regression test
+(`tests/integrations/codex/endpoint.test.ts`), the copyable example
+(`examples/codex/status-line.toml`), and a repo-wide grep for every remaining
+Codex version-string reference to catch drift outside the named files.
 
-**Passes run:** 2 fresh system-level passes; no module planning docs discovered
+**Documents reviewed:** 6 system planning docs + README + AGENTS + 3
+knowledge-index layers + code/test/example surfaces. No module-level planning
+docs are discoverable in this project (single-module system).
 
-**Final issues:** 0 Critical, 0 High, 0 Medium, 0 Low, 1 Info
+**Passes run:** 1 system-level pass (no modules discovered).
 
-## Exit gate
+**Issues found:** 0 Critical, 0 High, 0 Medium, 0 Low, 1 Info
 
-**PASS:** the mandatory fresh independent audit found zero Critical and zero
-High issues.
+**Exit gate: PASS.** 0 Critical, 0 High.
 
-## Auto-fix loop
-
-The initial independent pass found one High, one Medium, one Low, and one Info
-issue:
-
-- compatibility documentation had been committed before the matching source and
-  regression test, so committed code still rejected Codex `0.149.x`;
-- `examples/codex/status-line.toml` still named only the `0.147.x` and `0.148.x`
-  tested families;
-- the generated knowledge indexes had not incorporated the updated planning-doc
-  frontmatter; and
-- this report still described the previous `0.149.x` rejection boundary.
-
-The receiver committed the source, regression test, example, and repair story,
-then regenerated all three knowledge-index layers. The required fresh full audit
-returned 0 Critical, 0 High, 0 Medium, and 0 Low findings.
-
-## Final findings
+## Pass 1: System-Level
 
 ### Critical (0)
 
-None.
+None. The prior report's Critical — `docs/ARCHITECTURE.md:610-612` omitting
+`0.149.x` from the accepted family — is confirmed fixed on disk. Current text
+reads "Codex `0.147.x`, `0.148.x`, `0.149.x`, or `0.150.x`" (lines 610-611),
+matching `SUPPORTED_CODEX_FAMILY` in code.
 
 ### High (0)
 
@@ -46,7 +42,10 @@ None.
 
 ### Medium (0)
 
-None.
+None. The prior report's Medium — a stale header comment in
+`examples/codex/status-line.toml` — is confirmed fixed on disk. Line 1 now
+reads "...on the tested 0.147.x, 0.148.x, 0.149.x, or 0.150.x setup.",
+matching `docs/configuration.md:214`.
 
 ### Low (0)
 
@@ -54,32 +53,80 @@ None.
 
 ### Info (1)
 
-The previous root-level report predated this compatibility repair. This report
-replaces it with the current audit result.
+This report supersedes the prior root-level `doc-review-report.md`, which
+recorded the audit that found and specified the fixes for the Critical and
+Medium findings closed out above.
 
-## Clean areas
+## Clean Areas
 
-- Codex `0.147.x`, `0.148.x`, and `0.149.x` support and the rejected `0.150.x`
-  boundary agree across source, tests, README, architecture, configuration, and
-  the copyable status-line example.
-- `SUPPORTED_CODEX_FAMILY` remains single-sourced in the compatibility adapter
-  and consumed by doctor diagnostics.
-- The complete suite still reports 231 tests: 228 passed, zero failed, and three
-  intentional opt-in skips.
-- All referenced research and example files exist, and all six planning docs
-  retain compliant frontmatter.
-- The repair story is at review with checked acceptance criteria and recorded
-  verification evidence.
+- **Single source of truth holds.** `SUPPORTED_CODEX_MINORS = new Set([147,
+  148, 149, 150])` and `SUPPORTED_CODEX_FAMILY = "0.147.x, 0.148.x, 0.149.x,
+  or 0.150.x"` (`src/integrations/codex/compatibility.ts:4-5`) are the only
+  definitions; `src/application/doctor.ts` consumes `SUPPORTED_CODEX_FAMILY`
+  by reference for all three doctor messages (`CODEX_UNAVAILABLE`,
+  `CODEX_VERSION_UNSUPPORTED`, `CODEX_VERSION_UNKNOWN`) with no duplicated
+  literal family strings in code paths.
+- **Regression test matches the code contract.**
+  `tests/integrations/codex/endpoint.test.ts:34-42` asserts `0.147.0-0.150.1`
+  all compatible and `0.151.0` unsupported — full inclusive boundary coverage
+  of the accepted family plus the first excluded minor.
+- **All four operator-facing documents agree**, verified independently by
+  direct read (not by diff against the prior report):
+  - `docs/ARCHITECTURE.md:610-611` — "Codex `0.147.x`, `0.148.x`, `0.149.x`,
+    or `0.150.x`"
+  - `docs/configuration.md:214` — "tested Codex 0.147.x, 0.148.x, 0.149.x,
+    and 0.150.x setups"
+  - `README.md:24,316` — "Codex 0.147.x, 0.148.x, 0.149.x, or 0.150.x"
+  - `examples/codex/status-line.toml:1` — "tested 0.147.x, 0.148.x, 0.149.x,
+    or 0.150.x setup"
+- **Repo-wide grep for every `0.14x`/`0.15x` string** (across `.md`, `.ts`,
+  `.toml`, `.yaml`, excluding `.research/`) turned up no other stale
+  version-family claim. Other hits are either individual test fixture
+  versions inside the accepted range (`tests/integrations/codex/process.test.ts`,
+  `tests/application/launch-managed-codex.test.ts`, `tests/application/doctor.test.ts`,
+  `tests/e2e/packaged-failure.test.ts` — all use in-range sample versions, not
+  family statements) or historical `.work/archive/` and `.work/active/`
+  substrate items describing scope as of their own creation date (e.g. the
+  `0.148.x`-era epic/feature files), which are work-tracking artifacts, not
+  planning docs, and are expected to reflect the family known at the time
+  they were written.
+- **Full test suite is green:** `npm test` → 231 tests, 228 passed, 0 failed,
+  3 intentional opt-in skips (fresh run performed for this audit).
+- `docs/VISION.md`, `docs/SPEC.md`, `docs/PRINCIPLES.md`, and
+  `docs/research-plan.md` make no Codex-version-family claims, so they carry
+  no drift risk from this change.
+- `AGENTS.md` makes no version-specific Codex claims.
+- All six system planning docs carry compliant frontmatter
+  (`description`, `type`, `updated`, `status`); no frontmatter findings.
+- The three knowledge-index layers (`docs/knowledge-index.yaml`,
+  `docs/knowledge-index-nav.yaml`, `docs/knowledge-index-detail.yaml`) were
+  regenerated at `generated_at: 2026-08-27T23:43:09Z`, at or after every
+  system doc's frontmatter `updated: 2026-08-27` timestamp, and contain no
+  Codex version-family statements of their own that could drift (the only
+  version-tagged index content is unrelated schema-evidence tags like
+  `symmetry-codex-local-schema-0-148-0`, which name a research artifact, not
+  a supported-family claim).
 
-## Blocking research status
+## Blocking Briefs Status
 
-None. All research engagements named by `docs/research-plan.md` are complete and
-locked. The Codex `0.149.x` widening is a bounded compatibility repair under the
-existing narrow-tested-family policy, not a new architectural decision requiring
-research.
+Not applicable — this project has no `roadmap.md`; `docs/research-plan.md`
+(status: `locked`) records all pre-architecture research as complete with no
+open blocking briefs. The Codex `0.149.x`→`0.150.x` widening is a bounded
+compatibility repair under the existing narrow-tested-family policy, not a
+new architectural decision requiring research.
 
-## Provenance summary
+## DONE Phase Verification
+
+Not applicable — this project tracks delivery through `.work/` substrate
+items rather than a phased roadmap. `story-fix-codex-0-150-compatibility` is
+at `stage: implementing` (not `done`); the working tree currently holds the
+uncommitted fix with zero outstanding Critical/High/Medium/Low doc findings
+against it.
+
+## Provenance Summary
 
 The managed-provider topology remains grounded in the locked Codex detector,
-Ghostty registration/liveness, and Codex-Claude symmetric-support research. No
-new provenance was fabricated for this repair.
+Ghostty registration/liveness, and Codex-Claude symmetric-support research
+(all `research_method: /research` or `/scout`, all `status: locked`). No new
+provenance was fabricated or required for this bounded compatibility repair;
+no refresh candidates identified.

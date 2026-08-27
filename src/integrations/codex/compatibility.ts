@@ -1,8 +1,8 @@
 import { AgentBoardError } from "../../domain/errors.js";
 
 const VERSION = /\b(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?\b/gu;
-const SUPPORTED_CODEX_MINORS = new Set([147, 148, 149]);
-export const SUPPORTED_CODEX_FAMILY = "0.147.x, 0.148.x, or 0.149.x";
+const SUPPORTED_CODEX_MINORS = new Set([147, 148, 149, 150]);
+export const SUPPORTED_CODEX_FAMILY = "0.147.x, 0.148.x, 0.149.x, or 0.150.x";
 
 export function parseCodexVersion(output: string): string {
   const versions = [...output.matchAll(VERSION)].map((match) => `${match[1]}.${match[2]}.${match[3]}`);
