@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-0-150-compatibility
 kind: story
-stage: review
+stage: done
 tags: [bug, integration]
 parent: null
 depends_on: []
@@ -58,3 +58,20 @@ accepted by the same compatibility boundary used by managed launch and doctor.
   a mandatory fresh Sonnet doc-review audit reports 0 Critical and 0 High
   findings after its initial architecture/example findings were corrected.
 - **Adjacent issues parked:** none.
+
+## Review (2026-08-27)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review at standard project weight;
+no independent or cross-model implementation reviewer ran. Correctness, tests,
+design alignment, external-process security boundaries, compatibility behavior,
+foundation-doc alignment, and naming/comments were reviewed against commit
+`e58b512`, the original doctor failure, the live 0.150.1 probes, and the green
+full suite. The separate Sonnet pass was documentation consistency verification,
+not implementation review.
