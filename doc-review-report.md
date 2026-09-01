@@ -2,28 +2,21 @@
 
 **Project:** Agent Board
 
-**Date:** 2026-08-27
+**Date:** 2026-09-01
 
-**Scope:** Independent re-verification of the Codex `0.149.x` → `0.150.x`
-supported-family widening (story: `.work/active/stories/story-fix-codex-0-150-compatibility.md`,
-stage `review`). This is a fresh, from-scratch audit — not a diff against
-the prior report — covering all 6 indexed system planning docs
-(`docs/ARCHITECTURE.md`, `docs/configuration.md`, `docs/VISION.md`,
-`docs/SPEC.md`, `docs/PRINCIPLES.md`, `docs/research-plan.md`), `README.md`,
-`AGENTS.md`, the three knowledge-index layers, the source adapter
-(`src/integrations/codex/compatibility.ts` and its consumer
-`src/application/doctor.ts`), the regression test
-(`tests/integrations/codex/endpoint.test.ts`), the copyable example
-(`examples/codex/status-line.toml`), and a repo-wide grep for every remaining
-Codex version-string reference to catch drift outside the named files.
+**Scope:** Fresh system-level consistency audit after admitting the verified
+Codex `0.152.x` protocol family. Reviewed all six indexed planning docs,
+`README.md`, `AGENTS.md`, the generated knowledge-index layers, the Codex
+compatibility adapter and tests, the copyable status-line example, relevant
+completed work items, and local cross-references. No module planning sets were
+discovered.
 
-**Documents reviewed:** 6 system planning docs + README + AGENTS + 3
-knowledge-index layers + code/test/example surfaces. No module-level planning
-docs are discoverable in this project (single-module system).
+**Documents reviewed:** 6 system planning docs plus README, AGENTS, generated
+knowledge indexes, and supporting code/test/work evidence.
 
 **Passes run:** 1 system-level pass (no modules discovered).
 
-**Issues found:** 0 Critical, 0 High, 0 Medium, 0 Low, 1 Info
+**Issues found:** 0 Critical, 0 High, 2 Medium, 0 Low, 0 Info
 
 **Exit gate: PASS.** 0 Critical, 0 High.
 
@@ -31,102 +24,87 @@ docs are discoverable in this project (single-module system).
 
 ### Critical (0)
 
-None. The prior report's Critical — `docs/ARCHITECTURE.md:610-612` omitting
-`0.149.x` from the accepted family — is confirmed fixed on disk. Current text
-reads "Codex `0.147.x`, `0.148.x`, `0.149.x`, or `0.150.x`" (lines 610-611),
-matching `SUPPORTED_CODEX_FAMILY` in code.
+None.
 
 ### High (0)
 
 None.
 
-### Medium (0)
+### Medium (2)
 
-None. The prior report's Medium — a stale header comment in
-`examples/codex/status-line.toml` — is confirmed fixed on disk. Line 1 now
-reads "...on the tested 0.147.x, 0.148.x, 0.149.x, or 0.150.x setup.",
-matching `docs/configuration.md:214`.
+#### Narrow-proof principle predates symmetric provider support
+
+**Files:** `docs/PRINCIPLES.md:52`, `docs/VISION.md:10`, `docs/VISION.md:49`,
+`AGENTS.md:24`
+
+**What:** The principle still describes the narrow proof as a macOS + Ghostty +
+Codex path, while current product truth and completed delivery include managed
+Codex and Claude Code tabs.
+
+**Fix:** In a separate documentation-alignment change, describe the narrow
+proof as the current macOS + Ghostty supervised path or explicitly name both
+providers. This pre-existing drift is outside the bounded Codex `0.152.x`
+compatibility repair and was not silently bundled.
+
+#### Compatibility story had not yet completed its lifecycle
+
+**Files:** `.work/active/stories/story-fix-codex-0-152-compatibility.md`,
+`src/integrations/codex/compatibility.ts`,
+`tests/integrations/codex/endpoint.test.ts`
+
+**What:** At audit time the story remained at `stage: implementing` even though
+the implementation and verification were present in the working tree.
+
+**Fix:** Complete the story's normal implementation, inline review, and archive
+lifecycle in this change.
 
 ### Low (0)
 
 None.
 
-### Info (1)
+### Info (0)
 
-This report supersedes the prior root-level `doc-review-report.md`, which
-recorded the audit that found and specified the fixes for the Critical and
-Medium findings closed out above.
+None.
 
 ## Clean Areas
 
-- **Single source of truth holds.** `SUPPORTED_CODEX_MINORS = new Set([147,
-  148, 149, 150])` and `SUPPORTED_CODEX_FAMILY = "0.147.x, 0.148.x, 0.149.x,
-  or 0.150.x"` (`src/integrations/codex/compatibility.ts:4-5`) are the only
-  definitions; `src/application/doctor.ts` consumes `SUPPORTED_CODEX_FAMILY`
-  by reference for all three doctor messages (`CODEX_UNAVAILABLE`,
-  `CODEX_VERSION_UNSUPPORTED`, `CODEX_VERSION_UNKNOWN`) with no duplicated
-  literal family strings in code paths.
-- **Regression test matches the code contract.**
-  `tests/integrations/codex/endpoint.test.ts:34-42` asserts `0.147.0-0.150.1`
-  all compatible and `0.151.0` unsupported — full inclusive boundary coverage
-  of the accepted family plus the first excluded minor.
-- **All four operator-facing documents agree**, verified independently by
-  direct read (not by diff against the prior report):
-  - `docs/ARCHITECTURE.md:610-611` — "Codex `0.147.x`, `0.148.x`, `0.149.x`,
-    or `0.150.x`"
-  - `docs/configuration.md:214` — "tested Codex 0.147.x, 0.148.x, 0.149.x,
-    and 0.150.x setups"
-  - `README.md:24,316` — "Codex 0.147.x, 0.148.x, 0.149.x, or 0.150.x"
-  - `examples/codex/status-line.toml:1` — "tested 0.147.x, 0.148.x, 0.149.x,
-    or 0.150.x setup"
-- **Repo-wide grep for every `0.14x`/`0.15x` string** (across `.md`, `.ts`,
-  `.toml`, `.yaml`, excluding `.research/`) turned up no other stale
-  version-family claim. Other hits are either individual test fixture
-  versions inside the accepted range (`tests/integrations/codex/process.test.ts`,
-  `tests/application/launch-managed-codex.test.ts`, `tests/application/doctor.test.ts`,
-  `tests/e2e/packaged-failure.test.ts` — all use in-range sample versions, not
-  family statements) or historical `.work/archive/` and `.work/active/`
-  substrate items describing scope as of their own creation date (e.g. the
-  `0.148.x`-era epic/feature files), which are work-tracking artifacts, not
-  planning docs, and are expected to reflect the family known at the time
-  they were written.
-- **Full test suite is green:** `npm test` → 231 tests, 228 passed, 0 failed,
-  3 intentional opt-in skips (fresh run performed for this audit).
-- `docs/VISION.md`, `docs/SPEC.md`, `docs/PRINCIPLES.md`, and
-  `docs/research-plan.md` make no Codex-version-family claims, so they carry
-  no drift risk from this change.
-- `AGENTS.md` makes no version-specific Codex claims.
-- All six system planning docs carry compliant frontmatter
-  (`description`, `type`, `updated`, `status`); no frontmatter findings.
-- The three knowledge-index layers (`docs/knowledge-index.yaml`,
-  `docs/knowledge-index-nav.yaml`, `docs/knowledge-index-detail.yaml`) were
-  regenerated at `generated_at: 2026-08-27T23:43:09Z`, at or after every
-  system doc's frontmatter `updated: 2026-08-27` timestamp, and contain no
-  Codex version-family statements of their own that could drift (the only
-  version-tagged index content is unrelated schema-evidence tags like
-  `symmetry-codex-local-schema-0-148-0`, which name a research artifact, not
-  a supported-family claim).
+- The Codex support matrix is consistent across code, unit tests, README,
+  architecture, configuration guidance, and the copyable status-line example:
+  `0.147.x` through `0.150.x` plus `0.152.x` are admitted, while `0.151.x` and
+  unverified later releases remain excluded.
+- The installed `codex-cli 0.152.0` passes the generated-schema integration
+  probe, and `agent-board doctor --json` reports `CODEX_COMPATIBLE`.
+- All six planning documents have conformant indexed frontmatter. Knowledge
+  regeneration completed with zero errors.
+- All local Markdown cross-references checked across AGENTS, README, and the
+  planning corpus resolve.
+- Mixed-provider support, packaged end-to-end behavior, the five public bins,
+  and doctor claims are backed by code, passing tests, and completed work items.
+- The new `0.152.x` documentation introduced no contradiction.
 
 ## Blocking Briefs Status
 
-Not applicable — this project has no `roadmap.md`; `docs/research-plan.md`
-(status: `locked`) records all pre-architecture research as complete with no
-open blocking briefs. The Codex `0.149.x`→`0.150.x` widening is a bounded
-compatibility repair under the existing narrow-tested-family policy, not a
-new architectural decision requiring research.
+No roadmap or module phase document exists. All planning-linked research named
+by AGENTS and `docs/research-plan.md` exists on disk: the Scout parent, Codex
+detector brief, Ghostty registration/liveness brief, Codex-Claude campaign
+parent, Claude feasibility brief, and common-glyph position. No missing
+next-phase blocker was found.
 
 ## DONE Phase Verification
 
-Not applicable — this project tracks delivery through `.work/` substrate
-items rather than a phased roadmap. `story-fix-codex-0-150-compatibility` is
-at `stage: implementing` (not `done`); the working tree currently holds the
-uncommitted fix with zero outstanding Critical/High/Medium/Low doc findings
-against it.
+- `package.json` exposes all five documented public binaries.
+- `npm test` passed on 2026-09-01: 231 tests, 228 passed, 0 failed, and 3
+  intentional opt-in skips.
+- `AGENT_BOARD_LIVE_CODEX=1 npm run test:integration:codex` passed against
+  installed `codex-cli 0.152.0`.
+- `node dist/cli/agent-board.js doctor --json` reported the full local system
+  ready and Codex `0.152.0` compatible.
+- Completed mixed-provider substrate items and packaged tests substantiate the
+  current provider-support claims.
 
 ## Provenance Summary
 
-The managed-provider topology remains grounded in the locked Codex detector,
-Ghostty registration/liveness, and Codex-Claude symmetric-support research
-(all `research_method: /research` or `/scout`, all `status: locked`). No new
-provenance was fabricated or required for this bounded compatibility repair;
-no refresh candidates identified.
+The planning-linked decision corpus contains five `/research` artifacts (latest
+updated 2026-08-20) and one `/scout` artifact (latest updated 2026-08-14). No
+lower-tier refresh candidate was identified for this bounded compatibility
+repair.

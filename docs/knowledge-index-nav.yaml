@@ -3,7 +3,7 @@
 # Provides corpus situational awareness only. Read knowledge-index.yaml for full index.
 
 schema_version: 3
-generated_at: 2026-08-27T23:46:23Z
+generated_at: 2026-09-01T18:14:36Z
 generated_from: frontmatter
 total_docs: 25
 
@@ -17,7 +17,7 @@ substrate_summary:
   active:
     epic: 6
     feature: 19
-    story: 68
+    story: 69
     release: 0
   backlog: 12
   releases: {}
@@ -28,11 +28,11 @@ recent:
   - path: docs/ARCHITECTURE.md
     title: "Architecture: Agent Board"
     kind: planning
-    updated: 2026-08-27
+    updated: 2026-09-01
   - path: docs/configuration.md
     title: "Companion terminal configuration"
     kind: planning
-    updated: 2026-08-27
+    updated: 2026-09-01
   - path: docs/VISION.md
     title: "Agent Board vision"
     kind: planning
