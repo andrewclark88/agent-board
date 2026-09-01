@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-0-152-compatibility
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -63,3 +63,23 @@ still exposes all lifecycle shapes consumed by Agent-Board.
   Codex-only wording for the narrow proof. The doc review records this as a
   Medium finding; per its policy, it is surfaced rather than auto-fixed inside
   this compatibility repair.
+
+## Review (2026-09-01)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review at the project's standard
+weight; no independent, fresh-context, or cross-model reviewer ran. Correctness
+review confirmed the change addresses the static version-gate root cause while
+retaining the explicit `0.151.x` exclusion. The regression assertion fails on
+the old gate and passes on the new one; the live schema probe, full suite, and
+doctor result supply proportionate boundary evidence. The change only broadens
+an explicitly tested compatibility family, introduces no command-execution or
+data-handling change, and keeps operator and foundation assertions aligned.
+Security-specific review was non-applicable beyond confirming no executable
+boundary changed.
