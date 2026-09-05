@@ -2,25 +2,24 @@
 
 **Project:** Agent Board
 
-**Date:** 2026-09-01
+**Date:** 2026-09-05
 
-**Scope:** Fresh system-level consistency audit after admitting the verified
-Codex `0.152.x` protocol family. Reviewed all six indexed planning docs,
-`README.md`, `AGENTS.md`, the generated knowledge-index layers, the Codex
-compatibility adapter and tests, the copyable status-line example, relevant
-completed work items, and local cross-references. No module planning sets were
-discovered.
+**Scope:** Fresh system-level consistency audit after admitting the
+live-verified Codex `0.153.x` protocol family. Reviewed all six indexed planning
+docs, `README.md`, `AGENTS.md`, generated knowledge indexes, the Codex
+compatibility adapter and regression test, relevant delivery state, and local
+cross-references. No module-level planning sets were discovered.
 
-**Documents reviewed:** 6 system planning docs plus README, AGENTS, generated
-knowledge indexes, and supporting code/test/work evidence.
+**Documents reviewed:** 6 system planning docs plus supporting operator and
+implementation surfaces
 
-**Passes run:** 1 system-level pass (no modules discovered).
+**Passes run:** 1 system-level pass
 
-**Issues found:** 0 Critical, 0 High, 2 Medium, 0 Low, 0 Info
+**Issues found:** 0 Critical, 0 High, 1 Medium, 0 Low, 1 Info
 
 **Exit gate: PASS.** 0 Critical, 0 High.
 
-## Pass 1: System-Level
+## Findings
 
 ### Critical (0)
 
@@ -30,81 +29,63 @@ None.
 
 None.
 
-### Medium (2)
+### Medium (1)
 
-#### Narrow-proof principle predates symmetric provider support
+#### Ordinary-Codex fallback wording is stale
 
-**Files:** `docs/PRINCIPLES.md:52`, `docs/VISION.md:10`, `docs/VISION.md:49`,
-`AGENTS.md:24`
+**File:** `docs/research-plan.md:18`
 
-**What:** The principle still describes the narrow proof as a macOS + Ghostty +
-Codex path, while current product truth and completed delivery include managed
-Codex and Claude Code tabs.
+**What:** The research plan calls ordinary Codex a degraded-confidence
+fallback. Current architecture, specification, README, and implementation expose
+ordinary registration as diagnostic-only until `agent-codex` attaches managed
+observation; there is no ordinary-Codex lifecycle observer.
 
-**Fix:** In a separate documentation-alignment change, describe the narrow
-proof as the current macOS + Ghostty supervised path or explicitly name both
-providers. This pre-existing drift is outside the bounded Codex `0.152.x`
-compatibility repair and was not silently bundled.
-
-#### Compatibility story had not yet completed its lifecycle
-
-**Files:** `.work/active/stories/story-fix-codex-0-152-compatibility.md`,
-`src/integrations/codex/compatibility.ts`,
-`tests/integrations/codex/endpoint.test.ts`
-
-**What:** At audit time the story remained at `stage: implementing` even though
-the implementation and verification were present in the working tree.
-
-**Fix:** Complete the story's normal implementation, inline review, and archive
-lifecycle in this change.
+**Fix:** In separate documentation-alignment work, describe ordinary
+registration as diagnostic until managed observation attaches. This
+pre-existing drift is outside the bounded `0.153.x` compatibility repair.
 
 ### Low (0)
 
 None.
 
-### Info (0)
+### Info (1)
 
-None.
+Knowledge-index lint reports five pre-existing Markdown artifacts without
+frontmatter: two campaign support artifacts and three raw source-capture files.
+The warnings do not affect the six compliant system planning docs or block index
+regeneration.
 
 ## Clean Areas
 
-- The Codex support matrix is consistent across code, unit tests, README,
-  architecture, configuration guidance, and the copyable status-line example:
-  `0.147.x` through `0.150.x` plus `0.152.x` are admitted, while `0.151.x` and
-  unverified later releases remain excluded.
-- The installed `codex-cli 0.152.0` passes the generated-schema integration
-  probe, and `agent-board doctor --json` reports `CODEX_COMPATIBLE`.
-- All six planning documents have conformant indexed frontmatter. Knowledge
-  regeneration completed with zero errors.
-- All local Markdown cross-references checked across AGENTS, README, and the
-  planning corpus resolve.
-- Mixed-provider support, packaged end-to-end behavior, the five public bins,
-  and doctor claims are backed by code, passing tests, and completed work items.
-- The new `0.152.x` documentation introduced no contradiction.
+- Codex `0.153.x` compatibility is aligned across implementation, regression
+  test, README, architecture, configuration guidance, and the copyable
+  status-line example. `0.151.x` remains explicitly excluded.
+- Installed `codex-cli 0.153.4` passed the live generated-schema and lifecycle
+  value probe.
+- The full hermetic suite passed: 231 tests, 228 passed, 3 intentional live-probe
+  skips, and 0 failures.
+- All reviewed Markdown cross-references resolve, and document ownership is
+  otherwise consistent.
+- Frontmatter compliance is 6/6 system planning docs. The regenerated indexes
+  agree on 25 documents: 6 planning, 18 research, and 1 historical.
 
 ## Blocking Briefs Status
 
-No roadmap or module phase document exists. All planning-linked research named
-by AGENTS and `docs/research-plan.md` exists on disk: the Scout parent, Codex
-detector brief, Ghostty registration/liveness brief, Codex-Claude campaign
-parent, Claude feasibility brief, and common-glyph position. No missing
-next-phase blocker was found.
+All six planning-linked research outputs exist and are locked: the prior-art
+Scout parent, Codex topology brief, Ghostty liveness brief, symmetric-support
+parent, Claude feasibility brief, and common-glyph position. No blocking brief
+is missing.
 
 ## DONE Phase Verification
 
-- `package.json` exposes all five documented public binaries.
-- `npm test` passed on 2026-09-01: 231 tests, 228 passed, 0 failed, and 3
-  intentional opt-in skips.
-- `AGENT_BOARD_LIVE_CODEX=1 npm run test:integration:codex` passed against
-  installed `codex-cli 0.152.0`.
-- `node dist/cli/agent-board.js doctor --json` reported the full local system
-  ready and Codex `0.152.0` compatible.
-- Completed mixed-provider substrate items and packaged tests substantiate the
-  current provider-support claims.
+Completed terminal-V1 and mixed-provider claims are supported by the done
+substrate items, implementation surfaces, and green packaged end-to-end tests.
+The `0.153.x` compatibility maintenance story is correctly still in progress
+during this audit and does not contradict those completed delivery arcs.
 
 ## Provenance Summary
 
-The planning-linked decision corpus contains five `/research` artifacts (latest
-updated 2026-08-20) and one `/scout` artifact (latest updated 2026-08-14). No
-lower-tier refresh candidate was identified for this bounded compatibility
-repair.
+- `/research`: 5 decision-bearing outputs, latest updated 2026-08-20
+- `/scout`: 1 decision-bearing output, latest updated 2026-08-14
+- Missing `research_method`: 0
+- Refresh candidates: none under the configured tier and recency rule
