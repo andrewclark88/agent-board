@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-0-153-compatibility
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -63,3 +63,19 @@ the schema shapes and lifecycle values consumed by Agent-Board.
 - **Adjacent issue not bundled:** `docs/research-plan.md` retains stale wording
   about ordinary Codex as a degraded-confidence fallback. The doc review
   records it as a Medium finding for separate alignment.
+
+## Review (2026-09-05)
+
+**Verdict**: Approve
+
+**Blockers**: none
+**Important**: none
+**Nits**: none
+**Rejected**: none
+
+**Notes**: Bounded inline standalone-story review, effective weight `standard`,
+one host-context pass, and no independent or cross-model reviewer. Correctness,
+regression-test quality, compatibility-boundary behavior, and foundation-doc
+alignment all pass. Security and resource-lifecycle lenses are unchanged by
+this allowlist-only repair. The live installed probe supplies the external
+contract evidence required before admitting `0.153.x`.
