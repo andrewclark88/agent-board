@@ -5,7 +5,7 @@ type: architecture
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-09-05
+updated: 2026-09-12
 summary: |
   Agent Board is a local TypeScript modular monolith with five small CLI binaries and no permanently installed daemon. Each supervised tab runs a provider-specific managed launcher: Codex uses app-server plus remote TUI, while Claude preserves its ordinary interactive CLI and emits lifecycle evidence through bundled hooks. Both persist normalized state and share one Ghostty-title and board projection policy.
 decisions:
@@ -25,7 +25,7 @@ decisions:
 
 # Architecture: Agent Board
 
-*Last updated: 2026-09-05*
+*Last updated: 2026-09-12*
 
 > How the system is built. For product intent, see [Vision](VISION.md),
 > [Specification](SPEC.md), and [Principles](PRINCIPLES.md). Runtime decisions
@@ -608,9 +608,10 @@ phases in the V1 architecture.
 ## Bounded compatibility and tuning checks
 
 - Managed observation currently accepts Codex `0.147.x`, `0.148.x`, `0.149.x`,
-  `0.150.x`, `0.152.x`, or `0.153.x`. The installed `codex-cli` `0.153.4`
+  `0.150.x`, `0.152.x`, `0.153.x`, or `0.154.x`. The installed `codex-cli` `0.154.0`
   release passed the narrow generated-schema contract and lifecycle-value probe
-  in `tests/integration/installed-codex.test.ts`. `agent-board doctor` reports
+  in `tests/integration/installed-codex.test.ts`. This probe does not validate
+  status-line visual rendering. `agent-board doctor` reports
   unsupported or unrecognized versions before launch, including the explicitly
   excluded `0.151.x` family and unverified later releases. Compatibility is
   intentionally a narrow tested family, not an implicit promise for every

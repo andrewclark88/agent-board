@@ -5,7 +5,7 @@ type: design
 kind: planning
 status: locked
 nav_priority: high
-updated: 2026-09-05
+updated: 2026-09-12
 summary: |
   Agent Board owns the compact Ghostty tab title for both Codex and Claude Code sessions, while Codex additionally owns a detailed in-tab status line. Minimal merge-only examples preserve Andrew's tab and prompt-navigation workflow without copying or mutating full personal configuration files.
 decisions:
@@ -211,11 +211,13 @@ The safest setup path uses Codex itself:
 
 4. Enable status-line colors if desired.
 
-The tested Codex 0.147.x, 0.148.x, 0.149.x, 0.150.x, and 0.152.x setups, plus
-the verified 0.153.x setup, write this configuration. The installed `codex-cli`
-`0.153.4` passed the narrow generated-schema contract and lifecycle-value probe
-in `tests/integration/installed-codex.test.ts`. Codex 0.151.x remains
-explicitly excluded until it is verified separately:
+Agent Board supports the tested Codex 0.147.x, 0.148.x, 0.149.x, 0.150.x,
+0.152.x, 0.153.x, and 0.154.x families. The installed `codex-cli` `0.154.0`
+passed the narrow generated-schema contract and lifecycle-value probe in
+`tests/integration/installed-codex.test.ts`. This checks managed observation
+compatibility; it does not validate status-line visual rendering. Codex 0.151.x
+remains explicitly excluded until it is verified separately. The recommended
+status-line configuration is:
 
 ```toml
 [tui]
