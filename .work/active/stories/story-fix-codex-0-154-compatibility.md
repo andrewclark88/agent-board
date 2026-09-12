@@ -1,7 +1,7 @@
 ---
 id: story-fix-codex-0-154-compatibility
 kind: story
-stage: review
+stage: done
 tags: [bug, integration, cli]
 parent: null
 depends_on: []
@@ -75,3 +75,21 @@ Changed the shared compatibility set and diagnostic family string, extended the
 endpoint regression, refreshed README/architecture/configuration/example guidance,
 and regenerated knowledge indexes. No adjacent production bugs surfaced in the
 test pass; no additional bug items were needed.
+
+## Review (2026-09-12)
+
+**Verdict:** Approve.
+
+**Blockers:** none. **Important:** two pre-existing provider-observation
+documentation assertions parked in `idea-provider-observation-docs`; neither
+changes the Codex 0.154 compatibility boundary. **Nits:** none.
+**Rejected:** none.
+
+**Notes:** Standard weight, one bounded inline standalone-story review; no
+independent or cross-model code reviewer. Checked the shared version gate's
+doctor and launch callers, tested-family preservation, next-family rejection,
+regression failure and green confirmation, installed schema and app-server
+evidence, and compatibility documentation. The change adds only the verified
+minor family and introduces no new process, endpoint, data, or approval behavior.
+The separately delegated documentation consistency audit is not a story review.
+Close from the green evidence above; no re-review is required.
