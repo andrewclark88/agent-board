@@ -2,22 +2,26 @@
 
 **Project:** Agent Board
 
-**Date:** 2026-09-05
+**Date:** 2026-09-12
 
-**Scope:** Fresh system-level consistency audit after admitting the
-live-verified Codex `0.153.x` protocol family. Reviewed all six indexed planning
-docs, `README.md`, `AGENTS.md`, generated knowledge indexes, the Codex
-compatibility adapter and regression test, relevant delivery state, and local
-cross-references. No module-level planning sets were discovered.
+**Scope:** Fresh system-level documentation consistency audit after admitting
+the tested Codex `0.154.x` protocol family. Reviewed all six indexed planning
+documents, `README.md`, `AGENTS.md`, generated knowledge indexes, compatibility
+guidance and examples, relevant implementation contracts, delivery state, and
+local cross-references. `CLAUDE.md` is absent; project rules live in `AGENTS.md`
+and `.agents/rules/`. No module-level planning document sets were discovered.
 
-**Documents reviewed:** 6 system planning docs plus supporting operator and
-implementation surfaces
+**Documents reviewed:** 6 system planning documents plus supporting operator
+and implementation surfaces
 
-**Passes run:** 1 system-level pass
+**Passes run:** 1 delegated system-level pass; 0 module passes
 
-**Issues found:** 0 Critical, 0 High, 1 Medium, 0 Low, 1 Info
+**Issues found:** 0 Critical, 0 High, 2 Medium, 0 Low, 1 Info
 
-**Exit gate: PASS.** 0 Critical, 0 High.
+**Exit gate: PASS.** No Critical or High documentation findings. Both Medium
+findings predate this compatibility repair and were receiver-confirmed and
+parked together in `.work/backlog/idea-provider-observation-docs.md`. No source
+documents were changed by this audit.
 
 ## Findings
 
@@ -29,20 +33,39 @@ None.
 
 None.
 
-### Medium (1)
+### Medium (2)
 
-#### Ordinary-Codex fallback wording is stale
+#### Ordinary-Codex fallback wording remains stale
 
 **File:** `docs/research-plan.md:18`
 
 **What:** The research plan calls ordinary Codex a degraded-confidence
-fallback. Current architecture, specification, README, and implementation expose
-ordinary registration as diagnostic-only until `agent-codex` attaches managed
-observation; there is no ordinary-Codex lifecycle observer.
+fallback. Current architecture, specification, README, and projection expose
+ordinary registration as diagnostic-only until a managed launcher attaches
+observation. There is no ordinary-Codex lifecycle observer. This is the same
+pre-existing finding recorded in the previous documentation audit.
 
-**Fix:** In separate documentation-alignment work, describe ordinary
-registration as diagnostic until managed observation attaches. This
-pre-existing drift is outside the bounded `0.153.x` compatibility repair.
+**Fix:** Describe ordinary registration as diagnostic until managed observation
+attaches. Retain historical topology evidence in the research corpus.
+
+#### Working-freshness summaries omit the provider capability condition
+
+**Files:** `docs/SPEC.md:164`, `docs/SPEC.md:233`,
+`docs/ARCHITECTURE.md:19`, `docs/ARCHITECTURE.md:377`, and
+`docs/ARCHITECTURE.md:446`
+
+**What:** These descriptions say a managed session with a verified live launcher
+can retain working status regardless of observation age. The actual policy also
+requires the provider's `workingWhileLauncherAlive` capability, enabled for
+Codex and disabled for Claude in `src/domain/registries.ts`. Consequently,
+Claude hook-derived working evidence still expires even when its launcher is
+alive. `src/domain/projection.ts`, the regression at
+`tests/domain/projection.test.ts:78`, and `README.md:200` agree on this
+distinction. The broad foundation wording predates this compatibility repair.
+
+**Fix:** Qualify the freshness exemption by adapter capability and explicitly
+state that the current exemption applies to managed Codex; Claude retains its
+hook-evidence freshness window. Keep the current runtime behavior.
 
 ### Low (0)
 
@@ -50,42 +73,93 @@ None.
 
 ### Info (1)
 
-Knowledge-index lint reports five pre-existing Markdown artifacts without
-frontmatter: two campaign support artifacts and three raw source-capture files.
-The warnings do not affect the six compliant system planning docs or block index
-regeneration.
+The parent task's knowledge-index regeneration reported zero errors and five
+pre-existing missing-frontmatter warnings in research support/source artifacts.
+These do not affect the six compliant planning documents or block index
+generation. This pass checked the resulting indexes and their paths without
+rerunning the generator; the parent owns final regeneration after work-item
+archival.
 
 ## Clean Areas
 
-- Codex `0.153.x` compatibility is aligned across implementation, regression
-  test, README, architecture, configuration guidance, and the copyable
-  status-line example. `0.151.x` remains explicitly excluded.
-- Installed `codex-cli 0.153.4` passed the live generated-schema and lifecycle
-  value probe.
-- The full hermetic suite passed: 231 tests, 228 passed, 3 intentional live-probe
-  skips, and 0 failures.
-- All reviewed Markdown cross-references resolve, and document ownership is
-  otherwise consistent.
-- Frontmatter compliance is 6/6 system planning docs. The regenerated indexes
-  agree on 25 documents: 6 planning, 18 research, and 1 historical.
+- The accepted Codex families agree across the compatibility boundary,
+  regression test, README, architecture, configuration guide, and copyable
+  status-line example: `0.147.x`, `0.148.x`, `0.149.x`, `0.150.x`, `0.152.x`,
+  `0.153.x`, and `0.154.x`. `0.151.x` and unverified future families remain
+  excluded.
+- The updated guidance correctly limits the installed-schema probe's claim to
+  protocol shapes and lifecycle values; it does not claim to verify status-line
+  visual rendering.
+- Managed Codex app-server plus remote TUI, managed ordinary Claude plus bundled
+  hooks, observation-only actions, shared glyphs, and diagnostic ordinary
+  registration remain aligned across the implemented surfaces and current
+  product contract, except for the two wording findings above.
+- Session-record field names match `src/domain/session.ts`; the five package
+  binaries and their documented implementation directories exist.
+- All 25 local Markdown link targets checked across the planning documents,
+  README, and AGENTS exist. All 25 indexed document paths exist. The index
+  contains 6 planning documents, 18 research artifacts, and 1 historical
+  document.
+- All 6 planning documents have the required description, type, and current
+  updated fields, using the project's supported planning type vocabulary.
 
-## Blocking Briefs Status
+## Blocking Research Status
 
-All six planning-linked research outputs exist and are locked: the prior-art
-Scout parent, Codex topology brief, Ghostty liveness brief, symmetric-support
-parent, Claude feasibility brief, and common-glyph position. No blocking brief
-is missing.
+The research plan's six decision-bearing outputs exist and declare locked
+status. It commissions no missing blocker for the compatibility repair.
 
-## DONE Phase Verification
+| Output | Exists on disk? | Status |
+| --- | --- | --- |
+| `.research/analysis/campaigns/agent-board-prior-art/parent.md` | Yes | Locked |
+| `.research/analysis/briefs/codex-detector-topology.md` | Yes | Locked |
+| `.research/analysis/briefs/ghostty-registration-liveness.md` | Yes | Locked |
+| `.research/analysis/campaigns/codex-claude-symmetric-support/parent.md` | Yes | Locked |
+| `.research/analysis/briefs/claude-code-adapter-feasibility.md` | Yes | Locked |
+| `.research/analysis/positions/codex-claude-common-glyph-contract.md` | Yes | Locked |
 
-Completed terminal-V1 and mixed-provider claims are supported by the done
-substrate items, implementation surfaces, and green packaged end-to-end tests.
-The `0.153.x` compatibility maintenance story is correctly still in progress
-during this audit and does not contradict those completed delivery arcs.
+## Completed Delivery Verification
+
+All six delivery epics are marked `done`. Representative outputs and tests
+exist for each completed surface; the compatibility repair does not contradict
+those completion claims. The parent reports the compatibility story completed
+its bounded inline review and reached `done` in commit `5eab8e6`.
+
+| Completed surface | Representative evidence | Exists? |
+| --- | --- | --- |
+| Trustworthy session core | Domain schema/projection, atomic JSON store, domain/store tests | Yes |
+| Managed Codex observation | Codex client/lifecycle, managed launcher, integration tests | Yes |
+| Ghostty project surface | Ghostty client, registration/title use cases, adapter tests | Yes |
+| Terminal attention board | `list-sessions`, CLI commands, packed golden journey | Yes |
+| Operational readiness | Doctor, README, packed failure/chaos journeys | Yes |
+| Mixed Codex/Claude support | Claude launcher/lifecycle, bundled hooks, packed mixed-provider journey | Yes |
+
+The parent implementation task reported these current verification results:
+
+- `npm run typecheck` passed.
+- `AGENT_BOARD_LIVE_CODEX=1 npm test`: 231 tests, 229 passed, 0 failed, and
+  2 intentional opt-in skips for installed Claude and live Ghostty probes.
+- Installed Codex `0.154.0` passed generated-schema checks and a separate real
+  app-server startup, endpoint, WebSocket initialization, and loaded-thread
+  discovery smoke check.
+- The installed `agent-board doctor` reported Ready.
+
+This documentation pass inspected contracts and evidence without rerunning
+those commands. It did not exercise a live interactive Codex or Claude turn,
+Ghostty title rendering, or status-line visuals, and does not claim that the
+schema/smoke checks establish those behaviors.
 
 ## Provenance Summary
 
-- `/research`: 5 decision-bearing outputs, latest updated 2026-08-20
-- `/scout`: 1 decision-bearing output, latest updated 2026-08-14
-- Missing `research_method`: 0
-- Refresh candidates: none under the configured tier and recency rule
+The decision-bearing outputs comprise three briefs, two campaign parents, and
+one position. Supporting campaign artifacts are not separate commissioned
+briefs.
+
+| research_method | Decision-bearing outputs | Latest updated |
+| --- | --- | --- |
+| `/research` | 5 | 2026-08-20 |
+| `/scout` | 1 | 2026-08-14 |
+| Missing | 0 | — |
+
+No refresh candidates arise under the configured tier/recency rule. Historical
+research versions remain evidence of their original verification dates; current
+supported versions belong to the compatibility boundary and operator guidance.
